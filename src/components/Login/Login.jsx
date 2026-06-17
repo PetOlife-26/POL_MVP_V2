@@ -50,22 +50,10 @@ function BackBtn({ onClick }) {
   );
 }
 
-function CloseBtn({ onClick }) {
-  return (
-    <button className="close-btn" onClick={onClick} aria-label="Close">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-        <line x1="18" y1="6" x2="6" y2="18"/>
-        <line x1="6" y1="6" x2="18" y2="18"/>
-      </svg>
-    </button>
-  );
-}
-
-function SuccessScreen({ type, userName, onContinue, onClose }) {
+function SuccessScreen({ type, userName, onContinue }) {
   const isSignup = type === "signup";
   return (
     <div className="screen success-screen">
-      <CloseBtn onClick={onClose} />
       <div className="success-icon-wrap">
         <div className="success-circle">
           <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -92,10 +80,9 @@ function SuccessScreen({ type, userName, onContinue, onClose }) {
   );
 }
 
-function WelcomeScreen({ onCreateAccount, onLogin, onClose }) {
+function WelcomeScreen({ onCreateAccount, onLogin }) {
   return (
     <div className="screen welcome-screen">
-      <CloseBtn onClick={onClose} />
       <Logo />
       <div className="welcome-tagline">
         <span className="tagline-black">Building a Healthy<br />identity for </span>
@@ -323,11 +310,6 @@ export default function Login() {
     setSuccessData(null);
   };
 
-  const goHome = () => {
-    setScreen("welcome");
-    setSuccessData(null);
-  };
-
   return (
     <div className="login-root">
       <div className="login-card">
@@ -335,7 +317,6 @@ export default function Login() {
           <WelcomeScreen
             onCreateAccount={() => setScreen("signup")}
             onLogin={() => setScreen("login")}
-            onClose={goHome}
           />
         )}
         {screen === "login" && (
@@ -357,7 +338,6 @@ export default function Login() {
             type={successData?.type}
             userName={successData?.name}
             onContinue={handleSuccessContinue}
-            onClose={goHome}
           />
         )}
       </div>
