@@ -7,9 +7,9 @@ import "./AppShell.css";
    ───────────────────────────────── */
 function getGreeting() {
   const hour = new Date().getHours();
-  if (hour < 12) return { text: "Good Morning", emoji: "☀️" };
-  if (hour < 17) return { text: "Good Afternoon", emoji: "🌤️" };
-  return { text: "Good Evening", emoji: "🌙" };
+  if (hour < 12) return { text: "Good Morning" };
+  if (hour < 17) return { text: "Good Afternoon" };
+  return { text: "Good Evening" };
 }
 
 /* ─────────────────────────────────
@@ -69,22 +69,48 @@ function PlusIcon() {
   );
 }
 
+function NotificationIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+      <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+    </svg>
+  );
+}
+
 /* ─────────────────────────────────
-   TOP BAR
+   TOP BAR — Greeting (Pre-pet)
    ───────────────────────────────── */
-function TopBar({ userName, onAvatarClick }) {
+function GreetingTopBar({ userName, onAvatarClick }) {
   const greeting = getGreeting();
 
   return (
     <header className="top-bar">
       <div className="top-bar-left">
         <span className="greeting-text">
-          {greeting.text} {greeting.emoji}
+          {greeting.text}
         </span>
         <span className="user-name">{userName}</span>
       </div>
       <button className="avatar-btn" onClick={onAvatarClick} aria-label="Profile">
         <UserIcon />
+      </button>
+    </header>
+  );
+}
+
+/* ─────────────────────────────────
+   TOP BAR — Branded (Post-pet)
+   ───────────────────────────────── */
+function BrandedTopBar() {
+  return (
+    <header className="top-bar branded-top-bar">
+      <div className="top-bar-left">
+        <span className="brand-logo-text">petolife</span>
+        <span className="brand-slogan">CARE &bull; TRUST &bull; FAMILY</span>
+      </div>
+      <button className="notification-btn" aria-label="Notifications">
+        <NotificationIcon />
       </button>
     </header>
   );
@@ -127,7 +153,7 @@ function BottomNav({ activeTab, onTabChange, onFabClick }) {
 /* ─────────────────────────────────
    APP SHELL — Reusable Layout
    ───────────────────────────────── */
-export default function AppShell({ children, activeTab, onTabChange }) {
+export default function AppShell({ children, activeTab, onTabChange, hasPets }) {
   const navigate = useNavigate();
   const [userName, setUserName] = useState("There");
 
@@ -157,7 +183,11 @@ export default function AppShell({ children, activeTab, onTabChange }) {
 
   return (
     <div className="app-shell">
-      <TopBar userName={userName} onAvatarClick={handleAvatarClick} />
+      {hasPets ? (
+        <BrandedTopBar />
+      ) : (
+        <GreetingTopBar userName={userName} onAvatarClick={handleAvatarClick} />
+      )}
 
       <main className="main-content">
         {children}

@@ -130,6 +130,15 @@ const CreatePetProfile = () => {
       const formData = new FormData();
       formData.append("pet_type", selectedPet);
       formData.append("pet_name", petName.trim());
+
+      // Attach user_id from localStorage
+      const storedUserData = localStorage.getItem("user");
+      if (storedUserData) {
+        try {
+          const userId = JSON.parse(storedUserData).id;
+          if (userId) formData.append("user_id", userId);
+        } catch { /* ignore */ }
+      }
       if (selectedBreed) formData.append("breed", selectedBreed);
       if (selectedGender) formData.append("gender", selectedGender);
       if (birthDate) formData.append("birth_date", birthDate);

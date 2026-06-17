@@ -9,7 +9,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import PORT, FRONTEND_URL
-from app.routers import auth, pet_profile, care_team
+from app.routers import auth, pet_profile, care_team, daily_tasks
 from app.supabase_client import supabase
 
 app = FastAPI(
@@ -35,6 +35,7 @@ app.add_middleware(
 app.include_router(auth.router, prefix="/api/auth", tags=["Auth"])
 app.include_router(pet_profile.router, prefix="/api/pet-profile", tags=["Pet Profile"])
 app.include_router(care_team.router, prefix="/api/care-team", tags=["Care Team"])
+app.include_router(daily_tasks.router, prefix="/api/daily-tasks", tags=["Daily Tasks"])
 
 
 @app.get("/")

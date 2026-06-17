@@ -22,6 +22,7 @@ router = APIRouter()
 async def create_pet_profile(
     pet_type: str = Form(...),
     pet_name: str = Form(...),
+    user_id: Optional[str] = Form(None),
     breed: Optional[str] = Form(None),
     gender: Optional[str] = Form(None),
     birth_date: Optional[str] = Form(None),
@@ -79,6 +80,7 @@ async def create_pet_profile(
     print("Inserting pet profile into database...")
     insert_data = {
         "petolife_id": petolife_id,
+        "user_id": user_id or None,
         "pet_type": pet_type,
         "pet_name": pet_name,
         "breed": breed or None,
@@ -139,6 +141,23 @@ async def get_all_profiles():
     except Exception as e:
         print(f"Fetch profiles error: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to fetch profiles: {str(e)}")
+
+
+@router.get("/by-user/{user_id}")
+async def get_pets_by_user(user_id: str):
+    """Fetch all pet profiles for a specific user."""
+    try:
+        result = (
+            supabase.table("pet_profiles")
+            .select("*")
+            .eq("user_id", user_id)
+            .order("created_at", desc=True)
+            .execute()
+        )
+        return result.data or []
+    except Exception as e:
+        print(f"Fetch user pets error: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch user pets: {str(e)}")
 
 
 @router.get("/{profile_id}")

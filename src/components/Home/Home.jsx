@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import AppShell from "../AppShell/AppShell";
 import PetContextCard from "../PetContextCard/PetContextCard";
+import HomeDashboard from "../HomeDashboard/HomeDashboard";
 import "./Home.css";
 import heroImg from "../../assets/images/hero_welcome.png";
 
@@ -37,12 +38,9 @@ function HomeSection({ onAddPet }) {
 
   return (
     <div className="home-content">
-      {/* Hero Illustration */}
       <div className="hero-illustration">
         <img src={heroImg} alt="Dog and cat illustration" />
       </div>
-
-      {/* Welcome Message */}
       <div className="welcome-message">
         <h1 className="welcome-title">Welcome to PetoLife</h1>
         <p className="welcome-subtitle">
@@ -51,14 +49,10 @@ function HomeSection({ onAddPet }) {
           for every pet you love.
         </p>
       </div>
-
-      {/* Primary CTA */}
       <button className="primary-cta" onClick={onAddPet}>
         <PawSvg />
         Add My First Pet
       </button>
-
-      {/* Benefits Card */}
       <div className="benefits-card">
         <h3 className="benefits-title">Your pet family starts here</h3>
         <div className="benefits-list">
@@ -79,10 +73,16 @@ function HomeSection({ onAddPet }) {
 /* ─────────────────────────────────
    COMING SOON PAGES
    ───────────────────────────────── */
-function ComingSoonPage({ emoji, title }) {
+function ComingSoonPage({ title }) {
   return (
     <div className="coming-soon-page">
-      <span className="coming-soon-emoji">{emoji}</span>
+      <div className="coming-soon-icon">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+          <line x1="3" y1="9" x2="21" y2="9" />
+          <line x1="9" y1="21" x2="9" y2="9" />
+        </svg>
+      </div>
       <h2 className="coming-soon-title">{title}</h2>
       <p className="coming-soon-text">Coming Soon</p>
     </div>
@@ -96,6 +96,7 @@ export default function Home() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("home");
   const [hasPets, setHasPets] = useState(false);
+  const [activePetId, setActivePetId] = useState(null);
 
   useEffect(() => {
     try {
@@ -103,6 +104,15 @@ export default function Home() {
       const userId = localUser ? JSON.parse(localUser).id : "guest";
       const storedPets = JSON.parse(localStorage.getItem(`pets_${userId}`)) || [];
       setHasPets(storedPets.length > 0);
+
+      if (storedPets.length > 0) {
+        const savedActiveId = localStorage.getItem(`active_pet_id_${userId}`);
+        if (savedActiveId && storedPets.find((p) => p.id === savedActiveId)) {
+          setActivePetId(savedActiveId);
+        } else {
+          setActivePetId(storedPets[0].id);
+        }
+      }
     } catch (e) {
       console.error(e);
     }
@@ -112,32 +122,29 @@ export default function Home() {
     navigate("/create-pet-profile");
   };
 
-  // Render tab content
   const renderContent = () => {
     switch (activeTab) {
       case "home":
-        if (hasPets) {
-          return (
-            <>
-              <PetContextCard />
-              <ComingSoonPage emoji="📊" title="Dashboard" />
-            </>
-          );
+        if (hasPets && activePetId) {
+          return <HomeDashboard activePetId={activePetId} />;
         }
         return <HomeSection onAddPet={handleAddPet} />;
       case "health":
-        return <ComingSoonPage emoji="🩺" title="Health" />;
+        return <ComingSoonPage title="Health" />;
       case "docs":
-        return <ComingSoonPage emoji="📁" title="Documents" />;
+        return <ComingSoonPage title="Documents" />;
       case "profile":
-        return <ComingSoonPage emoji="👤" title="Profile" />;
+        if (hasPets) {
+          return <PetContextCard />;
+        }
+        return <ComingSoonPage title="Profile" />;
       default:
         return <HomeSection onAddPet={handleAddPet} />;
     }
   };
 
   return (
-    <AppShell activeTab={activeTab} onTabChange={setActiveTab}>
+    <AppShell activeTab={activeTab} onTabChange={setActiveTab} hasPets={hasPets}>
       {renderContent()}
     </AppShell>
   );
