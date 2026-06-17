@@ -1,0 +1,1800 @@
+/* =====================================================
+   PETOLIFE RECORDS
+   PART 1
+   GLOBAL + LAYOUT + PROFILE + UPLOAD SECTION
+===================================================== */
+
+html,
+body,
+#root {
+  width: 100%;
+  min-height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+:root {
+  /* PRIMARY BRAND */
+
+  --teal: #0B6B3A;
+  --teal-dark: #08552E;
+  --teal-light: #D8F2E2;
+  --teal-soft: #F2FBF5;
+
+  /* SECONDARY ACCENT */
+
+  --green: #4CAF50;
+  --green-light: #E4F5E5;
+
+  /* NEUTRALS */
+
+  --gray: #6B7280;
+  --dark: #111827;
+
+  /* BORDERS */
+
+  --border: #CDE8D7;
+  --white: #FFFFFF;
+
+  /* SHADOWS */
+
+  --shadow-sm: 0 4px 14px rgba(11, 107, 58, 0.08);
+  --shadow-md: 0 10px 30px rgba(11, 107, 58, 0.12);
+  --shadow-lg: 0 20px 50px rgba(11, 107, 58, 0.16);
+
+  /* RADIUS */
+
+  --radius-sm: 12px;
+  --radius-md: 18px;
+  --radius-lg: 24px;
+}
+
+body {
+  font-family: "Segoe UI", Arial, sans-serif;
+  background: #f4f9f9;
+  color: var(--dark);
+}
+
+img,
+svg,
+iframe,
+video {
+  max-width: 100%;
+}
+
+button {
+  cursor: pointer;
+  font-family: inherit;
+}
+
+/* =====================================================
+   PAGE
+===================================================== */
+
+.pl-page {
+  width: 100%;
+  min-height: 100vh;
+  background: #f4f9f9;
+}
+
+.pl-card {
+  width: 100%;
+  min-height: 100vh;
+  background: #ffffff;
+}
+
+/* =====================================================
+   HEADER
+===================================================== */
+
+.pl-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px;
+}
+
+.pl-back-btn {
+  width: 42px;
+  height: 42px;
+  border: none;
+  border-radius: 50%;
+  background: var(--teal-light);
+  color: var(--teal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pl-page-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--teal);
+  text-align: center;
+  flex: 1;
+}
+
+/* =====================================================
+   MAIN
+===================================================== */
+
+.pl-main {
+  width: 100%;
+  padding: 0 16px 100px;
+}
+
+/* =====================================================
+   PROFILE CARD
+===================================================== */
+
+.pl-profile {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.pl-profile-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+}
+
+.pl-profile-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.pl-avatar-wrap {
+  width: 72px;
+  height: 72px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid var(--teal-light);
+}
+
+.pl-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pl-pet-name-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pl-pet-name {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--teal);
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pl-pet-meta {
+  margin: 4px 0 0;
+  color: var(--gray);
+  font-size: 13px;
+}
+
+.pl-health-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.pl-health-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--teal);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pl-health-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--teal-dark);
+}
+
+.pl-health-sub {
+  margin: 0;
+  font-size: 12px;
+  color: var(--gray);
+}
+
+.pl-change-pet-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  align-self: flex-start;
+
+  border: none;
+  border-radius: 999px;
+
+  padding: 10px 16px;
+
+  background: var(--teal-light);
+  color: var(--teal);
+
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* =====================================================
+   CONTENT GRID
+===================================================== */
+
+.pl-columns {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-top: 24px;
+}
+
+/* =====================================================
+   SECTION TITLES
+===================================================== */
+
+.pl-section-title {
+  margin: 0 0 12px;
+  color: var(--teal);
+  font-size: 18px;
+  font-weight: 800;
+}
+
+/* =====================================================
+   UPLOAD DROPZONE
+===================================================== */
+
+.pl-dropzone {
+  position: relative;
+
+  width: 100%;
+  min-height: 280px;
+
+  overflow: hidden;
+
+  border: 2px dashed #9ad0d0;
+  border-radius: 20px;
+
+  background: var(--teal-soft);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 24px;
+}
+
+.pl-dropzone-paw {
+  position: absolute;
+  right: -20px;
+  top: 10px;
+
+  width: 120px;
+  height: auto;
+
+  opacity: 0.65;
+  transform: rotate(12deg);
+
+  pointer-events: none;
+}
+
+.pl-dropzone-content {
+  position: relative;
+  z-index: 1;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.pl-dropzone-title {
+  margin: 12px 0 6px;
+  color: var(--teal);
+
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.pl-dropzone-sub {
+  margin: 0;
+  color: var(--gray);
+  font-size: 13px;
+}
+
+.pl-choose-btn {
+  margin-top: 18px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 46px;
+
+  padding: 12px 20px;
+
+  border: none;
+  border-radius: 999px;
+
+  background: var(--teal);
+  color: white;
+
+  font-size: 14px;
+  font-weight: 700;
+
+  transition: 0.2s ease;
+}
+
+.pl-choose-btn:hover {
+  background: var(--teal-dark);
+  transform: translateY(-1px);
+}
+
+/* =====================================================
+   TABLET
+===================================================== */
+
+@media (min-width: 768px) {
+
+  .pl-main {
+    padding: 0 24px 110px;
+  }
+
+  .pl-profile {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .pl-avatar-wrap {
+    width: 84px;
+    height: 84px;
+  }
+
+  .pl-pet-name {
+    font-size: 24px;
+  }
+
+  .pl-columns {
+    gap: 28px;
+  }
+
+  .pl-dropzone {
+    min-height: 320px;
+  }
+}
+
+/* =====================================================
+   DESKTOP
+===================================================== */
+
+@media (min-width: 1024px) {
+
+  .pl-page {
+    padding: 20px;
+  }
+
+  .pl-card {
+    max-width: 1200px;
+    margin: 0 auto;
+
+    border-radius: 28px;
+    overflow: hidden;
+
+    box-shadow: var(--shadow-lg);
+  }
+
+  .pl-main {
+    padding: 0 32px 120px;
+  }
+
+  .pl-columns {
+    display: grid;
+    grid-template-columns: 48% 52%;
+    gap: 36px;
+    align-items: start;
+  }
+
+  .pl-avatar-wrap {
+    width: 96px;
+    height: 96px;
+  }
+
+  .pl-pet-name {
+    font-size: 28px;
+  }
+
+  .pl-pet-meta {
+    font-size: 14px;
+  }
+
+  .pl-dropzone {
+    min-height: 360px;
+  }
+
+  .pl-dropzone-title {
+    font-size: 22px;
+  }
+
+  .pl-dropzone-sub {
+    font-size: 14px;
+  }
+
+  .pl-dropzone-paw {
+    width: 160px;
+  }
+}
+
+/* =====================================================
+   LARGE DESKTOP
+===================================================== */
+
+@media (min-width: 1440px) {
+
+  .pl-card {
+    max-width: 1350px;
+  }
+
+  .pl-main {
+    padding: 0 48px 130px;
+  }
+
+  .pl-columns {
+    gap: 42px;
+  }
+}
+/* =====================================================
+   PETOLIFE RECORDS
+   PART 2
+   RECORDS + VIEW ALL + MODALS + FILE VIEWER
+===================================================== */
+
+/* =====================================================
+   RECORDS HEADER
+===================================================== */
+
+.pl-records-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.pl-view-all-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+
+  min-height: 40px;
+
+  padding: 8px 14px;
+
+  border: none;
+  border-radius: 999px;
+
+  background: var(--teal-light);
+  color: var(--teal);
+
+  font-size: 13px;
+  font-weight: 700;
+
+  transition: 0.2s ease;
+}
+
+.pl-view-all-btn:hover {
+  background: #d4eeee;
+}
+
+.pl-view-all-count {
+  min-width: 20px;
+  height: 20px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 999px;
+
+  background: #ffffff;
+  color: var(--teal);
+
+  font-size: 11px;
+  font-weight: 800;
+}
+
+/* =====================================================
+   RECORDS LIST
+===================================================== */
+
+.pl-records-list,
+.pl-all-records {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  width: 100%;
+}
+
+.pl-empty-state {
+  text-align: center;
+
+  padding: 20px;
+
+  border: 1px dashed var(--border);
+  border-radius: 14px;
+
+  color: var(--gray);
+  font-size: 14px;
+}
+
+/* =====================================================
+   RECORD ITEM
+===================================================== */
+
+.pl-record-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  width: 100%;
+  min-width: 0;
+
+  padding: 12px;
+
+  border: 1px solid var(--border);
+  border-radius: 16px;
+
+  background: #ffffff;
+
+  transition: 0.2s ease;
+}
+
+.pl-record-item:hover {
+  border-color: #a7dcdc;
+  box-shadow: 0 6px 20px rgba(30, 107, 107, 0.08);
+}
+
+.pl-record-item--new {
+  border-color: #9ad0d0;
+}
+
+.pl-record-left {
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pl-record-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.pl-record-name {
+  margin: 0;
+
+  color: #1f2a24;
+
+  font-size: 14px;
+  font-weight: 700;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pl-record-meta {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+
+  margin-top: 4px;
+
+  color: var(--gray);
+  font-size: 12px;
+}
+
+.pl-record-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  flex-shrink: 0;
+
+  margin-left: auto;
+}
+
+.pl-record-size {
+  color: var(--gray);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.pl-new-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  background: var(--teal);
+  color: white;
+
+  padding: 4px 8px;
+
+  border-radius: 999px;
+
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.pl-show-more-btn {
+  width: 100%;
+
+  margin-top: 12px;
+
+  padding: 12px;
+
+  border: 1px dashed var(--border);
+  border-radius: 14px;
+
+  background: transparent;
+
+  color: var(--gray);
+
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.pl-show-more-btn:hover {
+  background: #fafefe;
+}
+
+/* =====================================================
+   ALL RECORDS PAGE
+===================================================== */
+
+.pl-all-records {
+  padding-bottom: 20px;
+}
+
+/* =====================================================
+   MODAL OVERLAY
+===================================================== */
+
+.pl-modal-overlay {
+  position: fixed;
+  inset: 0;
+
+  background: rgba(0, 0, 0, 0.55);
+
+  z-index: 99999;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 16px;
+}
+
+/* =====================================================
+   MODAL
+===================================================== */
+
+.pl-modal,
+.pl-upload-modal-v2 {
+  width: 100%;
+  max-width: 500px;
+
+  background: #ffffff;
+
+  border-radius: 22px;
+
+  overflow: hidden;
+
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.18);
+}
+
+.pl-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 12px;
+
+  padding: 16px 18px;
+
+  border-bottom: 1px solid var(--border);
+}
+
+.pl-modal-header h2 {
+  margin: 0;
+
+  color: var(--teal);
+
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.pl-close-btn {
+  width: 38px;
+  height: 38px;
+
+  border: none;
+  border-radius: 50%;
+
+  background: var(--teal-light);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* =====================================================
+   PET OPTION
+===================================================== */
+
+.pl-pet-option {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  padding: 18px;
+}
+
+.pl-pet-option img {
+  width: 56px;
+  height: 56px;
+
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.pl-pet-option h4 {
+  margin: 0;
+
+  color: var(--dark);
+
+  font-size: 15px;
+}
+
+.pl-pet-option span {
+  display: block;
+  margin-top: 2px;
+
+  color: var(--gray);
+  font-size: 12px;
+}
+
+.pl-pet-option.active {
+  background: #f8fcfc;
+}
+
+/* =====================================================
+   FILE VIEWER
+===================================================== */
+
+.pl-file-viewer-overlay {
+  position: fixed;
+  inset: 0;
+
+  z-index: 100000;
+
+  background: rgba(0, 0, 0, 0.92);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pl-file-viewer-modal {
+  width: 100%;
+  height: 100%;
+
+  background: #ffffff;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.pl-file-viewer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 12px;
+
+  padding: 14px 16px;
+
+  border-bottom: 1px solid var(--border);
+
+  min-width: 0;
+}
+
+.pl-file-viewer-title {
+  flex: 1;
+
+  margin: 0;
+
+  color: var(--teal);
+
+  font-size: 14px;
+  font-weight: 700;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pl-file-viewer-close {
+  width: 38px;
+  height: 38px;
+
+  border: none;
+  border-radius: 50%;
+
+  background: var(--teal);
+  color: white;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+}
+
+.pl-file-viewer-content {
+  flex: 1;
+
+  min-height: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  overflow: auto;
+
+  background: #f4f5f6;
+}
+
+.pl-file-viewer-content iframe,
+.pl-file-viewer-content img {
+  width: 100%;
+  height: 100%;
+
+  border: none;
+  object-fit: contain;
+}
+
+/* =====================================================
+   TABLET
+===================================================== */
+
+@media (min-width: 768px) {
+
+  .pl-record-item {
+    padding: 14px;
+  }
+
+  .pl-record-name {
+    font-size: 15px;
+  }
+
+  .pl-modal {
+    max-width: 560px;
+  }
+
+  .pl-file-viewer-modal {
+    width: 95%;
+    height: 92vh;
+
+    border-radius: 20px;
+    overflow: hidden;
+  }
+}
+
+/* =====================================================
+   DESKTOP
+===================================================== */
+
+@media (min-width: 1024px) {
+
+  .pl-record-item {
+    min-height: 82px;
+    padding: 16px;
+  }
+
+  .pl-record-name {
+    font-size: 15px;
+  }
+
+  .pl-record-meta {
+    font-size: 12px;
+  }
+
+  .pl-new-badge {
+    font-size: 11px;
+  }
+
+  .pl-modal {
+    max-width: 620px;
+  }
+
+  .pl-file-viewer-modal {
+    width: 95%;
+    max-width: 1300px;
+    height: 92vh;
+  }
+}
+
+/* =====================================================
+   LARGE DESKTOP
+===================================================== */
+
+@media (min-width: 1440px) {
+
+  .pl-file-viewer-modal {
+    max-width: 1400px;
+  }
+}
+/* =====================================================
+   PETOLIFE RECORDS
+   PART 3
+   BOTTOM NAV + RESPONSIVE BREAKPOINTS + UTILITIES
+===================================================== */
+
+/* =====================================================
+   BOTTOM NAVIGATION
+===================================================== */
+
+.pl-bottom-nav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  z-index: 1000;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  background: #ffffff;
+
+  border-top: 1px solid var(--border);
+
+  padding: 8px 10px calc(8px + env(safe-area-inset-bottom));
+}
+
+.pl-nav-item {
+  flex: 1;
+
+  border: none;
+  background: transparent;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  gap: 3px;
+
+  padding: 6px 2px;
+
+  color: #9ca3af;
+
+  transition: 0.2s ease;
+}
+
+.pl-nav-item.active {
+  color: var(--teal);
+}
+
+.pl-nav-item span {
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.pl-nav-center-btn {
+  width: 56px;
+  height: 56px;
+
+  margin-top: -28px;
+
+  border: none;
+  border-radius: 50%;
+
+  flex-shrink: 0;
+
+  color: #ffffff;
+
+  background: linear-gradient(
+    135deg,
+    var(--teal) 0%,
+    var(--green) 100%
+  );
+
+  box-shadow: 0 10px 24px rgba(30, 107, 107, 0.3);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* =====================================================
+   MOBILE SMALL
+   320px - 359px
+===================================================== */
+
+@media (max-width: 359px) {
+
+  .pl-main {
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-bottom: 90px;
+  }
+
+  .pl-header {
+    padding: 10px;
+  }
+
+  .pl-page-title {
+    font-size: 16px;
+  }
+
+  .pl-avatar-wrap {
+    width: 52px;
+    height: 52px;
+  }
+
+  .pl-pet-name {
+    font-size: 16px;
+  }
+
+  .pl-pet-meta {
+    font-size: 11px;
+  }
+
+  .pl-health-title {
+    font-size: 11px;
+  }
+
+  .pl-health-sub {
+    font-size: 10px;
+  }
+
+  .pl-section-title {
+    font-size: 15px;
+  }
+
+  .pl-dropzone {
+    min-height: 220px;
+    padding: 18px 10px;
+  }
+
+  .pl-dropzone-paw {
+    width: 80px;
+  }
+
+  .pl-dropzone-title {
+    font-size: 16px;
+  }
+
+  .pl-dropzone-sub {
+    font-size: 11px;
+  }
+
+  .pl-record-item {
+    padding: 8px;
+    gap: 8px;
+  }
+
+  .pl-record-name {
+    font-size: 12px;
+  }
+
+  .pl-record-meta {
+    font-size: 10px;
+  }
+
+  .pl-nav-center-btn {
+    width: 46px;
+    height: 46px;
+    margin-top: -23px;
+  }
+
+  .pl-nav-item span {
+    font-size: 9px;
+  }
+}
+
+/* =====================================================
+   MOBILE
+   360px - 479px
+===================================================== */
+
+@media (min-width: 360px) and (max-width: 479px) {
+
+  .pl-main {
+    padding-bottom: 92px;
+  }
+
+  .pl-avatar-wrap {
+    width: 60px;
+    height: 60px;
+  }
+
+  .pl-pet-name {
+    font-size: 18px;
+  }
+
+  .pl-dropzone {
+    min-height: 250px;
+  }
+
+  .pl-dropzone-paw {
+    width: 95px;
+  }
+
+  .pl-nav-center-btn {
+    width: 50px;
+    height: 50px;
+    margin-top: -25px;
+  }
+}
+
+/* =====================================================
+   LARGE MOBILE
+   480px - 767px
+===================================================== */
+
+@media (min-width: 480px) and (max-width: 767px) {
+
+  .pl-main {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+
+  .pl-avatar-wrap {
+    width: 68px;
+    height: 68px;
+  }
+
+  .pl-pet-name {
+    font-size: 20px;
+  }
+
+  .pl-dropzone {
+    min-height: 280px;
+  }
+
+  .pl-dropzone-paw {
+    width: 110px;
+  }
+
+  .pl-record-item {
+    padding: 12px;
+  }
+
+  .pl-record-name {
+    font-size: 14px;
+  }
+
+  .pl-record-meta {
+    font-size: 11px;
+  }
+}
+
+/* =====================================================
+   TABLET
+===================================================== */
+
+@media (min-width: 768px) {
+
+  .pl-bottom-nav {
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% - 48px);
+    max-width: 1200px;
+  }
+
+  .pl-nav-item span {
+    font-size: 11px;
+  }
+
+  .pl-nav-center-btn {
+    width: 58px;
+    height: 58px;
+    margin-top: -29px;
+  }
+}
+
+/* =====================================================
+   DESKTOP
+===================================================== */
+
+@media (min-width: 1024px) {
+
+  .pl-bottom-nav {
+    max-width: 1200px;
+  }
+
+  .pl-header {
+    padding: 20px 32px;
+  }
+
+  .pl-page-title {
+    font-size: 24px;
+  }
+
+  .pl-back-btn {
+    width: 46px;
+    height: 46px;
+  }
+
+  .pl-profile {
+    margin-top: 8px;
+  }
+
+  .pl-health-icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .pl-health-title {
+    font-size: 14px;
+  }
+
+  .pl-health-sub {
+    font-size: 12px;
+  }
+
+  .pl-section-title {
+    font-size: 20px;
+  }
+
+  .pl-change-pet-btn {
+    min-height: 44px;
+    padding: 12px 18px;
+  }
+}
+
+/* =====================================================
+   LARGE DESKTOP
+===================================================== */
+
+@media (min-width: 1440px) {
+
+  .pl-card {
+    max-width: 1400px;
+  }
+
+  .pl-bottom-nav {
+    max-width: 1400px;
+  }
+
+  .pl-main {
+    padding-left: 48px;
+    padding-right: 48px;
+  }
+
+  .pl-section-title {
+    font-size: 22px;
+  }
+}
+
+/* =====================================================
+   ULTRA WIDE
+===================================================== */
+
+@media (min-width: 1920px) {
+
+  .pl-card {
+    max-width: 1600px;
+  }
+
+  .pl-bottom-nav {
+    max-width: 1600px;
+  }
+
+  .pl-main {
+    padding-left: 60px;
+    padding-right: 60px;
+  }
+}
+
+/* =====================================================
+   TOUCH DEVICES
+===================================================== */
+
+@media (hover: none) {
+
+  .pl-record-item:hover {
+    box-shadow: none;
+  }
+
+  .pl-view-all-btn:hover,
+  .pl-choose-btn:hover,
+  .pl-show-more-btn:hover {
+    transform: none;
+  }
+}
+
+/* =====================================================
+   ACCESSIBILITY
+===================================================== */
+
+.pl-back-btn:focus,
+.pl-close-btn:focus,
+.pl-file-viewer-close:focus,
+.pl-view-all-btn:focus,
+.pl-show-more-btn:focus,
+.pl-change-pet-btn:focus,
+.pl-choose-btn:focus,
+.pl-nav-item:focus,
+.pl-nav-center-btn:focus {
+  outline: 2px solid var(--teal);
+  outline-offset: 2px;
+}
+
+/* =====================================================
+   SCROLLBAR
+===================================================== */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #b7dede;
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f5fbfb;
+}
+
+/* =====================================================
+   FINAL SAFETY UTILITIES
+===================================================== */
+
+.pl-page,
+.pl-card,
+.pl-main,
+.pl-columns,
+.pl-profile,
+.pl-profile-left,
+.pl-profile-text,
+.pl-record-item,
+.pl-record-info {
+  min-width: 0;
+}
+
+.pl-record-name,
+.pl-file-viewer-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pl-record-meta span {
+  min-width: 0;
+}
+
+.pl-record-right {
+  flex-shrink: 0;
+}
+
+.pl-record-left {
+  flex-shrink: 0;
+}
+
+.pl-view-all-btn,
+.pl-choose-btn,
+.pl-change-pet-btn,
+.pl-show-more-btn {
+  white-space: nowrap;
+}
+
+.pl-file-viewer-content iframe,
+.pl-file-viewer-content img {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.pl-modal,
+.pl-upload-modal-v2 {
+  max-height: 92vh;
+  overflow-y: auto;
+}
+
+.pl-file-viewer-content {
+  overscroll-behavior: contain;
+}
+
+.pl-page,
+.pl-card {
+  overflow-x: hidden;
+}
+/* =====================================================
+   AI COMING SOON CARD
+===================================================== */
+
+.pl-ai-card {
+  margin-top: 30px;
+  border: 2px solid rgba(11, 107, 58, 0.18);
+  border-radius: 28px;
+  background: linear-gradient(
+    135deg,
+    #ffffff 0%,
+    #fbfffc 100%
+  );
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 10px 35px rgba(11, 107, 58, 0.08);
+}
+
+.pl-ai-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 28px;
+}
+
+.pl-ai-left {
+  flex: 1;
+}
+
+.pl-ai-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.pl-ai-title-row h3 {
+  margin: 0;
+  color: var(--teal);
+  font-size: 30px;
+  font-weight: 800;
+}
+
+.pl-ai-badge {
+  padding: 10px 18px;
+  border-radius: 14px;
+  background: #e8f5eb;
+  color: var(--teal);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.pl-ai-left p {
+  margin: 18px 0 28px;
+  max-width: 520px;
+  line-height: 1.8;
+  color: #4b5563;
+  font-size: 18px;
+}
+
+/* progress */
+
+.pl-ai-progress-box {
+  background: #f9fcf9;
+  border: 1px solid #edf4ee;
+  border-radius: 20px;
+  padding: 18px;
+  position: relative;
+}
+
+.pl-ai-progress-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #374151;
+  font-weight: 600;
+  margin-bottom: 14px;
+}
+
+.pl-ai-sparkle {
+  color: var(--teal);
+  font-size: 22px;
+  animation: sparklePulse 2s infinite;
+}
+
+.pl-ai-progress-bar {
+  height: 8px;
+  background: #dcefdc;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.pl-ai-progress-fill {
+  width: 60%;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(
+    90deg,
+    var(--teal),
+    #6cbf5b
+  );
+  animation: progressMove 3s ease-in-out infinite;
+}
+
+.pl-ai-percent {
+  position: absolute;
+  right: 18px;
+  bottom: 14px;
+  font-weight: 700;
+  color: #4b5563;
+}
+
+/* Robot Area */
+
+.pl-ai-right {
+  width: 320px;
+  display: flex;
+  justify-content: center;
+}
+
+.pl-ai-robot-wrap {
+  position: relative;
+  width: 260px;
+  height: 220px;
+}
+
+.pl-ai-circle {
+  position: absolute;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  background: rgba(11, 107, 58, 0.08);
+  right: 0;
+  top: 0;
+}
+
+.pl-ai-stars span {
+  position: absolute;
+  animation: twinkle 2.5s infinite;
+}
+
+.pl-ai-stars span:nth-child(1) {
+  left: 10px;
+  top: 10px;
+}
+
+.pl-ai-stars span:nth-child(2) {
+  right: 40px;
+  top: 0;
+}
+
+.pl-ai-stars span:nth-child(3) {
+  left: 80px;
+  top: -5px;
+}
+
+.pl-ai-document {
+  position: absolute;
+  left: 20px;
+  top: 55px;
+  width: 90px;
+  height: 115px;
+  border-radius: 14px;
+  background: #fff;
+  border: 4px solid #7abf43;
+  animation: floatDoc 3s ease-in-out infinite;
+}
+
+.pl-ai-document::before {
+  content: "";
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 22px;
+  height: 22px;
+  background: #c7e7b6;
+  clip-path: polygon(0 0, 100% 0, 100% 100%);
+}
+
+.pl-ai-doc-line {
+  height: 6px;
+  width: 55px;
+  background: #cce8cb;
+  border-radius: 20px;
+  margin: 20px auto 10px;
+}
+
+.pl-ai-doc-line.short {
+  width: 35px;
+}
+
+.pl-ai-doc-check {
+  width: 12px;
+  height: 12px;
+  border-radius: 4px;
+  border: 2px solid #6cbf5b;
+  margin: 10px 18px;
+}
+
+.pl-ai-robot {
+  position: absolute;
+  right: 25px;
+  top: 45px;
+  animation: robotFloat 3s ease-in-out infinite;
+}
+
+.pl-ai-head {
+  width: 90px;
+  height: 75px;
+  border-radius: 22px;
+  background: white;
+  border: 4px solid #8ecf60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pl-ai-face {
+  width: 58px;
+  height: 38px;
+  background: #093f4b;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+}
+
+.pl-ai-face span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: white;
+  animation: blink 4s infinite;
+}
+
+.pl-ai-body {
+  width: 60px;
+  height: 75px;
+  background: white;
+  border: 4px solid #8ecf60;
+  border-radius: 18px;
+  margin: -4px auto 0;
+}
+
+/* Animations */
+
+@keyframes robotFloat {
+  0%,100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes floatDoc {
+  0%,100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes twinkle {
+  0%,100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}
+
+@keyframes blink {
+  0%,95%,100% {
+    transform: scaleY(1);
+  }
+  97% {
+    transform: scaleY(0.1);
+  }
+}
+
+@keyframes sparklePulse {
+  0%,100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+}
+
+@keyframes progressMove {
+  0% {
+    width: 55%;
+  }
+  50% {
+    width: 65%;
+  }
+  100% {
+    width: 55%;
+  }
+}
+
+/* Responsive */
+
+@media (max-width: 900px) {
+  .pl-ai-content {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .pl-ai-left p {
+    max-width: 100%;
+  }
+
+  .pl-ai-right {
+    width: 100%;
+  }
+
+  .pl-ai-title-row {
+    justify-content: center;
+  }
+
+  .pl-ai-title-row h3 {
+    font-size: 24px;
+  }
+}
+
+@media (max-width: 600px) {
+  .pl-ai-content {
+    padding: 20px;
+  }
+
+  .pl-ai-title-row h3 {
+    font-size: 20px;
+  }
+
+  .pl-ai-left p {
+    font-size: 14px;
+    line-height: 1.7;
+  }
+
+  .pl-ai-robot-wrap {
+    transform: scale(0.8);
+  }
+}
