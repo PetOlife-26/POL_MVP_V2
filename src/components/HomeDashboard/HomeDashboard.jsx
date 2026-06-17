@@ -3,9 +3,7 @@ import "./HomeDashboard.css";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
 
-/* ─────────────────────────────────
-   WELLNESS SCORE RING (SVG)
-   ───────────────────────────────── */
+/* WELLNESS SCORE RING (SVG) */
 function ScoreRing({ score, size = 160, strokeWidth = 10 }) {
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
@@ -49,9 +47,7 @@ function ScoreRing({ score, size = 160, strokeWidth = 10 }) {
   );
 }
 
-/* ─────────────────────────────────
-   MOOD INDICATOR
-   ───────────────────────────────── */
+/* MOOD INDICATOR */
 function MoodFace({ mood }) {
   // Returns a simple animated face using CSS classes
   const moodClass = `mood-face mood-${mood}`;
@@ -66,9 +62,7 @@ function MoodFace({ mood }) {
   );
 }
 
-/* ─────────────────────────────────
-   TASK CARD
-   ───────────────────────────────── */
+/* TASK CARD */
 function TaskCard({ task, petName, onComplete, onSkip, isAnimating }) {
   const isPending = task.status === "pending";
   const isCompleted = task.status === "completed";
@@ -130,9 +124,7 @@ function TaskCard({ task, petName, onComplete, onSkip, isAnimating }) {
   );
 }
 
-/* ─────────────────────────────────
-   CONFETTI PARTICLES
-   ───────────────────────────────── */
+/* CONFETTI PARTICLES */
 function ConfettiPaws({ show }) {
   if (!show) return null;
   // Generate small paw-shaped confetti particles using CSS
@@ -150,9 +142,7 @@ function ConfettiPaws({ show }) {
   return <div className="confetti-container">{particles}</div>;
 }
 
-/* ─────────────────────────────────
-   MAIN HOME DASHBOARD
-   ───────────────────────────────── */
+/* MAIN HOME DASHBOARD */
 export default function HomeDashboard({ activePetId }) {
   const [tasks, setTasks] = useState([]);
   const [wellness, setWellness] = useState({ score: 0, completed: 0, total: 0, mood: "neutral", message: "" });
@@ -299,7 +289,7 @@ export default function HomeDashboard({ activePetId }) {
     <div className="home-dashboard">
       <ConfettiPaws show={showConfetti} />
 
-      {/* ── WELLNESS HERO CARD ── */}
+      {/* WELLNESS HERO CARD */}
       <div className="wellness-hero">
         <div className="wellness-header">
           <h2 className="wellness-pet-name">{petName} Today</h2>
@@ -320,7 +310,7 @@ export default function HomeDashboard({ activePetId }) {
         <p className="wellness-message">{wellness.message}</p>
       </div>
 
-      {/* ── DAILY STREAK ── */}
+      {/* DAILY STREAK */}
       <div className="streak-card">
         <div className="streak-icon-wrap">
           <img
@@ -337,7 +327,7 @@ export default function HomeDashboard({ activePetId }) {
         </div>
       </div>
 
-      {/* ── TODAY'S CARE JOURNEY ── */}
+      {/* TODAY'S CARE JOURNEY */}
       <div className="care-journey-section">
         <div className="care-journey-header">
           <h3 className="section-heading">Today's Care Journey</h3>
@@ -376,7 +366,7 @@ export default function HomeDashboard({ activePetId }) {
         )}
       </div>
 
-      {/* ── CUSTOM TASK MODAL ── */}
+      {/* CUSTOM TASK MODAL */}
       {isModalOpen && (
         <div className="custom-task-modal-overlay" onClick={() => setIsModalOpen(false)}>
           <div className="custom-task-modal-content" onClick={(e) => e.stopPropagation()}>

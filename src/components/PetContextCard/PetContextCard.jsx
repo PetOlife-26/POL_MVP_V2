@@ -3,9 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { generateQR } from "../../services/QRService";
 import "./PetContextCard.css";
 
-/* ─────────────────────────────────
-   ICONS
-   ───────────────────────────────── */
+/* ICONS */
 function ChevronDownIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -62,9 +60,7 @@ function DefaultPetAvatar() {
   );
 }
 
-/* ─────────────────────────────────
-   UTILITIES
-   ───────────────────────────────── */
+/* UTILITIES */
 function calculateAge(dobStr) {
   if (!dobStr) return null;
   const dob = new Date(dobStr);

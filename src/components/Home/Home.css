@@ -1,9 +1,6 @@
-/* ═══════════════════════════════════════════
-   HOME SECTION — Content Only
-   (AppShell handles the chrome)
-   ═══════════════════════════════════════════ */
+/* HOME SECTION — Content Only (AppShell handles the chrome) */
 
-/* ── HOME CONTENT ── */
+/* HOME CONTENT */
 .home-content {
   padding: 12px 20px 20px;
   display: flex;
@@ -11,7 +8,7 @@
   align-items: center;
 }
 
-/* ── Hero Illustration ── */
+/* Hero Illustration */
 .hero-illustration {
   width: 200px;
   height: 200px;
@@ -39,7 +36,7 @@
   }
 }
 
-/* ── Welcome Message ── */
+/* Welcome Message */
 .welcome-message {
   text-align: center;
   margin-bottom: 20px;
@@ -63,7 +60,7 @@
   margin: 0 auto;
 }
 
-/* ── Primary CTA ── */
+/* Primary CTA */
 .primary-cta {
   width: 100%;
   height: 52px;
@@ -83,6 +80,7 @@
   margin-bottom: 20px;
   animation: fadeInUp 0.6s 0.2s ease both;
   -webkit-appearance: none;
+  appearance: none;
   letter-spacing: 0.2px;
 }
 
@@ -97,7 +95,7 @@
   opacity: 0.9;
 }
 
-/* ── Benefits Card ── */
+/* Benefits Card */
 .benefits-card {
   width: 100%;
   background: #ffffff;
@@ -153,9 +151,7 @@
   color: var(--brand-gray, #6b7280);
 }
 
-/* ═══════════════════════════════════════════
-   RESPONSIVE
-   ═══════════════════════════════════════════ */
+/* RESPONSIVE */
 
 @media (max-width: 359px) {
   .welcome-title {

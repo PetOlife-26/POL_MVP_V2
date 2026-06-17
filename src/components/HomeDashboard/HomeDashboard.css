@@ -1,6 +1,4 @@
-/* ═══════════════════════════════════════════
-   HOME DASHBOARD — Care Journey & Wellness
-   ═══════════════════════════════════════════ */
+/* HOME DASHBOARD — Care Journey & Wellness */
 
 :root {
   --brand-peto: #0D5C5C;
@@ -18,9 +16,7 @@
   position: relative;
 }
 
-/* ─────────────────────────────────
-   WELLNESS HERO CARD
-   ───────────────────────────────── */
+/* WELLNESS HERO CARD */
 .wellness-hero {
   background: #ffffff;
   border-radius: 24px;
@@ -175,9 +171,7 @@
   animation: blink 2s ease infinite;
 }
 
-/* ─────────────────────────────────
-   STREAK CARD
-   ───────────────────────────────── */
+/* STREAK CARD */
 .streak-card {
   background: #ffffff;
   border-radius: 16px;
@@ -233,9 +227,7 @@
   color: var(--brand-light-gray);
 }
 
-/* ─────────────────────────────────
-   CARE JOURNEY SECTION
-   ───────────────────────────────── */
+/* CARE JOURNEY SECTION */
 .care-journey-section {
   animation: slideIn 0.5s 0.2s ease both;
 }
@@ -291,9 +283,7 @@
   gap: 12px;
 }
 
-/* ─────────────────────────────────
-   TASK CARD
-   ───────────────────────────────── */
+/* TASK CARD */
 .task-card {
   background: #ffffff;
   border-radius: 20px;
@@ -467,9 +457,7 @@
   color: #f59e0b;
 }
 
-/* ─────────────────────────────────
-   ALL DONE STATE
-   ───────────────────────────────── */
+/* ALL DONE STATE */
 .all-done-card {
   background: #ffffff;
   border-radius: 24px;
@@ -510,9 +498,7 @@
   color: var(--brand-gray);
 }
 
-/* ─────────────────────────────────
-   LOADING & ERROR STATES
-   ───────────────────────────────── */
+/* LOADING & ERROR STATES */
 .dashboard-loading {
   display: flex;
   flex-direction: column;
@@ -562,9 +548,7 @@
   font-family: inherit;
 }
 
-/* ─────────────────────────────────
-   CONFETTI PARTICLES
-   ───────────────────────────────── */
+/* CONFETTI PARTICLES */
 .confetti-container {
   position: fixed;
   top: 0;
@@ -600,9 +584,7 @@
   border-radius: 3px;
 }
 
-/* ═══════════════════════════════════════════
-   ANIMATIONS
-   ═══════════════════════════════════════════ */
+/* ANIMATIONS */
 
 @keyframes slideIn {
   from {
@@ -662,9 +644,7 @@
   animation: success-bounce 0.5s ease;
 }
 
-/* ─────────────────────────────────
-   CUSTOM TASK MODAL
-   ───────────────────────────────── */
+/* CUSTOM TASK MODAL */
 .custom-task-modal-overlay {
   position: fixed;
   top: 0;

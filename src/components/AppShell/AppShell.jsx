@@ -2,9 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import "./AppShell.css";
 
-/* ─────────────────────────────────
-   UTILITY: Dynamic Greeting
-   ───────────────────────────────── */
+/* UTILITY: Dynamic Greeting */
 function getGreeting() {
   const hour = new Date().getHours();
   if (hour < 12) return { text: "Good Morning" };
@@ -12,9 +10,7 @@ function getGreeting() {
   return { text: "Good Evening" };
 }
 
-/* ─────────────────────────────────
-   ICONS (inline SVG)
-   ───────────────────────────────── */
+/* ICONS (inline SVG) */
 function UserIcon() {
   return (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -78,9 +74,7 @@ function NotificationIcon() {
   );
 }
 
-/* ─────────────────────────────────
-   TOP BAR — Greeting (Pre-pet)
-   ───────────────────────────────── */
+/* TOP BAR — Greeting (Pre-pet) */
 function GreetingTopBar({ userName, onAvatarClick }) {
   const greeting = getGreeting();
 
@@ -99,9 +93,7 @@ function GreetingTopBar({ userName, onAvatarClick }) {
   );
 }
 
-/* ─────────────────────────────────
-   TOP BAR — Branded (Post-pet)
-   ───────────────────────────────── */
+/* TOP BAR — Branded (Post-pet) */
 function BrandedTopBar() {
   return (
     <header className="top-bar branded-top-bar">
@@ -116,9 +108,7 @@ function BrandedTopBar() {
   );
 }
 
-/* ─────────────────────────────────
-   BOTTOM NAVIGATION
-   ───────────────────────────────── */
+/* BOTTOM NAVIGATION */
 function BottomNav({ activeTab, onTabChange, onFabClick }) {
   const tabs = [
     { id: "home", label: "Home", icon: <HouseIcon /> },
@@ -150,9 +140,7 @@ function BottomNav({ activeTab, onTabChange, onFabClick }) {
   );
 }
 
-/* ─────────────────────────────────
-   APP SHELL — Reusable Layout
-   ───────────────────────────────── */
+/* APP SHELL — Reusable Layout */
 export default function AppShell({ children, activeTab, onTabChange, hasPets }) {
   const navigate = useNavigate();
   const [userName, setUserName] = useState("There");

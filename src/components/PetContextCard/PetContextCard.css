@@ -8,7 +8,7 @@
   --brand-light-gray: #9ca3af;
 }
 
-/* ── OVERLAY (Visible only when expanded as a modal) ── */
+/* OVERLAY (Visible only when expanded as a modal) */
 .pcc-overlay {
   position: fixed;
   inset: 0;
@@ -25,7 +25,7 @@
   pointer-events: auto;
 }
 
-/* ── CARD CONTAINER ── */
+/* CARD CONTAINER */
 .pet-context-card {
   width: 100%;
   background: #ffffff;
@@ -55,7 +55,7 @@
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
 }
 
-/* ── DRAG HANDLE ── */
+/* DRAG HANDLE */
 .drag-handle-area {
   position: absolute;
   bottom: 0;
@@ -90,7 +90,7 @@
   padding-bottom: 12px;
 }
 
-/* ── HEADER (Collapsed Content) ── */
+/* HEADER (Collapsed Content) */
 .pcc-header {
   padding: 24px 20px 0;
   display: flex;
@@ -199,7 +199,7 @@
   opacity: 0.5;
 }
 
-/* ── DRAWER CONTENT (Expanded Only) ── */
+/* DRAWER CONTENT (Expanded Only) */
 .pcc-drawer-content {
   opacity: 0;
   pointer-events: none;
@@ -216,7 +216,7 @@
   display: block;
 }
 
-/* ── DIGITAL ID CARD ── */
+/* DIGITAL ID CARD */
 .pcc-digital-id {
   background: white;
   border-radius: 20px;
@@ -303,7 +303,7 @@
   font-weight: 600;
 }
 
-/* ── DETAILS GRID ── */
+/* DETAILS GRID */
 .pcc-section {
   margin-bottom: 32px;
 }
@@ -347,7 +347,7 @@
   word-break: break-all;
 }
 
-/* ── PET SWITCHER ── */
+/* PET SWITCHER */
 .pcc-switcher-list {
   display: flex;
   flex-direction: column;

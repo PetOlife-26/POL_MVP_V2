@@ -1,10 +1,8 @@
-/* ═══════════════════════════════════════════
-   APP SHELL — Reusable Scaffolding
-   ═══════════════════════════════════════════ */
+/* APP SHELL — Reusable Scaffolding */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
-/* ── Brand Colors ── */
+/* Brand Colors */
 :root {
   --brand-peto: #0D5C5C;
   --brand-life: #8FBC5A;
@@ -14,7 +12,7 @@
   --brand-bg: #fafafa;
 }
 
-/* ── App Shell ── */
+/* App Shell */
 .app-shell {
   display: flex;
   flex-direction: column;
@@ -27,7 +25,7 @@
   margin: 0 auto;
 }
 
-/* ── TOP BAR ── */
+/* TOP BAR */
 .top-bar {
   position: sticky;
   top: 0;
@@ -86,7 +84,7 @@
   color: var(--brand-light-gray);
 }
 
-/* ── BRANDED TOP BAR (Post-pet) ── */
+/* BRANDED TOP BAR (Post-pet) */
 .branded-top-bar .brand-logo-text {
   font-size: 20px;
   font-weight: 800;
@@ -122,7 +120,7 @@
   background: #f9fafb;
 }
 
-/* ── MAIN CONTENT ── */
+/* MAIN CONTENT */
 .main-content {
   flex: 1;
   overflow-y: auto;
@@ -130,9 +128,7 @@
   padding-bottom: 90px;
 }
 
-/* ═══════════════════════════════════════════
-   BOTTOM NAVIGATION
-   ═══════════════════════════════════════════ */
+/* BOTTOM NAVIGATION */
 
 .bottom-nav {
   position: fixed;
@@ -191,7 +187,7 @@
   transform: scale(0.9);
 }
 
-/* ── Floating Action Button ── */
+/* Floating Action Button */
 .fab-button {
   position: fixed;
   bottom: 36px;
@@ -223,9 +219,7 @@
   color: #ffffff;
 }
 
-/* ═══════════════════════════════════════════
-   COMING SOON PAGES
-   ═══════════════════════════════════════════ */
+/* COMING SOON PAGES */
 
 .coming-soon-page {
   flex: 1;
@@ -261,9 +255,7 @@
   margin-top: 2px;
 }
 
-/* ═══════════════════════════════════════════
-   RESPONSIVE
-   ═══════════════════════════════════════════ */
+/* RESPONSIVE */
 
 @media (max-width: 359px) {
   .user-name {

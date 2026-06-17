@@ -6,9 +6,7 @@ import HomeDashboard from "../HomeDashboard/HomeDashboard";
 import "./Home.css";
 import heroImg from "../../assets/images/hero_welcome.png";
 
-/* ─────────────────────────────────
-   ICONS
-   ───────────────────────────────── */
+/* ICONS */
 function CheckIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -25,9 +23,7 @@ function PawSvg() {
   );
 }
 
-/* ─────────────────────────────────
-   HOME SECTION (Empty State)
-   ───────────────────────────────── */
+/* HOME SECTION (Empty State) */
 function HomeSection({ onAddPet }) {
   const benefits = [
     "Health Tracking",
@@ -70,9 +66,7 @@ function HomeSection({ onAddPet }) {
   );
 }
 
-/* ─────────────────────────────────
-   COMING SOON PAGES
-   ───────────────────────────────── */
+/* COMING SOON PAGES */
 function ComingSoonPage({ title }) {
   return (
     <div className="coming-soon-page">
@@ -89,9 +83,7 @@ function ComingSoonPage({ title }) {
   );
 }
 
-/* ─────────────────────────────────
-   MAIN HOME COMPONENT
-   ───────────────────────────────── */
+/* MAIN HOME COMPONENT */
 export default function Home() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("home");
