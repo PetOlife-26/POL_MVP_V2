@@ -300,11 +300,7 @@ export default function PetContextCard() {
             ) : (
               <h2 className="pcc-pet-name">{activePet.pet_name}</h2>
             )}
-            {!isExpanded && (
-              <div className="pcc-expand-icon">
-                <ChevronDownIcon />
-              </div>
-            )}
+
           </div>
 
           <div className="pcc-pet-meta">

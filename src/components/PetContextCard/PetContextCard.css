@@ -39,7 +39,7 @@
 }
 
 .pet-context-card.collapsed {
-  height: 160px; /* Fixed height for collapsed state */
+  height: 210px; /* Fixed height for collapsed state */
   position: relative; /* Normal document flow */
 }
 

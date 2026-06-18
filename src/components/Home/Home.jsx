@@ -5,8 +5,10 @@ import PetContextCard from "../PetContextCard/PetContextCard";
 import HomeDashboard from "../HomeDashboard/HomeDashboard";
 import FamilyManagement from "../FamilyAccess/FamilyManagement";
 import FamilyAccessCard from "../FamilyAccess/FamilyAccessCard";
+import DocsDashboard from "../DocsDashboard/DocsDashboard";
 import "./Home.css";
 import heroImg from "../../assets/images/hero_welcome.png";
+import timelineDemoImg from "../../assets/images/timeline_demo.jpeg";
 
 /* ICONS */
 function CheckIcon() {
@@ -154,9 +156,13 @@ export default function Home() {
         }
         return <HomeSection onAddPet={handleAddPet} />;
       case "health":
-        return <ComingSoonPage title="Health" />;
+        return (
+          <div style={{ width: '100%', height: '100%', paddingBottom: '80px', overflowY: 'auto' }}>
+            <img src={timelineDemoImg} alt="Health Timeline Demo" style={{ width: '100%', display: 'block' }} />
+          </div>
+        );
       case "docs":
-        return <ComingSoonPage title="Documents" />;
+        return <DocsDashboard activePetId={activePetId} onTabChange={setActiveTab} />;
       case "profile":
         if (hasPets) {
           return (
