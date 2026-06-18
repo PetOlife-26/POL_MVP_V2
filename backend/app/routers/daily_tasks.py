@@ -1,7 +1,7 @@
 """
 Daily Tasks routes — Care Journey Engine
 
-GET  /api/daily-tasks/{pet_id}/today              — Get/generate today's tasks
+GET  /api/daily-tasks/{pet_id}/today              — Get/generate today's tasks 
 PUT  /api/daily-tasks/{pet_id}/complete/{task_id}  — Mark task completed
 PUT  /api/daily-tasks/{pet_id}/skip/{task_id}      — Mark task skipped
 GET  /api/daily-tasks/{pet_id}/streak              — Get streak and care points
