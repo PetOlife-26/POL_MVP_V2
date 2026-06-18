@@ -6,9 +6,9 @@ import HomeDashboard from "../HomeDashboard/HomeDashboard";
 import FamilyManagement from "../FamilyAccess/FamilyManagement";
 import FamilyAccessCard from "../FamilyAccess/FamilyAccessCard";
 import DocsDashboard from "../DocsDashboard/DocsDashboard";
+import HealthTab from "../HealthTab/HealthTab";
 import "./Home.css";
 import heroImg from "../../assets/images/hero_welcome.png";
-import timelineDemoImg from "../../assets/images/timeline_demo.jpeg";
 
 /* ICONS */
 function CheckIcon() {
@@ -156,11 +156,7 @@ export default function Home() {
         }
         return <HomeSection onAddPet={handleAddPet} />;
       case "health":
-        return (
-          <div style={{ width: '100%', height: '100%', overflow: 'hidden' }}>
-            <img src={timelineDemoImg} alt="Health Timeline Demo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-          </div>
-        );
+        return <HealthTab />;
       case "docs":
         return <DocsDashboard activePetId={activePetId} onTabChange={setActiveTab} />;
       case "profile":
