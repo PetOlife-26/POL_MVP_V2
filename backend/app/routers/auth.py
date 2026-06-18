@@ -1,7 +1,7 @@
 """
 Auth routes — Supabase Auth with Google OAuth + email/password.
 
-POST /api/auth/signup     — Email+password signup
+POST /api/auth/signup     — Email+password signup and 
 POST /api/auth/login      — Email+password login
 GET  /api/auth/google     — Returns Google OAuth redirect URL
 GET  /api/auth/callback   — OAuth callback handler
