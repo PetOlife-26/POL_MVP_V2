@@ -99,11 +99,13 @@ export default function PetContextCard() {
 
   // Swipe logic
   const [startY, setStartY] = useState(0);
+  const [userId, setUserId] = useState(null);
 
   useEffect(() => {
     try {
       const localUser = localStorage.getItem("user");
       const userId = localUser ? JSON.parse(localUser).id : "guest";
+      setUserId(userId);
       const storedPets = JSON.parse(localStorage.getItem(`pets_${userId}`)) || [];
       setPets(storedPets);
 
@@ -443,6 +445,7 @@ export default function PetContextCard() {
 
         </div>
       </div>
+
     </>
   );
 }

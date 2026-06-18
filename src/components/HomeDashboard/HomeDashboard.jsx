@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import FamilyActivityFeed from "../FamilyAccess/FamilyActivityFeed";
 import "./HomeDashboard.css";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
@@ -143,11 +144,12 @@ function ConfettiPaws({ show }) {
 }
 
 /* MAIN HOME DASHBOARD */
-export default function HomeDashboard({ activePetId }) {
+export default function HomeDashboard({ activePetId, onManageFamilyClick }) {
   const [tasks, setTasks] = useState([]);
   const [wellness, setWellness] = useState({ score: 0, completed: 0, total: 0, mood: "neutral", message: "" });
   const [streak, setStreak] = useState({ current: 0, longest: 0, care_points: 0 });
   const [petName, setPetName] = useState("Your Pet");
+  const [householdId, setHouseholdId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [animatingTaskId, setAnimatingTaskId] = useState(null);
@@ -201,6 +203,19 @@ export default function HomeDashboard({ activePetId }) {
       setStreak(data.streak || {});
       setPetName(data.pet_name || "Your Pet");
       setError("");
+
+      // Resolve household_id from pet profile
+      try {
+        const petRes = await fetch(`${API_BASE}/api/pet-profile/${activePetId}`);
+        if (petRes.ok) {
+          const petData = await petRes.json();
+          if (petData.household_id) {
+            setHouseholdId(petData.household_id);
+          }
+        }
+      } catch {
+        // Non-fatal: activity feed just won't show
+      }
     } catch (err) {
       console.error("Failed to fetch tasks:", err);
       setError(err.message);
@@ -365,6 +380,9 @@ export default function HomeDashboard({ activePetId }) {
           </div>
         )}
       </div>
+
+      {/* FAMILY ACTIVITY FEED */}
+      <FamilyActivityFeed householdId={householdId} onManageClick={onManageFamilyClick} />
 
       {/* CUSTOM TASK MODAL */}
       {isModalOpen && (

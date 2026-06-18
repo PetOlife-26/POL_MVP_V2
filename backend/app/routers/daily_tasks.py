@@ -63,6 +63,40 @@ def _ensure_streak_row(pet_id: str) -> dict:
     return insert.data[0]
 
 
+def _log_task_activity(pet: dict, task_id: str, task_title: str, action: str, member_id: str = None, member_name: str = None):
+    """Log a task activity event to the household activity feed."""
+    household_id = pet.get("household_id")
+    if not household_id:
+        return  # Pet not linked to a household yet
+    try:
+        # If no member info provided, try to find the owner
+        if not member_id or not member_name:
+            owner = (
+                supabase.table("household_members")
+                .select("id, display_name")
+                .eq("household_id", household_id)
+                .eq("role", "owner")
+                .execute()
+            )
+            if owner.data:
+                member_id = member_id or owner.data[0]["id"]
+                member_name = member_name or owner.data[0]["display_name"] or "Owner"
+            else:
+                return  # No owner found, skip logging
+
+        supabase.table("task_activity_log").insert({
+            "household_id": household_id,
+            "pet_id": pet["id"],
+            "task_id": task_id,
+            "task_title": task_title,
+            "member_id": member_id,
+            "member_name": member_name,
+            "action": action,
+        }).execute()
+    except Exception as e:
+        print(f"Activity log warning (non-fatal): {e}")
+
+
 @router.get("/{pet_id}/today")
 async def get_today_tasks(pet_id: str):
     """
@@ -140,7 +174,7 @@ async def get_today_tasks(pet_id: str):
 
 
 @router.put("/{pet_id}/complete/{task_id}")
-async def complete_task(pet_id: str, task_id: str):
+async def complete_task(pet_id: str, task_id: str, member_id: str = None, member_name: str = None):
     """Mark a task as completed for today."""
     pet = _get_pet(pet_id)
     today = _today()
@@ -166,6 +200,9 @@ async def complete_task(pet_id: str, task_id: str):
         "status": "completed",
         "completed_at": datetime.now(timezone.utc).isoformat(),
     }).eq("id", task_row["id"]).execute()
+
+    # Log activity if pet has a household
+    _log_task_activity(pet, task_id, task_row.get("task_title", ""), "completed", member_id, member_name)
 
     # Recalculate wellness score
     all_tasks = (
@@ -202,7 +239,6 @@ async def complete_task(pet_id: str, task_id: str):
         total_points = streak_data.get("total_care_points", 0)
 
         # Check if yesterday was completed (streak continuity)
-        yesterday = date.today().isoformat()  # We compare with last_completed_date
         from datetime import timedelta
         yesterday_str = (date.today() - timedelta(days=1)).isoformat()
 
@@ -255,7 +291,7 @@ async def complete_task(pet_id: str, task_id: str):
 
 
 @router.put("/{pet_id}/skip/{task_id}")
-async def skip_task(pet_id: str, task_id: str):
+async def skip_task(pet_id: str, task_id: str, member_id: str = None, member_name: str = None):
     """Mark a task as skipped for today."""
     pet = _get_pet(pet_id)
     today = _today()
@@ -279,6 +315,9 @@ async def skip_task(pet_id: str, task_id: str):
         "status": "skipped",
         "completed_at": datetime.now(timezone.utc).isoformat(),
     }).eq("id", task_row["id"]).execute()
+
+    # Log activity if pet has a household
+    _log_task_activity(pet, task_id, task_row.get("task_title", ""), "skipped", member_id, member_name)
 
     # Recalculate
     all_tasks = (

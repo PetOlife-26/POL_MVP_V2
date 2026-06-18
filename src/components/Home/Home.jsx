@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import AppShell from "../AppShell/AppShell";
 import PetContextCard from "../PetContextCard/PetContextCard";
 import HomeDashboard from "../HomeDashboard/HomeDashboard";
+import FamilyManagement from "../FamilyAccess/FamilyManagement";
+import FamilyAccessCard from "../FamilyAccess/FamilyAccessCard";
 import "./Home.css";
 import heroImg from "../../assets/images/hero_welcome.png";
 
@@ -89,6 +91,8 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState("home");
   const [hasPets, setHasPets] = useState(false);
   const [activePetId, setActivePetId] = useState(null);
+  const [userId, setUserId] = useState(null);
+  const [showFamilyMgmt, setShowFamilyMgmt] = useState(false);
 
   useEffect(() => {
     const initAuth = async () => {
@@ -118,6 +122,7 @@ export default function Home() {
       try {
         const localUser = localStorage.getItem("user");
         const userId = localUser ? JSON.parse(localUser).id : "guest";
+        setUserId(userId);
         const storedPets = JSON.parse(localStorage.getItem(`pets_${userId}`)) || [];
         setHasPets(storedPets.length > 0);
 
@@ -145,7 +150,7 @@ export default function Home() {
     switch (activeTab) {
       case "home":
         if (hasPets && activePetId) {
-          return <HomeDashboard activePetId={activePetId} />;
+          return <HomeDashboard activePetId={activePetId} onManageFamilyClick={() => setShowFamilyMgmt(true)} />;
         }
         return <HomeSection onAddPet={handleAddPet} />;
       case "health":
@@ -154,7 +159,15 @@ export default function Home() {
         return <ComingSoonPage title="Documents" />;
       case "profile":
         if (hasPets) {
-          return <PetContextCard />;
+          return (
+            <div className="profile-tab-wrapper" style={{ display: "flex", flexDirection: "column", height: "100%", paddingBottom: "100px" }}>
+              <PetContextCard />
+              <div style={{ padding: "16px 20px" }}>
+                <h3 style={{ fontSize: "18px", fontWeight: 800, color: "var(--brand-dark)", marginBottom: "8px" }}>Household</h3>
+                <FamilyAccessCard userId={userId} onManageClick={() => setShowFamilyMgmt(true)} />
+              </div>
+            </div>
+          );
         }
         return <ComingSoonPage title="Profile" />;
       default:
@@ -165,6 +178,10 @@ export default function Home() {
   return (
     <AppShell activeTab={activeTab} onTabChange={setActiveTab} hasPets={hasPets}>
       {renderContent()}
+      {/* Family Management Overlay */}
+      {showFamilyMgmt && userId && (
+        <FamilyManagement userId={userId} onClose={() => setShowFamilyMgmt(false)} />
+      )}
     </AppShell>
   );
 }
