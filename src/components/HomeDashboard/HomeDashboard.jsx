@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import FamilyActivityFeed from "../FamilyAccess/FamilyActivityFeed";
+import PetContextCard from "../PetContextCard/PetContextCard";
 import "./HomeDashboard.css";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
@@ -302,6 +303,7 @@ export default function HomeDashboard({ activePetId, onManageFamilyClick }) {
 
   return (
     <div className="home-dashboard">
+      <PetContextCard />
       <ConfettiPaws show={showConfetti} />
 
       {/* WELLNESS HERO CARD */}

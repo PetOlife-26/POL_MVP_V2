@@ -157,8 +157,8 @@ export default function Home() {
         return <HomeSection onAddPet={handleAddPet} />;
       case "health":
         return (
-          <div style={{ width: '100%', height: '100%', paddingBottom: '80px', overflowY: 'auto' }}>
-            <img src={timelineDemoImg} alt="Health Timeline Demo" style={{ width: '100%', display: 'block' }} />
+          <div style={{ width: '100%', height: '100%', overflow: 'hidden' }}>
+            <img src={timelineDemoImg} alt="Health Timeline Demo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           </div>
         );
       case "docs":
