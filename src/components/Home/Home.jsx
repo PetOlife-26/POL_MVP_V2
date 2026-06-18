@@ -91,23 +91,50 @@ export default function Home() {
   const [activePetId, setActivePetId] = useState(null);
 
   useEffect(() => {
-    try {
-      const localUser = localStorage.getItem("user");
-      const userId = localUser ? JSON.parse(localUser).id : "guest";
-      const storedPets = JSON.parse(localStorage.getItem(`pets_${userId}`)) || [];
-      setHasPets(storedPets.length > 0);
-
-      if (storedPets.length > 0) {
-        const savedActiveId = localStorage.getItem(`active_pet_id_${userId}`);
-        if (savedActiveId && storedPets.find((p) => p.id === savedActiveId)) {
-          setActivePetId(savedActiveId);
-        } else {
-          setActivePetId(storedPets[0].id);
+    const initAuth = async () => {
+      // Check for Google OAuth redirect
+      if (window.location.hash) {
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const accessToken = hashParams.get("access_token");
+        if (accessToken) {
+          localStorage.setItem("access_token", accessToken);
+          const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+          try {
+            const res = await fetch(`${API_BASE}/api/auth/me`, {
+              headers: { "Authorization": `Bearer ${accessToken}` }
+            });
+            if (res.ok) {
+              const userData = await res.json();
+              localStorage.setItem("user", JSON.stringify(userData));
+            }
+          } catch (e) {
+            console.error("Failed to fetch user profile", e);
+          }
+          // Clean up URL hash
+          window.history.replaceState(null, "", window.location.pathname);
         }
       }
-    } catch (e) {
-      console.error(e);
-    }
+
+      try {
+        const localUser = localStorage.getItem("user");
+        const userId = localUser ? JSON.parse(localUser).id : "guest";
+        const storedPets = JSON.parse(localStorage.getItem(`pets_${userId}`)) || [];
+        setHasPets(storedPets.length > 0);
+
+        if (storedPets.length > 0) {
+          const savedActiveId = localStorage.getItem(`active_pet_id_${userId}`);
+          if (savedActiveId && storedPets.find((p) => p.id === savedActiveId)) {
+            setActivePetId(savedActiveId);
+          } else {
+            setActivePetId(storedPets[0].id);
+          }
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    };
+
+    initAuth();
   }, []);
 
   const handleAddPet = () => {
