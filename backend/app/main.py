@@ -5,12 +5,32 @@ Replaces the Express.js backend.
 Run with: uvicorn app.main:app --reload --port 8000
 """
 
+import os
+import platform
+from collections import namedtuple
+
+# Patch platform.uname to bypass WMI query hang on Windows
+if os.name == "nt":
+    try:
+        UnameResult = namedtuple("uname_result", ["system", "node", "release", "version", "machine", "processor"])
+        platform.uname = lambda: UnameResult(
+            system="Windows",
+            node="localhost",
+            release="10",
+            version="10.0.19045",
+            machine="AMD64",
+            processor="Intel64 Family 6 Model 158 Stepping 10, GenuineIntel"
+        )
+    except Exception:
+        pass
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import PORT, FRONTEND_URL
 from app.routers import auth, pet_profile, care_team, daily_tasks, household
 from app.supabase_client import supabase
+
 
 app = FastAPI(
     title="PetOLife API",
