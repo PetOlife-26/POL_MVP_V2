@@ -287,26 +287,27 @@ export default function PetContextCard() {
             )}
           </div>
 
-          <div className="pcc-name-row">
-            {isEditing ? (
-              <input 
-                type="text" 
-                name="pet_name" 
-                className="pcc-header-input" 
-                value={editData.pet_name} 
-                onChange={handleEditChange} 
-                onClick={e => e.stopPropagation()} 
-              />
-            ) : (
-              <h2 className="pcc-pet-name">{activePet.pet_name}</h2>
-            )}
+          <div className="pcc-header-info">
+            <div className="pcc-name-row">
+              {isEditing ? (
+                <input 
+                  type="text" 
+                  name="pet_name" 
+                  className="pcc-header-input" 
+                  value={editData.pet_name} 
+                  onChange={handleEditChange} 
+                  onClick={e => e.stopPropagation()} 
+                />
+              ) : (
+                <h2 className="pcc-pet-name">{activePet.pet_name}</h2>
+              )}
+            </div>
 
-          </div>
-
-          <div className="pcc-pet-meta">
-            <span>{typeStr}{breedStr}</span>
-            {fullMetaStr && <span className="meta-dot">•</span>}
-            {fullMetaStr && <span>{fullMetaStr}</span>}
+            <div className="pcc-pet-meta">
+              <span>{typeStr}{breedStr}</span>
+              {fullMetaStr && <span className="meta-dot">•</span>}
+              {fullMetaStr && <span>{fullMetaStr}</span>}
+            </div>
           </div>
         </div>
 
