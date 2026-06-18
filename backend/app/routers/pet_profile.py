@@ -11,6 +11,16 @@ import time
 from typing import Optional
 
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException
+from pydantic import BaseModel
+
+class PetProfileUpdate(BaseModel):
+    pet_name: Optional[str] = None
+    breed: Optional[str] = None
+    gender: Optional[str] = None
+    birth_date: Optional[str] = None
+    weight: Optional[float] = None
+    color: Optional[str] = None
+    blood_group: Optional[str] = None
 
 from app.supabase_client import supabase
 from app.utils.generate_petolife_id import generate_petolife_id
@@ -174,6 +184,25 @@ async def get_pet_profile(profile_id: str):
     ids_result = supabase.table("pet_ids").select("*").eq("pet_profile_id", profile_id).execute()
 
     return {**profile, "pet_ids": ids_result.data or []}
+
+
+@router.patch("/{profile_id}")
+async def update_pet_profile(profile_id: str, updates: PetProfileUpdate):
+    """Update pet profile details in-place."""
+    try:
+        # Filter out None values so we only update provided fields
+        update_data = {k: v for k, v in updates.model_dump().items() if v is not None}
+        if not update_data:
+            return {"message": "No updates provided"}
+            
+        result = supabase.table("pet_profiles").update(update_data).eq("id", profile_id).execute()
+        if not result.data:
+            raise HTTPException(status_code=404, detail="Pet profile not found or update failed")
+            
+        return {"message": "Pet profile updated successfully", "data": result.data[0]}
+    except Exception as e:
+        print(f"Update profile error: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to update profile: {str(e)}")
 
 
 @router.get("/by-petolife-id/{petolife_id:path}")

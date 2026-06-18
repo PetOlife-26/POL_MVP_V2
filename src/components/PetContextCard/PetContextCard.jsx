@@ -43,6 +43,16 @@ function EditIcon() {
   );
 }
 
+function SaveIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+      <polyline points="17 21 17 13 7 13 7 21" />
+      <polyline points="7 3 7 8 15 8" />
+    </svg>
+  );
+}
+
 function PlusIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -81,6 +91,11 @@ export default function PetContextCard() {
   const [activePetId, setActivePetId] = useState("");
   const [isExpanded, setIsExpanded] = useState(false);
   const canvasRef = useRef(null);
+
+  // Edit Mode Logic
+  const [isEditing, setIsEditing] = useState(false);
+  const [editData, setEditData] = useState({});
+  const [isSaving, setIsSaving] = useState(false);
 
   // Swipe logic
   const [startY, setStartY] = useState(0);
@@ -141,6 +156,62 @@ export default function PetContextCard() {
     setActivePetId(petId);
     localStorage.setItem(`active_pet_id_${userId}`, petId);
     setIsExpanded(false);
+    setIsEditing(false);
+  };
+
+  const handleEditToggle = () => {
+    if (isEditing) {
+      handleSave();
+    } else {
+      setEditData({
+        weight: activePet.weight || "",
+        blood_group: activePet.blood_group || "",
+        gender: activePet.gender || "",
+        breed: activePet.breed || "",
+        color: activePet.color || "",
+        birth_date: activePet.birth_date || "",
+        pet_name: activePet.pet_name || ""
+      });
+      setIsEditing(true);
+    }
+  };
+
+  const handleSave = async () => {
+    if (!activePet) return;
+    setIsSaving(true);
+    try {
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+      const payload = { ...editData };
+      if (payload.weight) payload.weight = parseFloat(payload.weight);
+      
+      const res = await fetch(`${API_BASE}/api/pet-profile/${activePet.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) throw new Error("Failed to update");
+      
+      const updatedProfileRes = await res.json();
+      const updatedProfile = updatedProfileRes.data;
+
+      const localUser = localStorage.getItem("user");
+      const userId = localUser ? JSON.parse(localUser).id : "guest";
+      const newPets = pets.map(p => p.id === activePet.id ? { ...p, ...updatedProfile } : p);
+      setPets(newPets);
+      localStorage.setItem(`pets_${userId}`, JSON.stringify(newPets));
+      
+      setIsEditing(false);
+    } catch (e) {
+      console.error(e);
+      alert("Failed to save profile updates.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleEditChange = (e) => {
+    const { name, value } = e.target;
+    setEditData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleShare = async () => {
@@ -196,15 +267,13 @@ export default function PetContextCard() {
       >
         {/* DRAG HANDLE */}
         <div className="drag-handle-area" onClick={toggleExpand}>
-          <div className="drag-pill"></div>
+          <svg width="36" height="12" viewBox="0 0 36 12" fill="none" stroke="#d1d5db" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="4 2 18 10 32 2" />
+          </svg>
         </div>
 
         {/* HEADER AREA */}
         <div className="pcc-header" onClick={toggleExpand}>
-          <div className="pcc-branding">
-            <span className="pcc-brand-name">petolife</span>
-            <span className="pcc-brand-slogan">CARE • TRUST • FAMILY</span>
-          </div>
 
           <div className="pcc-avatar-container">
             {activePet.pet_photo_url ? (
@@ -217,7 +286,18 @@ export default function PetContextCard() {
           </div>
 
           <div className="pcc-name-row">
-            <h2 className="pcc-pet-name">{activePet.pet_name}</h2>
+            {isEditing ? (
+              <input 
+                type="text" 
+                name="pet_name" 
+                className="pcc-header-input" 
+                value={editData.pet_name} 
+                onChange={handleEditChange} 
+                onClick={e => e.stopPropagation()} 
+              />
+            ) : (
+              <h2 className="pcc-pet-name">{activePet.pet_name}</h2>
+            )}
             {!isExpanded && (
               <div className="pcc-expand-icon">
                 <ChevronDownIcon />
@@ -255,9 +335,9 @@ export default function PetContextCard() {
                 <DownloadIcon />
                 <span>Download</span>
               </button>
-              <button className="pcc-action-btn" onClick={() => navigate("/create-pet-profile")}>
-                <EditIcon />
-                <span>Edit</span>
+              <button className="pcc-action-btn" onClick={handleEditToggle} disabled={isSaving}>
+                {isEditing ? <SaveIcon /> : <EditIcon />}
+                <span>{isEditing ? (isSaving ? "Saving..." : "Save") : "Edit"}</span>
               </button>
             </div>
           </div>
@@ -272,27 +352,55 @@ export default function PetContextCard() {
               </div>
               <div className="pcc-detail-card">
                 <span className="pcc-detail-label">DOB</span>
-                <span className="pcc-detail-val">{activePet.birth_date || "N/A"}</span>
+                {isEditing ? (
+                  <input type="date" name="birth_date" className="pcc-detail-input" value={editData.birth_date} onChange={handleEditChange} />
+                ) : (
+                  <span className="pcc-detail-val">{activePet.birth_date || "N/A"}</span>
+                )}
               </div>
               <div className="pcc-detail-card">
-                <span className="pcc-detail-label">Weight</span>
-                <span className="pcc-detail-val">{activePet.weight ? `${activePet.weight} kg` : "N/A"}</span>
+                <span className="pcc-detail-label">Weight (kg)</span>
+                {isEditing ? (
+                  <input type="number" step="0.1" name="weight" className="pcc-detail-input" value={editData.weight} onChange={handleEditChange} />
+                ) : (
+                  <span className="pcc-detail-val">{activePet.weight ? `${activePet.weight} kg` : "N/A"}</span>
+                )}
               </div>
               <div className="pcc-detail-card">
                 <span className="pcc-detail-label">Blood Group</span>
-                <span className="pcc-detail-val">{activePet.blood_group || "N/A"}</span>
+                {isEditing ? (
+                  <input type="text" name="blood_group" className="pcc-detail-input" value={editData.blood_group} onChange={handleEditChange} />
+                ) : (
+                  <span className="pcc-detail-val">{activePet.blood_group || "N/A"}</span>
+                )}
               </div>
               <div className="pcc-detail-card">
                 <span className="pcc-detail-label">Gender</span>
-                <span className="pcc-detail-val">{activePet.gender || "N/A"}</span>
+                {isEditing ? (
+                  <select name="gender" className="pcc-detail-input" value={editData.gender} onChange={handleEditChange}>
+                    <option value="">Select</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                  </select>
+                ) : (
+                  <span className="pcc-detail-val">{activePet.gender || "N/A"}</span>
+                )}
               </div>
               <div className="pcc-detail-card">
                 <span className="pcc-detail-label">Breed</span>
-                <span className="pcc-detail-val">{activePet.breed || "N/A"}</span>
+                {isEditing ? (
+                  <input type="text" name="breed" className="pcc-detail-input" value={editData.breed} onChange={handleEditChange} />
+                ) : (
+                  <span className="pcc-detail-val">{activePet.breed || "N/A"}</span>
+                )}
               </div>
               <div className="pcc-detail-card">
                 <span className="pcc-detail-label">Color</span>
-                <span className="pcc-detail-val">{activePet.color || "N/A"}</span>
+                {isEditing ? (
+                  <input type="text" name="color" className="pcc-detail-input" value={editData.color} onChange={handleEditChange} />
+                ) : (
+                  <span className="pcc-detail-val">{activePet.color || "N/A"}</span>
+                )}
               </div>
               <div className="pcc-detail-card">
                 <span className="pcc-detail-label">Microchip</span>

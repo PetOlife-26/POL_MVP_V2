@@ -20,36 +20,43 @@ router = APIRouter()
 
 
 class SignupRequest(BaseModel):
-    email: str
+    email: Optional[str] = None
+    phone: Optional[str] = None
     password: str
     full_name: Optional[str] = None
-    phone: Optional[str] = None
 
 
 class LoginRequest(BaseModel):
-    email: str
+    email: Optional[str] = None
+    phone: Optional[str] = None
     password: str
 
 
 @router.post("/signup")
 async def signup(body: SignupRequest):
-    """Create a new user account with email and password."""
+    """Create a new user account with email/phone and password."""
     try:
-        result = supabase.auth.sign_up(
-            {
-                "email": body.email,
-                "password": body.password,
-                "options": {
-                    "data": {
-                        "full_name": body.full_name or "",
-                        "phone": body.phone or "",
-                    }
-                },
+        if not body.email and not body.phone:
+            raise HTTPException(status_code=400, detail="Either email or phone must be provided")
+            
+        # Use admin client to bypass email sending rate limits and instantly verify
+        admin_payload = {
+            "password": body.password,
+            "email_confirm": True,
+            "phone_confirm": True,
+            "user_metadata": {
+                "full_name": body.full_name or "",
             }
-        )
-
+        }
+        if body.email:
+            admin_payload["email"] = body.email
+        if body.phone:
+            admin_payload["phone"] = body.phone
+            
+        result = supabase.auth.admin.create_user(admin_payload)
+        
         if result.user is None:
-            raise HTTPException(status_code=400, detail="Signup failed — check your email and password.")
+            raise HTTPException(status_code=400, detail="Signup failed — invalid details.")
 
         return {
             "message": "Account created successfully",
@@ -70,14 +77,24 @@ async def signup(body: SignupRequest):
 
 @router.post("/login")
 async def login(body: LoginRequest):
-    """Log in with email and password."""
+    """Log in with email/phone and password."""
     try:
-        result = supabase.auth.sign_in_with_password(
-            {
-                "email": body.email,
-                "password": body.password,
-            }
-        )
+        if not body.email and not body.phone:
+            raise HTTPException(status_code=400, detail="Either email or phone must be provided")
+            
+        credentials = {"password": body.password}
+        if body.email:
+            credentials["email"] = body.email
+        if body.phone:
+            credentials["phone"] = body.phone
+            
+        # We create a temporary client so we don't mutate the global client's auth state.
+        # This ensures the global backend client always acts as service_role (bypassing RLS).
+        from supabase import create_client
+        from app.config import SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
+        temp_supabase = create_client(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
+        
+        result = temp_supabase.auth.sign_in_with_password(credentials)
 
         if result.session is None:
             raise HTTPException(status_code=401, detail="Invalid email or password.")
