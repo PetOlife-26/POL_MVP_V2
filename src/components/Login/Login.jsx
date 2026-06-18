@@ -80,52 +80,39 @@ function SuccessScreen({ type, userName, onContinue }) {
   );
 }
 
-function WelcomeScreen({ onCreateAccount, onLogin }) {
-  return (
-    <div className="screen welcome-screen">
-      <Logo />
-      <div className="welcome-tagline">
-        <span className="tagline-black">Building a Healthy<br />identity for </span>
-        <span className="tagline-green"><em>every pet</em></span>
-      </div>
-      <div className="vet-badge">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="#06402B"><path d="M12 21.593c-5.63-5.539-11-10.297-11-14.402 0-3.791 3.068-5.191 5.281-5.191 1.312 0 4.151.501 5.719 4.457 1.59-3.968 4.464-4.447 5.726-4.447 2.54 0 5.274 1.621 5.274 5.181 0 4.069-5.136 8.625-11 14.402z"/></svg>
-        <span>Built with Veterinary Insights</span>
-      </div>
-      <div className="hero-container">
-        <img src={heroImg} alt="PetOLife App" className="hero-img" />
-      </div>
-      <div className="welcome-actions">
-        <button className="btn-primary" onClick={onCreateAccount}>Create Account</button>
-        <button className="btn-secondary" onClick={onLogin}>Login into PetOLife</button>
-      </div>
-    </div>
-  );
-}
 
-function LoginScreen({ onBack, onSignUp, onSuccess }) {
+
+function LoginScreen({ onSignUp, onSuccess }) {
   const [showPass, setShowPass] = useState(false);
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
-    if (!email || !password) { setError("Please fill in all fields."); return; }
+    if (!identifier || !password) { setError("Please fill in all fields."); return; }
     setLoading(true);
     setError("");
     try {
+      const isEmail = identifier.includes("@");
+      const payload = { password };
+      if (isEmail) {
+        payload.email = identifier;
+      } else {
+        payload.phone = identifier.replace(/\s+/g, '');
+      }
+
       const res = await fetch(`${API_BASE}/api/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify(payload),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.detail || data.error || "Login failed");
       // Store token
       if (data.access_token) localStorage.setItem("access_token", data.access_token);
       if (data.user) localStorage.setItem("user", JSON.stringify(data.user));
-      onSuccess({ type: "login", name: data.user?.user_metadata?.full_name || email.split("@")[0] });
+      onSuccess({ type: "login", name: data.user?.user_metadata?.full_name || identifier.split("@")[0] });
     } catch (err) {
       setError(err.message);
     } finally {
@@ -145,15 +132,26 @@ function LoginScreen({ onBack, onSignUp, onSuccess }) {
 
   return (
     <div className="screen auth-screen">
-      <BackBtn onClick={onBack} />
       <Logo />
-      <h2 className="auth-title">Welcome Back!</h2>
+      <div className="welcome-tagline">
+        <span className="tagline-black">Building a Healthy<br />identity for </span>
+        <span className="tagline-green"><em>every pet</em></span>
+      </div>
+      <div className="vet-badge">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="#06402B"><path d="M12 21.593c-5.63-5.539-11-10.297-11-14.402 0-3.791 3.068-5.191 5.281-5.191 1.312 0 4.151.501 5.719 4.457 1.59-3.968 4.464-4.447 5.726-4.447 2.54 0 5.274 1.621 5.274 5.181 0 4.069-5.136 8.625-11 14.402z"/></svg>
+        <span>Built with Veterinary Insights</span>
+      </div>
+      <div className="hero-container" style={{ marginBottom: 20 }}>
+        <img src={heroImg} alt="PetOLife App" className="hero-img" />
+      </div>
+
+      <h2 className="auth-title" style={{ marginTop: 0 }}>Login</h2>
 
       {error && <p className="auth-error">{error}</p>}
 
       <div className="form-group">
-        <label>Email</label>
-        <input type="email" placeholder="Enter your email" value={email} onChange={e => setEmail(e.target.value)} />
+        <label>Email or Phone Number</label>
+        <input type="text" placeholder="Enter your email or phone" value={identifier} onChange={e => setIdentifier(e.target.value)} />
       </div>
 
       <div className="form-group">
@@ -186,8 +184,8 @@ function LoginScreen({ onBack, onSignUp, onSuccess }) {
       </button>
 
       <p className="auth-footer">
-        Don't have an account?{" "}
-        <span className="link-green" onClick={onSignUp}>Sign Up</span>
+        New user?{" "}
+        <span className="link-green" onClick={onSignUp}>Create Account</span>
       </p>
     </div>
   );
@@ -196,25 +194,26 @@ function LoginScreen({ onBack, onSignUp, onSuccess }) {
 function SignupScreen({ onBack, onLogin, onSuccess }) {
   const [showPass, setShowPass] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-  const [form, setForm] = useState({ name: "", email: "", phone: "", password: "", confirm: "" });
+  const [form, setForm] = useState({ name: "", identifier: "", password: "", confirm: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
 
   const handleSignup = async () => {
-    if (!form.name || !form.email || !form.password) { setError("Please fill in required fields."); return; }
+    if (!form.name || !form.password || !form.identifier) { setError("Please fill in required fields."); return; }
     if (form.password !== form.confirm) { setError("Passwords do not match."); return; }
     setLoading(true);
     setError("");
     try {
+      const isEmail = form.identifier.includes("@");
       const res = await fetch(`${API_BASE}/api/auth/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          email: form.email,
+          email: isEmail ? form.identifier : undefined,
           password: form.password,
           full_name: form.name,
-          phone: form.phone,
+          phone: !isEmail ? form.identifier.replace(/\s+/g, '') : undefined,
         }),
       });
       const data = await res.json();
@@ -250,12 +249,8 @@ function SignupScreen({ onBack, onLogin, onSuccess }) {
         <input type="text" placeholder="Enter your name" value={form.name} onChange={set("name")} />
       </div>
       <div className="form-group">
-        <label>Email</label>
-        <input type="email" placeholder="Enter your email" value={form.email} onChange={set("email")} />
-      </div>
-      <div className="form-group">
-        <label>Phone Number</label>
-        <input type="tel" placeholder="Enter your phone number" value={form.phone} onChange={set("phone")} />
+        <label>Email or Phone Number</label>
+        <input type="text" placeholder="Enter your email or phone" value={form.identifier} onChange={set("identifier")} />
       </div>
       <div className="form-group">
         <label>Password</label>
@@ -292,7 +287,7 @@ function SignupScreen({ onBack, onLogin, onSuccess }) {
 
 export default function Login() {
   const navigate = useNavigate();
-  const [screen, setScreen] = useState("welcome");
+  const [screen, setScreen] = useState("login");
   const [successData, setSuccessData] = useState(null);
 
   const handleSuccess = (data) => {
@@ -313,15 +308,8 @@ export default function Login() {
   return (
     <div className="login-root">
       <div className="login-card">
-        {screen === "welcome" && (
-          <WelcomeScreen
-            onCreateAccount={() => setScreen("signup")}
-            onLogin={() => setScreen("login")}
-          />
-        )}
         {screen === "login" && (
           <LoginScreen
-            onBack={() => setScreen("welcome")}
             onSignUp={() => setScreen("signup")}
             onSuccess={handleSuccess}
           />
