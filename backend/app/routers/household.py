@@ -1,5 +1,5 @@
 """
-Household routes — Family Access System
+Household routes — Family Access System 
 
 POST   /api/household                              — Create household
 GET    /api/household/by-user/{user_id}             — Get user's household + members
