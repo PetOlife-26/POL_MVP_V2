@@ -1,5 +1,5 @@
 """
-Species-specific daily care task templates.
+Species-specific daily care task templates. 
 
 Each species has a list of tasks with:
 - id: unique key
