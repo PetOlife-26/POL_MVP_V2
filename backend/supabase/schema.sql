@@ -45,3 +45,14 @@ CREATE TABLE care_team (
 ALTER TABLE care_team ADD CONSTRAINT care_team_pet_profile_id_key UNIQUE (pet_profile_id);
 
 -- STORAGE: Create bucket named "pet-photos" as Public in Supabase Dashboard > Storage
+
+-- PET HEALTH IDS (Sequence Tracker)
+CREATE TABLE IF NOT EXISTS pet_health_ids (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  health_id TEXT UNIQUE NOT NULL,
+  pet_profile_id UUID REFERENCES pet_profiles(id) ON DELETE CASCADE,
+  city_code TEXT NOT NULL,
+  pet_type_code TEXT NOT NULL,
+  sequence_number INTEGER NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);

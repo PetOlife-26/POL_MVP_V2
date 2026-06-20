@@ -23,7 +23,7 @@ class PetProfileUpdate(BaseModel):
     blood_group: Optional[str] = None
 
 from app.supabase_client import supabase
-from app.utils.generate_petolife_id import generate_petolife_id
+from app.routers.pet_health_id import generate_pet_health_id, store_pet_health_id
 
 router = APIRouter()
 
@@ -33,6 +33,7 @@ async def create_pet_profile(
     pet_type: str = Form(...),
     pet_name: str = Form(...),
     user_id: Optional[str] = Form(None),
+    city: Optional[str] = Form(None),
     breed: Optional[str] = Form(None),
     gender: Optional[str] = Form(None),
     birth_date: Optional[str] = Form(None),
@@ -59,7 +60,7 @@ async def create_pet_profile(
             raise HTTPException(status_code=400, detail="Invalid pet_ids format")
 
     # Generate unique PetOLife ID
-    petolife_id = generate_petolife_id(pet_type, parsed_ids)
+    petolife_id = generate_pet_health_id(city or "coimbatore", pet_type)
     print(f"Generated PetOLife ID: {petolife_id}")
 
     # Upload photo to Supabase Storage if provided
@@ -86,48 +87,11 @@ async def create_pet_profile(
         pet_photo_url = url_data
         print(f"Photo URL: {pet_photo_url}")
 
-    # Auto-create or resolve household for this user
-    household_id = None
-    if user_id:
-        try:
-            # Check if user already has a household
-            membership = (
-                supabase.table("household_members")
-                .select("household_id")
-                .eq("user_id", user_id)
-                .eq("status", "active")
-                .execute()
-            )
-            if membership.data:
-                household_id = membership.data[0]["household_id"]
-                print(f"User already in household: {household_id}")
-            else:
-                # Create a new household
-                hh_name = f"{pet_name}'s Family"
-                hh_result = supabase.table("households").insert({
-                    "name": hh_name,
-                    "owner_user_id": user_id,
-                }).execute()
-                if hh_result.data:
-                    household_id = hh_result.data[0]["id"]
-                    # Add user as owner member
-                    supabase.table("household_members").insert({
-                        "household_id": household_id,
-                        "user_id": user_id,
-                        "display_name": "Owner",
-                        "role": "owner",
-                        "status": "active",
-                    }).execute()
-                    print(f"Created household: {household_id}")
-        except Exception as hh_err:
-            print(f"Household auto-create warning (non-fatal): {hh_err}")
-
     # Insert pet profile
     print("Inserting pet profile into database...")
     insert_data = {
         "petolife_id": petolife_id,
         "user_id": user_id or None,
-        "household_id": household_id,
         "pet_type": pet_type,
         "pet_name": pet_name,
         "breed": breed or None,
@@ -148,6 +112,9 @@ async def create_pet_profile(
 
     profile = result.data[0]
     print(f"Profile created: {profile['id']}")
+
+    # Store sequence tracking for health ID
+    store_pet_health_id(petolife_id, profile["id"])
 
     # Insert pet IDs
     valid_ids = [
@@ -175,7 +142,6 @@ async def create_pet_profile(
         "message": "Pet profile created successfully",
         "pet_profile_id": profile["id"],
         "petolife_id": profile["petolife_id"],
-        "household_id": household_id,
         "data": profile,
     }
 

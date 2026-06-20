@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Login.css";
 import logoImg from "../../assets/logo.png";
@@ -6,6 +6,7 @@ import heroImg from "../../assets/login/hero.jpg";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
 
+/* ── Shared Icons ── */
 function Logo() {
   return (
     <div className="logo-wrap">
@@ -50,6 +51,11 @@ function BackBtn({ onClick }) {
   );
 }
 
+function SmallSpinner() {
+  return <span className="pincode-spinner" />;
+}
+
+/* ── Success Screen ── */
 function SuccessScreen({ type, userName, onContinue }) {
   const isSignup = type === "signup";
   return (
@@ -74,14 +80,272 @@ function SuccessScreen({ type, userName, onContinue }) {
         <span>PetOLife Member</span>
       </div>
       <button className="btn-primary success-btn" onClick={onContinue}>
-        {isSignup ? "Go to Login" : "Continue to App"}
+        {isSignup ? "Continue to App" : "Continue to App"}
       </button>
     </div>
   );
 }
 
+/* ══════════════════════════════════════════════════════
+   REGISTRATION SCREEN (default — "Join as Pet Parent")
+   ══════════════════════════════════════════════════════ */
+function RegistrationScreen({ onLogin, onSuccess }) {
+  const [form, setForm] = useState({
+    name: "",
+    mobile: "",
+    pincode: "",
+    city: "",
+    state: "",
+  });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [pincodeLoading, setPincodeLoading] = useState(false);
+  const [pincodeError, setPincodeError] = useState("");
 
+  const set = (k) => (e) => {
+    const val = e.target.value;
+    setForm((prev) => ({ ...prev, [k]: val }));
+    if (k === "pincode") {
+      setPincodeError("");
+      // Reset city/state when pincode changes
+      if (val.length < 6) {
+        setForm((prev) => ({ ...prev, [k]: val, city: "", state: "" }));
+      }
+    }
+  };
 
+  // Auto-fetch city/state when pincode reaches 6 digits
+  const lookupPincode = useCallback(async (pincode) => {
+    if (pincode.length !== 6 || !/^\d{6}$/.test(pincode)) return;
+    setPincodeLoading(true);
+    setPincodeError("");
+    try {
+      const res = await fetch(`${API_BASE}/api/location/lookup`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pincode }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.detail || "Invalid pincode");
+      }
+      const data = await res.json();
+      setForm((prev) => ({
+        ...prev,
+        city: data.city || "",
+        state: data.state || "",
+      }));
+    } catch (err) {
+      setPincodeError(err.message || "Could not lookup pincode");
+      setForm((prev) => ({ ...prev, city: "", state: "" }));
+    } finally {
+      setPincodeLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (form.pincode.length === 6 && /^\d{6}$/.test(form.pincode)) {
+      lookupPincode(form.pincode);
+    }
+  }, [form.pincode, lookupPincode]);
+
+  const handleRegister = async () => {
+    if (!form.name.trim()) { setError("Please enter your name."); return; }
+    if (!form.mobile.trim() || form.mobile.replace(/\D/g, "").length < 10) {
+      setError("Please enter a valid 10-digit mobile number."); return;
+    }
+    if (form.pincode.length !== 6) { setError("Please enter a valid 6-digit pincode."); return; }
+    if (!form.city) { setError("Could not determine city from pincode."); return; }
+
+    setLoading(true);
+    setError("");
+
+    // Clean mobile → ensure +91 prefix for Supabase
+    let phone = form.mobile.replace(/\D/g, "");
+    if (phone.length === 10) phone = "+91" + phone;
+    else if (!phone.startsWith("+")) phone = "+" + phone;
+
+    // Auto-generate a password from phone tail
+    const autoPassword = phone.slice(-4) + "Pet@Life";
+
+    try {
+      // 1. Sign up
+      const signupRes = await fetch(`${API_BASE}/api/auth/signup`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          phone,
+          password: autoPassword,
+          full_name: form.name.trim(),
+        }),
+      });
+      const signupData = await signupRes.json();
+      if (!signupRes.ok) throw new Error(signupData.detail || "Signup failed");
+
+      // 2. Auto-login
+      const loginRes = await fetch(`${API_BASE}/api/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone, password: autoPassword }),
+      });
+      const loginData = await loginRes.json();
+      if (!loginRes.ok) throw new Error(loginData.detail || "Auto-login failed");
+
+      // 3. Persist session
+      if (loginData.access_token) localStorage.setItem("access_token", loginData.access_token);
+      if (loginData.user) {
+        // Enrich user data with location
+        const enrichedUser = {
+          ...loginData.user,
+          user_metadata: {
+            ...loginData.user.user_metadata,
+            pincode: form.pincode,
+            city: form.city,
+            state: form.state,
+          },
+        };
+        localStorage.setItem("user", JSON.stringify(enrichedUser));
+      }
+
+      onSuccess({ type: "signup", name: form.name.trim() });
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSignup = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/auth/google`);
+      const data = await res.json();
+      if (data.url) window.location.href = data.url;
+    } catch {
+      setError("Google signup is not available yet.");
+    }
+  };
+
+  return (
+    <div className="screen auth-screen">
+      <Logo />
+      <div className="welcome-tagline">
+        <span className="tagline-black">Join as a<br /></span>
+        <span className="tagline-green"><em>Pet Parent</em></span>
+      </div>
+      <div className="vet-badge">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="#06402B"><path d="M12 21.593c-5.63-5.539-11-10.297-11-14.402 0-3.791 3.068-5.191 5.281-5.191 1.312 0 4.151.501 5.719 4.457 1.59-3.968 4.464-4.447 5.726-4.447 2.54 0 5.274 1.621 5.274 5.181 0 4.069-5.136 8.625-11 14.402z"/></svg>
+        <span>Building a Health Identity for Every Pet</span>
+      </div>
+
+      {error && <p className="auth-error">{error}</p>}
+
+      {/* Pet Parent Name */}
+      <div className="form-group">
+        <label>Pet Parent Name</label>
+        <input
+          type="text"
+          placeholder="Enter your full name"
+          value={form.name}
+          onChange={set("name")}
+          autoComplete="name"
+        />
+      </div>
+
+      {/* Mobile Number */}
+      <div className="form-group">
+        <label>Mobile Number</label>
+        <div className="phone-input-group">
+          <span className="phone-prefix">+91</span>
+          <input
+            type="tel"
+            placeholder="Enter 10-digit mobile number"
+            value={form.mobile}
+            onChange={(e) => {
+              // Only allow digits, max 10
+              const val = e.target.value.replace(/\D/g, "").slice(0, 10);
+              setForm((prev) => ({ ...prev, mobile: val }));
+            }}
+            inputMode="numeric"
+            maxLength={10}
+            autoComplete="tel"
+          />
+        </div>
+      </div>
+
+      {/* Pincode */}
+      <div className="form-group">
+        <label>
+          Pincode
+          {pincodeLoading && <SmallSpinner />}
+        </label>
+        <input
+          type="text"
+          placeholder="Enter 6-digit pincode"
+          value={form.pincode}
+          onChange={(e) => {
+            const val = e.target.value.replace(/\D/g, "").slice(0, 6);
+            setForm((prev) => ({ ...prev, pincode: val }));
+            if (val.length < 6) {
+              setForm((prev) => ({ ...prev, pincode: val, city: "", state: "" }));
+              setPincodeError("");
+            }
+          }}
+          inputMode="numeric"
+          maxLength={6}
+        />
+        {pincodeError && <span className="field-error">{pincodeError}</span>}
+      </div>
+
+      {/* City & State — auto-filled, read-only */}
+      <div className="pincode-row">
+        <div className="form-group">
+          <label>City</label>
+          <input
+            type="text"
+            placeholder="Auto-filled"
+            value={form.city}
+            readOnly
+            className={form.city ? "field-readonly field-filled" : "field-readonly"}
+          />
+        </div>
+        <div className="form-group">
+          <label>State</label>
+          <input
+            type="text"
+            placeholder="Auto-filled"
+            value={form.state}
+            readOnly
+            className={form.state ? "field-readonly field-filled" : "field-readonly"}
+          />
+        </div>
+      </div>
+
+      <button
+        className="btn-primary"
+        style={{ marginTop: 8 }}
+        onClick={handleRegister}
+        disabled={loading}
+      >
+        {loading ? "Creating Account…" : "Create Account"}
+      </button>
+
+      <div className="or-divider"><span>OR</span></div>
+
+      <button className="btn-google" onClick={handleGoogleSignup}>
+        <GoogleIcon /> Sign up with Google
+      </button>
+
+      <p className="auth-footer" style={{ marginTop: 16 }}>
+        Already have an account?{" "}
+        <span className="link-green" onClick={onLogin}>Login</span>
+      </p>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════
+   LOGIN SCREEN (existing — email/phone + password)
+   ══════════════════════════════════════════════════════ */
 function LoginScreen({ onSignUp, onSuccess }) {
   const [showPass, setShowPass] = useState(false);
   const [identifier, setIdentifier] = useState("");
@@ -132,19 +396,8 @@ function LoginScreen({ onSignUp, onSuccess }) {
 
   return (
     <div className="screen auth-screen">
+      <BackBtn onClick={onSignUp} />
       <Logo />
-      <div className="welcome-tagline">
-        <span className="tagline-black">Building a Healthy<br />identity for </span>
-        <span className="tagline-green"><em>every pet</em></span>
-      </div>
-      <div className="vet-badge">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="#06402B"><path d="M12 21.593c-5.63-5.539-11-10.297-11-14.402 0-3.791 3.068-5.191 5.281-5.191 1.312 0 4.151.501 5.719 4.457 1.59-3.968 4.464-4.447 5.726-4.447 2.54 0 5.274 1.621 5.274 5.181 0 4.069-5.136 8.625-11 14.402z"/></svg>
-        <span>Built with Veterinary Insights</span>
-      </div>
-      <div className="hero-container" style={{ marginBottom: 20 }}>
-        <img src={heroImg} alt="PetOLife App" className="hero-img" />
-      </div>
-
       <h2 className="auth-title" style={{ marginTop: 0 }}>Login</h2>
 
       {error && <p className="auth-error">{error}</p>}
@@ -191,103 +444,13 @@ function LoginScreen({ onSignUp, onSuccess }) {
   );
 }
 
-function SignupScreen({ onBack, onLogin, onSuccess }) {
-  const [showPass, setShowPass] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
-  const [form, setForm] = useState({ name: "", identifier: "", password: "", confirm: "" });
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-  const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
-
-  const handleSignup = async () => {
-    if (!form.name || !form.password || !form.identifier) { setError("Please fill in required fields."); return; }
-    if (form.password !== form.confirm) { setError("Passwords do not match."); return; }
-    setLoading(true);
-    setError("");
-    try {
-      const isEmail = form.identifier.includes("@");
-      const res = await fetch(`${API_BASE}/api/auth/signup`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: isEmail ? form.identifier : undefined,
-          password: form.password,
-          full_name: form.name,
-          phone: !isEmail ? form.identifier.replace(/\s+/g, '') : undefined,
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || data.error || "Signup failed");
-      onSuccess({ type: "signup", name: form.name });
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleGoogleSignup = async () => {
-    try {
-      const res = await fetch(`${API_BASE}/api/auth/google`);
-      const data = await res.json();
-      if (data.url) window.location.href = data.url;
-    } catch {
-      setError("Google signup is not available yet.");
-    }
-  };
-
-  return (
-    <div className="screen auth-screen signup-screen">
-      <BackBtn onClick={onBack} />
-      <Logo />
-      <h2 className="auth-title">Create Account</h2>
-
-      {error && <p className="auth-error">{error}</p>}
-
-      <div className="form-group">
-        <label>Full Name</label>
-        <input type="text" placeholder="Enter your name" value={form.name} onChange={set("name")} />
-      </div>
-      <div className="form-group">
-        <label>Email or Phone Number</label>
-        <input type="text" placeholder="Enter your email or phone" value={form.identifier} onChange={set("identifier")} />
-      </div>
-      <div className="form-group">
-        <label>Password</label>
-        <div className="input-with-icon">
-          <input type={showPass ? "text" : "password"} placeholder="Create password" value={form.password} onChange={set("password")} />
-          <button className="eye-btn" onClick={() => setShowPass(!showPass)}><EyeIcon open={showPass} /></button>
-        </div>
-      </div>
-      <div className="form-group">
-        <label>Confirm Password</label>
-        <div className="input-with-icon">
-          <input type={showConfirm ? "text" : "password"} placeholder="Confirm password" value={form.confirm} onChange={set("confirm")} />
-          <button className="eye-btn" onClick={() => setShowConfirm(!showConfirm)}><EyeIcon open={showConfirm} /></button>
-        </div>
-      </div>
-
-      <button className="btn-primary" style={{ marginTop: 6 }} onClick={handleSignup} disabled={loading}>
-        {loading ? "Creating Account…" : "Create Account"}
-      </button>
-
-      <div className="or-divider"><span>OR</span></div>
-
-      <button className="btn-google" onClick={handleGoogleSignup}>
-        <GoogleIcon /> Continue with Google
-      </button>
-
-      <p className="auth-footer" style={{ marginTop: 14 }}>
-        Already have an account?{" "}
-        <span className="link-green" onClick={onLogin}>Login</span>
-      </p>
-    </div>
-  );
-}
-
+/* ══════════════════════════════════════════════════════
+   MAIN LOGIN COMPONENT
+   ══════════════════════════════════════════════════════ */
 export default function Login() {
   const navigate = useNavigate();
-  const [screen, setScreen] = useState("login");
+  // Default screen is now "register" (the registration form)
+  const [screen, setScreen] = useState("register");
   const [successData, setSuccessData] = useState(null);
 
   const handleSuccess = (data) => {
@@ -296,28 +459,23 @@ export default function Login() {
   };
 
   const handleSuccessContinue = () => {
-    if (successData?.type === "signup") {
-      setScreen("login");
-    } else {
-      // Login success — go to home dashboard
-      navigate("/home");
-    }
+    // Both signup and login success → go to home
+    navigate("/home");
     setSuccessData(null);
   };
 
   return (
     <div className="login-root">
       <div className="login-card">
-        {screen === "login" && (
-          <LoginScreen
-            onSignUp={() => setScreen("signup")}
+        {screen === "register" && (
+          <RegistrationScreen
+            onLogin={() => setScreen("login")}
             onSuccess={handleSuccess}
           />
         )}
-        {screen === "signup" && (
-          <SignupScreen
-            onBack={() => setScreen("login")}
-            onLogin={() => setScreen("login")}
+        {screen === "login" && (
+          <LoginScreen
+            onSignUp={() => setScreen("register")}
             onSuccess={handleSuccess}
           />
         )}

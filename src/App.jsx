@@ -1,13 +1,14 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
-import StartAnimation from './components/startanimation/StartAnimation';
+import { Navigate } from 'react-router-dom';
 import Login from './components/Login/Login';
 import Home from './components/Home/Home';
 import './App.css';
 
-// Lazy-load these — they have asset dependencies that may not exist yet
-const CreatePetProfile = lazy(() => import('./components/CreatePetProfile/CreatePetProfile'));
-const QRGeneratedSuccess = lazy(() => import('./components/QRGeneratedSuccess/QRGeneratedSuccess'));
+// Lazy-loaded routes
+const Homepg = lazy(() => import('./components/homepg/Homepg'));
+const ProfileCreate = lazy(() => import('./components/profilecreation/Profilecreation'));
+const PostIdScreen = lazy(() => import('./components/postidscreen/postidscreen'));
 
 function LoadingFallback() {
   return (
@@ -22,11 +23,12 @@ function App() {
     <Router>
       <Suspense fallback={<LoadingFallback />}>
         <Routes>
-          <Route path="/" element={<StartAnimation />} />
+          <Route path="/" element={<Navigate to="/landing" replace />} />
+          <Route path="/landing" element={<Homepg />} />
           <Route path="/login" element={<Login />} />
           <Route path="/home" element={<Home />} />
-          <Route path="/create-pet-profile" element={<CreatePetProfile />} />
-          <Route path="/qr-success" element={<QRGeneratedSuccess />} />
+          <Route path="/create-pet-profile" element={<ProfileCreate />} />
+          <Route path="/post-id-success" element={<PostIdScreen />} />
         </Routes>
       </Suspense>
     </Router>
