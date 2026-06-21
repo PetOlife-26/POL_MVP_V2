@@ -11,7 +11,7 @@ import "./Profilecreation.css";
 
 
 const TOTAL_STEPS = 4; // photo, pet-id details, age, confirm
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+const API_BASE = import.meta.env.VITE_API_BASE_URL !== undefined ? import.meta.env.VITE_API_BASE_URL : (import.meta.env.PROD ? "" : "http://localhost");
 
 const dogBreeds = [
   "Afghan Hound",
