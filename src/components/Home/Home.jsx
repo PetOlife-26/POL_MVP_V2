@@ -256,7 +256,7 @@ export default function Home() {
         const accessToken = hashParams.get("access_token");
         if (accessToken) {
           localStorage.setItem("access_token", accessToken);
-          const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+          const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
           try {
             const res = await fetch(`${API_BASE}/api/auth/me`, {
               headers: { "Authorization": `Bearer ${accessToken}` }

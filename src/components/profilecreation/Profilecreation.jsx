@@ -6,7 +6,7 @@ import {
   FiArrowRight,
   FiSkipForward,
 } from "react-icons/fi";
-import "./ProfileCreation.css";
+import "./Profilecreation.css";
 
 import dogIcon from "../../assets/pets/dog.png";
 import catIcon from "../../assets/pets/cat.png";
@@ -40,7 +40,7 @@ import lionheadImg from "../../assets/rabbitbreeds/lionhead.png";
 import dutchRabbitImg from "../../assets/rabbitbreeds/dutch-rabbit.png";
 
 const TOTAL_STEPS = 6; // photo, pet-id details, age, location, care crew, confirm
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 
 const breedData = {
   Dog: [

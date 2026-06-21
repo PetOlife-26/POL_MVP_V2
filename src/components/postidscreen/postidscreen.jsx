@@ -24,8 +24,8 @@ export default function PostIdScreen() {
     petProfileId = '',
   } = location.state || {};
 
-  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
-  const qrValue = `${API_BASE}/api/pet-profile/by-petolife-id/${encodeURIComponent(petolifeId)}`;
+  const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
+  const qrValue = `${window.location.origin}/api/pet-profile/by-petolife-id/${encodeURIComponent(petolifeId)}`;
 
   // Deterministic pseudo-random confetti layout
   const useConfetti = (count = 26) => {
