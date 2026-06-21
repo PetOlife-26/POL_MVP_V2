@@ -65,25 +65,50 @@ import heroPets from "../../assets/hero-pets.png";
 const Hero = ({ openModal, onJoinPetParent }) => (
   <section id="home" className="hero">
     <div className="container hero-grid">
+
+      {/* Left Side */}
       <div className="hero-content">
         <h1 className="hero-title">
-          Building a Health Identity<br />
+          Building a Health Identity
+          <br />
           for <span className="highlight">Every Pet</span>
         </h1>
+
         <p className="hero-description">
-          Helping pet parents organize health records, track care routines, and stay connected with trusted veterinary care.
+          Helping pet parents organize health records, track care routines,
+          and stay connected with trusted veterinary care.
         </p>
-        <div className="hero-visual">
-          <img src={heroPets} alt="Pet parent with dog and cat alongside the PetOlife app interface" className="hero-image" />
-        </div>
+
         <div className="hero-actions">
-          <button className="btn btn-primary" onClick={onJoinPetParent}>Join as Pet Parent</button>
-          <button className="btn btn-secondary" onClick={() => openModal('vet')}>Join as Veterinarian</button>
+          <button
+            className="btn btn-primary"
+            onClick={onJoinPetParent}
+          >
+            Join as Pet Parent
+          </button>
+
+          <button
+            className="btn btn-secondary"
+            onClick={() => openModal("vet")}
+          >
+            Join as Veterinarian
+          </button>
         </div>
       </div>
+
+      {/* Right Side */}
+      <div className="hero-visual">
+        <img
+          src={heroPets}
+          alt="Pet parent with pets"
+          className="hero-image"
+        />
+      </div>
+
     </div>
   </section>
-);
+)
+;
 
 // ---------- Solution ----------
 const problems = [
