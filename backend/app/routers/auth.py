@@ -119,17 +119,30 @@ async def login(body: LoginRequest):
 
 
 @router.get("/google")
-async def google_oauth():
+async def google_oauth(request: Request):
     """
     Returns the Google OAuth URL for the frontend to redirect to.
     The user will be redirected back to /api/auth/callback after Google login.
     """
     try:
+        proto = request.headers.get("X-Forwarded-Proto", "http")
+        host = request.headers.get("Host", "localhost")
+        # Construct dynamic base URL from reverse proxy headers
+        base_url = f"{proto}://{host}"
+        
+        # If testing locally without Nginx, base_url might be http://localhost:8000
+        # In that case or if Host is missing, fallback to FRONTEND_URL.
+        # Nginx sets Host correctly to 'petolife.com' in production.
+        redirect_url = f"{base_url}/home" if host != "localhost" else f"{FRONTEND_URL}/home"
+        # If it's a localhost deployment but through Nginx (port 80), use base_url
+        if host == "localhost" and request.headers.get("X-Forwarded-For"):
+             redirect_url = f"{base_url}/home"
+
         result = supabase.auth.sign_in_with_oauth(
             {
                 "provider": "google",
                 "options": {
-                    "redirect_to": f"{FRONTEND_URL}/home",
+                    "redirect_to": redirect_url,
                 },
             }
         )
