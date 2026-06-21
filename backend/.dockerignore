@@ -1,0 +1,26 @@
+# Ignore everything that should never enter the image
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+
+# Environment files — loaded at runtime via docker-compose env_file
+.env
+.env.*
+
+# Dev / editor artifacts
+.git/
+.gitignore
+README.md
+*.md
+
+# Supabase CLI artifacts
+supabase/
+
+# Vercel artifacts (not used in Docker)
+vercel.json

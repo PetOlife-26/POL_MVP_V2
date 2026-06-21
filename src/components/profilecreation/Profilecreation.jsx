@@ -6,7 +6,7 @@ import {
   FiArrowRight,
   FiSkipForward,
 } from "react-icons/fi";
-import "./ProfileCreation.css";
+import "./Profilecreation.css";
 
 
 
