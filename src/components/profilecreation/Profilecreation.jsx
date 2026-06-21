@@ -864,7 +864,7 @@ function ProfileCreation() {
           formData.append("pet_ids", JSON.stringify(validIds));
         }
 
-        const response = await fetch(`${API_BASE}/api/pet-profile`, {
+        const response = await fetch(`${API_BASE}/api/pet-profile/`, {
           method: "POST",
           body: formData,
         });

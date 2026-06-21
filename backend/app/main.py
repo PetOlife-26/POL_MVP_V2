@@ -12,6 +12,13 @@ app = FastAPI(
     version="2.0.0",
 )
 
+# Trust the X-Forwarded-Proto header set by Nginx so that FastAPI uses
+# https:// (not http://) when generating any redirect URLs (e.g. trailing-slash
+# 307 redirects from /api/pet-profile → /api/pet-profile/).
+# This prevents Mixed Content errors on the frontend.
+from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
+app.add_middleware(ProxyHeadersMiddleware, trusted_hosts="*")
+
 # CORS — keep the frontend origin and preserve the permissive behavior from the second file.
 app.add_middleware(
     CORSMiddleware,
