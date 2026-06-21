@@ -1,222 +1,43 @@
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-/* ============================
-   FIXED HERO CARD
-   Always renders the "desktop" 3-column
-   layout (image | details | owner+QR),
-   regardless of screen size. The whole
-   card just scales down as one block —
-   it never restacks.
-   ============================ */
-
-.petcard-wrapper {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  padding: 12px;
-  container-type: inline-size; /* lets us measure available width below */
-}
-
+/* Styling for PetCard component */
 .petcard {
-  width: 900px; /* fixed "poster" size — never reflows */
-  flex-shrink: 0;
-  background: white;
-  border-radius: 20px;
-  padding: 24px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  transform: scale(var(--petcard-scale, 1));
-  transform-origin: center center;
+  max-width: 480px;
+  margin: 20px auto;
+  padding: 16px;
+  background: var(--cream);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  font-family: var(--font-body);
+  color: var(--ink);
 }
 
-/* Auto-shrink the whole card as one block when the
-   wrapper is narrower than the card's natural 900px+padding.
-   Add ~24px back for wrapper padding on each side. */
-@container (max-width: 948px) {
-  .petcard {
-    --petcard-scale: 0.9;
-  }
-}
-@container (max-width: 850px) {
-  .petcard {
-    --petcard-scale: 0.8;
-  }
-}
-@container (max-width: 750px) {
-  .petcard {
-    --petcard-scale: 0.65;
-  }
-}
-@container (max-width: 600px) {
-  .petcard {
-    --petcard-scale: 0.5;
-  }
-}
-@container (max-width: 460px) {
-  .petcard {
-    --petcard-scale: 0.38;
-  }
-}
-@container (max-width: 340px) {
-  .petcard {
-    --petcard-scale: 0.3;
-  }
-}
-
-/* HEADER */
-
-.petcard-header {
-  text-align: center;
-  margin-bottom: 16px;
-}
-
-.logo {
-  font-size: 1.8rem;
-  font-weight: 800;
-  margin-bottom: 4px;
-}
-
-.logo-green {
-  color: #2f9d58;
-}
-
-.logo-dark {
-  color: #14532d;
-}
-
-.title-section h1 {
-  font-size: 1.6rem;
-  color: #14532d;
-  margin-bottom: 3px;
-}
-
-.title-section p {
-  color: #666;
-  font-size: 0.9rem;
-}
-
-/* BODY — always 3 columns: image | details | owner */
-
-.petcard-body {
-  display: grid;
-  grid-template-columns: 220px 1fr 280px;
-  gap: 24px;
-  align-items: start;
-}
-
-/* IMAGE */
-
-.pet-image-section {
+.pet-photo {
   width: 100%;
-}
-
-.pet-image {
-  width: 100%;
-  height: 260px;
+  max-height: 200px;
   object-fit: cover;
-  border-radius: 14px;
-  display: block;
-  background: #eef5ee; /* placeholder if image 404s */
+  border-radius: 8px;
+  margin-bottom: 12px;
 }
 
-/* PET DETAILS */
+.pet-name {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  text-align: center;
+  color: var(--green-800);
+}
 
 .pet-details {
-  padding-top: 6px;
-}
-
-.pet-details h2 {
-  font-size: 1.7rem;
-  color: #14532d;
-  font-weight: 800;
-  margin-bottom: 10px;
-}
-
-.breed-tag {
-  display: inline-block;
-  background: #edf7ed;
-  padding: 8px 18px;
-  border-radius: 10px;
-  font-size: 0.9rem;
-  margin-bottom: 18px;
-}
-
-.info-list {
-  display: flex;
-  flex-direction: column;
-  gap: 11px;
-}
-
-.info-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding-bottom: 9px;
-  border-bottom: 1px solid #eee;
-  font-size: 0.92rem;
-}
-
-.info-row span {
-  min-width: 95px;
-  color: #555;
-}
-
-.info-row strong {
-  margin-left: auto;
-  color: #111;
-  text-align: right;
-  word-break: break-word;
-}
-
-/* OWNER — always its own column, never full-width */
-
-.owner-section {
-  display: flex;
-  flex-direction: column;
-}
-
-.owner-card {
-  border: 1px solid #e8e8e8;
-  border-radius: 16px;
-  padding: 18px;
-}
-
-.owner-card h3 {
-  color: #2f9d58;
-  margin-bottom: 12px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
   font-size: 0.95rem;
 }
 
-.owner-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 10px;
-  font-size: 0.88rem;
-  word-break: break-word;
+.pet-details li {
+  margin-bottom: 4px;
 }
 
-.qr-section {
-  text-align: center;
-  margin-top: 16px;
-}
-
-.qr-image {
-  width: 160px;
-  height: 160px;
-  object-fit: contain;
-  border: 4px solid #d8f0d8;
-  border-radius: 14px;
-  display: block;
-  margin: 0 auto;
-}
-
-.qr-section p {
-  margin-top: 8px;
-  color: #444;
+.pet-details li strong {
   font-weight: 600;
-  font-size: 0.8rem;
+  color: var(--green-600);
 }
