@@ -8,82 +8,272 @@ import {
 } from "react-icons/fi";
 import "./ProfileCreation.css";
 
-import dogIcon from "../../assets/pets/dog.png";
-import catIcon from "../../assets/pets/cat.png";
-import birdIcon from "../../assets/pets/bird.png";
-import rabbitIcon from "../../assets/pets/rabbit.png";
-import otherIcon from "../../assets/pets/other.png";
 
-import labradorImg from "../../assets/dogbreeds/labrador.png";
-import goldenImg from "../../assets/dogbreeds/golden-retriever.png";
-import shepherdImg from "../../assets/dogbreeds/german-shepherd.png";
-import beagleImg from "../../assets/dogbreeds/beagle.png";
-import pugImg from "../../assets/dogbreeds/pug.png";
-import rottweilerImg from "../../assets/dogbreeds/rottweiler.png";
-import shihTzuImg from "../../assets/dogbreeds/shih-tzu.png";
 
-import persianImg from "../../assets/catbreeds/persian.png";
-import siameseImg from "../../assets/catbreeds/siamese.png";
-import maineCoonImg from "../../assets/catbreeds/maine-coon.png";
-import ragdollImg from "../../assets/catbreeds/ragdoll.png";
-import britishShorthairImg from "../../assets/catbreeds/british-shorthair.png";
-
-import parrotImg from "../../assets/birdbreeds/parrot.png";
-import cockatielImg from "../../assets/birdbreeds/cockatiel.png";
-import lovebirdImg from "../../assets/birdbreeds/lovebird.png";
-import macawImg from "../../assets/birdbreeds/macaw.png";
-import budgieImg from "../../assets/birdbreeds/budgie.png";
-
-import hollandLopImg from "../../assets/rabbitbreeds/holland-lop.png";
-import miniRexImg from "../../assets/rabbitbreeds/mini-rex.png";
-import lionheadImg from "../../assets/rabbitbreeds/lionhead.png";
-import dutchRabbitImg from "../../assets/rabbitbreeds/dutch-rabbit.png";
-
-const TOTAL_STEPS = 6; // photo, pet-id details, age, location, care crew, confirm
+const TOTAL_STEPS = 4; // photo, pet-id details, age, confirm
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
 
+const dogBreeds = [
+  "Afghan Hound",
+  "Akita",
+  "Alaskan Malamute",
+  "American Bully",
+  "American Staffordshire Terrier",
+  "Australian Shepherd",
+  "Bakharwal Dog",
+  "Banjara Hound",
+  "Basset Hound",
+  "Beagle",
+  "Belgian Malinois",
+  "Belgian Shepherd",
+  "Bernese Mountain Dog",
+  "Bloodhound",
+  "Border Collie",
+  "Borzoi",
+  "Boston Terrier",
+  "Boxer",
+  "Bullmastiff",
+  "Bully Kutta",
+  "Cane Corso",
+  "Caravan Hound",
+  "Cavalier King Charles Spaniel",
+  "Chihuahua",
+  "Chippiparai",
+  "Chow Chow",
+  "Cockapoo",
+  "Cocker Spaniel",
+  "Dachshund",
+  "Dalmatian",
+  "Doberman",
+  "English Bulldog",
+  "English Springer Spaniel",
+  "French Bulldog",
+  "Gaddi Kutta (Himalayan Sheepdog)",
+  "German Shepherd",
+  "Golden Retriever",
+  "Goldendoodle",
+  "Great Dane",
+  "Greyhound",
+  "Himalayan Mastiff",
+  "Indian Pariah Dog (Indie)",
+  "Indian Spitz",
+  "Irish Setter",
+  "Jack Russell Terrier",
+  "Jonangi",
+  "Kaikadi",
+  "Kanni",
+  "Kombai",
+  "Labradoodle",
+  "Labrador Retriever",
+  "Lhasa Apso",
+  "Mahratta Hound",
+  "Maltese",
+  "Miniature Pinscher",
+  "Miniature Poodle",
+  "Mudhol Hound",
+  "Neapolitan Mastiff",
+  "Newfoundland",
+  "Pandikona",
+  "Pashmi Hound",
+  "Pekingese",
+  "Pit Bull Terrier",
+  "Pointer",
+  "Pomeranian",
+  "Poodle (Standard)",
+  "Pug",
+  "Rajapalayam",
+  "Ramanadhapuram Mandai",
+  "Rampur Hound",
+  "Rottweiler",
+  "Rough Collie",
+  "Saint Bernard",
+  "Saluki",
+  "Samoyed",
+  "Shetland Sheepdog",
+  "Shih Tzu",
+  "Siberian Husky",
+  "Sindh Mastiff",
+  "Tangkhul Hui Dog",
+  "Tibetan Mastiff",
+  "Toy Poodle",
+  "Vizsla",
+  "Weimaraner",
+  "Whippet",
+  "Yorkshire Terrier",
+  "Other",
+];
+const catBreeds = [
+  "American Bobtail",
+  "American Curl",
+  "American Shorthair",
+  "Balinese",
+  "Bengal",
+  "Birman",
+  "Bombay",
+  "British Longhair",
+  "British Shorthair",
+  "Burmese",
+  "Chartreux",
+  "Cornish Rex",
+  "Devon Rex",
+  "Egyptian Mau",
+  "Exotic Shorthair",
+  "Havana Brown",
+  "Himalayan",
+  "Japanese Bobtail",
+  "Khao Manee",
+  "Korat",
+  "LaPerm",
+  "Maine Coon",
+  "Manx",
+  "Munchkin",
+  "Norwegian Forest Cat",
+  "Ocicat",
+  "Oriental Longhair",
+  "Oriental Shorthair",
+  "Persian",
+  "Peterbald",
+  "Pixie-Bob",
+  "Ragamuffin",
+  "Ragdoll",
+  "Russian Blue",
+  "Savannah",
+  "Scottish Fold",
+  "Selkirk Rex",
+  "Siamese",
+  "Siberian",
+  "Singapura",
+  "Snowshoe",
+  "Somali",
+  "Sphynx",
+  "Thai",
+  "Tonkinese",
+  "Toyger",
+  "Turkish Angora",
+  "Turkish Van",
+  "York Chocolate",
+  "Other",
+];
+const birdBreeds = [
+  "Alexandrine Parakeet",
+  "African Grey Parrot",
+  "Australian King Parrot",
+  "Blue-and-Gold Macaw",
+  "Blue-fronted Amazon",
+  "Blue-winged Parakeet",
+  "Budgerigar (Budgie)",
+  "Canary",
+  "Cockatiel",
+  "Cockatoo",
+  "Crimson Rosella",
+  "Derbyan Parakeet",
+  "Diamond Dove",
+  "Eclectus Parrot",
+  "Finch (Bengalese)",
+  "Finch (Gouldian)",
+  "Finch (Zebra)",
+  "Golden-fronted Leafbird",
+  "Green Cheek Conure",
+  "Hill Myna",
+  "Indian Ringneck Parakeet",
+  "Indian Silverbill",
+  "Java Sparrow",
+  "Lorikeet",
+  "Lovebird (Fischer's)",
+  "Lovebird (Masked)",
+  "Lovebird (Peach-faced)",
+  "Macaw (Green-winged)",
+  "Macaw (Hyacinth)",
+  "Moluccan Cockatoo",
+  "Monk Parakeet",
+  "Mustache Parakeet",
+  "Nanday Conure",
+  "Orange-winged Amazon",
+  "Parrotlet",
+  "Plum-headed Parakeet",
+  "Princess Parrot",
+  "Quaker Parrot",
+  "Rainbow Lorikeet",
+  "Red-breasted Parakeet",
+  "Rose-ringed Parakeet",
+  "Rosy-faced Lovebird",
+  "Senegal Parrot",
+  "Sun Conure",
+  "Sulphur-crested Cockatoo",
+  "White Cockatiel",
+  "White-eyed Conure",
+  "Yellow-collared Lovebird",
+  "Yellow-headed Amazon",
+  "Other",
+];
+const rabbitBreeds = [
+  "Alaska",
+  "American",
+  "American Chinchilla",
+  "American Fuzzy Lop",
+  "American Sable",
+  "Angora",
+  "Belgian Hare",
+  "Beveren",
+  "Blanc de Hotot",
+  "Britannia Petite",
+  "Californian",
+  "Champagne d'Argent",
+  "Checkered Giant",
+  "Chinchilla",
+  "Cinnamon",
+  "Continental Giant",
+  "Crème d'Argent",
+  "Dutch",
+  "Dwarf Hotot",
+  "English Angora",
+  "English Lop",
+  "English Spot",
+  "Flemish Giant",
+  "Florida White",
+  "French Angora",
+  "French Lop",
+  "Giant Chinchilla",
+  "Harlequin",
+  "Havana",
+  "Himalayan",
+  "Holland Lop",
+  "Jersey Wooly",
+  "Lionhead",
+  "Mini Lop",
+  "Mini Rex",
+  "Mini Satin",
+  "Netherland Dwarf",
+  "New Zealand White",
+  "Palomino",
+  "Polish",
+  "Rex",
+  "Satin",
+  "Silver",
+  "Silver Fox",
+  "Silver Marten",
+  "Tan",
+  "Thrianta",
+  "Velveteen Lop",
+  "Vienna White",
+  "White Giant"
+];
 const breedData = {
-  Dog: [
-    { name: "Labrador", image: labradorImg },
-    { name: "Golden Retriever", image: goldenImg },
-    { name: "German Shepherd", image: shepherdImg },
-    { name: "Beagle", image: beagleImg },
-    { name: "Pug", image: pugImg },
-    { name: "Rottweiler", image: rottweilerImg },
-    { name: "Shih Tzu", image: shihTzuImg },
-    { name: "Other", image: otherIcon },
-  ],
-  Cat: [
-    { name: "Persian", image: persianImg },
-    { name: "Siamese", image: siameseImg },
-    { name: "Maine Coon", image: maineCoonImg },
-    { name: "Ragdoll", image: ragdollImg },
-    { name: "British Shorthair", image: britishShorthairImg },
-    { name: "Other", image: otherIcon },
-  ],
-  Bird: [
-    { name: "Parrot", image: parrotImg },
-    { name: "Cockatiel", image: cockatielImg },
-    { name: "Lovebird", image: lovebirdImg },
-    { name: "Macaw", image: macawImg },
-    { name: "Budgie", image: budgieImg },
-    { name: "Other", image: otherIcon },
-  ],
-  Rabbit: [
-    { name: "Holland Lop", image: hollandLopImg },
-    { name: "Mini Rex", image: miniRexImg },
-    { name: "Lionhead", image: lionheadImg },
-    { name: "Dutch Rabbit", image: dutchRabbitImg },
-    { name: "Other", image: otherIcon },
-  ],
+  Dog: dogBreeds,
+
+  Cat: catBreeds,
+
+  Bird: birdBreeds,
+
+  Rabbit: rabbitBreeds
 };
 
 const petTypes = [
-  { name: "Dog", image: dogIcon },
-  { name: "Cat", image: catIcon },
-  { name: "Bird", image: birdIcon },
-  { name: "Rabbit", image: rabbitIcon },
-  { name: "Other", image: otherIcon },
+  { name: "Dog" },
+  { name: "Cat"  },
+  { name: "Bird"},
+  { name: "Rabbit"},
+  { name: "Other" },
 ];
 
 // Shared progress bar, reused by every step.
@@ -103,7 +293,7 @@ function StepProgress({ progress, stepNumber }) {
         <span>Pet Life ID</span>
       </div>
 
-      <div className="step-text">Step {stepNumber} of {TOTAL_STEPS + 1}</div>
+      <div className="step-text">Step {stepNumber} of {TOTAL_STEPS}</div>
     </div>
   );
 }
@@ -129,7 +319,7 @@ function ProfileCreation() {
     const [image, setImage] = useState(null);
     const [photoFile, setPhotoFile] = useState(null);
     const [photoUploaded, setPhotoUploaded] = useState(false);
-    const progress = photoUploaded ? 14 : 0;
+    const progress = photoUploaded ? 25 : 0;
 
     const handleImageUpload = (e) => {
       const file = e.target.files[0];
@@ -165,7 +355,7 @@ function ProfileCreation() {
             {image ? <img src={image} alt="pet" /> : <span>🐶</span>}
           </div>
 
-          <span className="step-badge">Step 1 of {TOTAL_STEPS + 1}</span>
+          <span className="step-badge">Step 1 of {TOTAL_STEPS}</span>
 
           <h1>Add Your Pet's Photo</h1>
 
@@ -220,16 +410,32 @@ function ProfileCreation() {
     const [selectedPet, setSelectedPet] = useState("");
     const [selectedPetCard, setSelectedPetCard] = useState("");
     const [selectedBreed, setSelectedBreed] = useState("");
+    const [breedSearch, setBreedSearch] = useState("");
+    const [showBreedDropdown, setShowBreedDropdown] = useState(false);
+    const filteredBreeds =
+      breedData[selectedPet]?.filter((breed) =>
+        breed.toLowerCase().includes(breedSearch.toLowerCase())
+      ) || [];
     const [selectedGender, setSelectedGender] = useState("");
     const [petName, setPetName] = useState("");
-    const [showBreedPopup, setShowBreedPopup] = useState(false);
-    const [showGenderPopup, setShowGenderPopup] = useState(false);
     const [showOtherPopup, setShowOtherPopup] = useState(false);
     const [showOtherBreedPopup, setShowOtherBreedPopup] = useState(false);
     const [customPetType, setCustomPetType] = useState("");
     const [customBreed, setCustomBreed] = useState("");
     const [localError, setLocalError] = useState("");
-    const progress = 28;
+    const breedBoxRef = React.useRef(null);
+    const progress = 50;
+
+    // Close breed dropdown when clicking outside of it.
+    React.useEffect(() => {
+      const handleClickOutside = (e) => {
+        if (breedBoxRef.current && !breedBoxRef.current.contains(e.target)) {
+          setShowBreedDropdown(false);
+        }
+      };
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
 
     // Microchip / pet-ID tags. UI for adding/removing rows isn't part of
     // the original design yet, so this is kept as state only, ready to
@@ -302,20 +508,17 @@ function ProfileCreation() {
                       setSelectedPet(pet.name);
                       setSelectedPetCard(pet.name);
                       setSelectedBreed("");
+                      setBreedSearch("");
                     }
                   }}
                 >
-                  <div className="icon-wrapper">
-                    <img src={pet.image} alt={pet.name} className="pet-image" />
-                  </div>
-
-                  <span>
-                    {pet.name === "Other" &&
-                    selectedPet &&
-                    !["Dog", "Cat", "Bird", "Rabbit"].includes(selectedPet)
-                      ? selectedPet
-                      : pet.name}
-                  </span>
+<span>
+  {pet.name === "Other" &&
+  selectedPet &&
+  !["Dog", "Cat", "Bird", "Rabbit"].includes(selectedPet)
+    ? selectedPet
+    : pet.name}
+</span>
                 </button>
               ))}
             </div>
@@ -332,36 +535,110 @@ function ProfileCreation() {
             />
           </div>
 
-          {/* BREED */}
+          {/* BREED — searchable dropdown */}
           <div className="form-group">
             <label>Breed</label>
-            <button
-              type="button"
-              className="breed-selector"
-              onClick={() => {
-                if (!selectedPet) {
-                  alert("Please select a pet type first");
-                  return;
-                }
-                setShowBreedPopup(true);
-              }}
-            >
-              <span>{selectedBreed || "Select Breed"}</span>
-              <span>›</span>
-            </button>
+            <div className="breed-search-box" ref={breedBoxRef}>
+              <button
+                type="button"
+                className="breed-selector"
+                onClick={() => {
+                  if (!selectedPet) {
+                    alert("Please select a pet type first");
+                    return;
+                  }
+                  setShowBreedDropdown((prev) => !prev);
+                }}
+              >
+                <span>{selectedBreed || "Search or select breed"}</span>
+                <span className={`chevron ${showBreedDropdown ? "open" : ""}`}>›</span>
+              </button>
+
+              {showBreedDropdown && breedData[selectedPet] && (
+                <div className="breed-dropdown">
+                  <div className="breed-dropdown-search">
+                    <span className="search-icon"></span>
+                    <input
+                      type="text"
+                      autoFocus
+                      placeholder="Type to search breed..."
+                      value={breedSearch}
+                      onChange={(e) => setBreedSearch(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="breed-dropdown-list">
+                    {filteredBreeds.length > 0 ? (
+                      filteredBreeds.map((breed) => (
+                        <button
+                          type="button"
+                          key={breed}
+                          className={`breed-dropdown-item ${
+                            selectedBreed === breed ? "active" : ""
+                          }`}
+                          onClick={() => {
+                            if (breed === "Other") {
+                              setShowBreedDropdown(false);
+                              setShowOtherBreedPopup(true);
+                            } else {
+                              setSelectedBreed(breed);
+                              setShowBreedDropdown(false);
+                              setBreedSearch("");
+                            }
+                          }}
+                        >
+                          {breed}
+                        </button>
+                      ))
+                    ) : (
+                      <div className="breed-dropdown-empty">No breeds found</div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {showBreedDropdown && !breedData[selectedPet] && (
+                <div className="breed-dropdown">
+                  <div className="custom-breed-box">
+                    <input
+                      type="text"
+                      placeholder="Enter breed..."
+                      value={selectedBreed}
+                      onChange={(e) => setSelectedBreed(e.target.value)}
+                    />
+                    <button
+                      type="button"
+                      className="save-breed-btn"
+                      onClick={() => setShowBreedDropdown(false)}
+                    >
+                      Save Breed
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* GENDER */}
+          {/* GENDER — direct toggle buttons */}
           <div className="form-group">
             <label>Gender</label>
-            <button
-              type="button"
-              className="breed-selector"
-              onClick={() => setShowGenderPopup(true)}
-            >
-              <span>{selectedGender || "Select Gender"}</span>
-              <span>›</span>
-            </button>
+            <div className="gender-toggle-grid">
+              {["Male", "Female"].map((gender) => (
+                <button
+                  key={gender}
+                  type="button"
+                  className={`gender-toggle-card ${
+                    selectedGender === gender ? "active" : ""
+                  }`}
+                  onClick={() => setSelectedGender(gender)}
+                >
+                  <span className="gender-icon">
+                    {gender === "Male" ? "♂" : "♀"}
+                  </span>
+                  <span>{gender}</span>
+                </button>
+              ))}
+            </div>
           </div>
 
           {localError && <div className="submit-error">{localError}</div>}
@@ -372,82 +649,6 @@ function ProfileCreation() {
             </button>
           </div>
         </div>
-
-        {/* GENDER POPUP */}
-        {showGenderPopup && (
-          <div className="other-popup-overlay" onClick={() => setShowGenderPopup(false)}>
-            <div className="breed-popup" onClick={(e) => e.stopPropagation()}>
-              <h3>Select Gender</h3>
-              <div className="breed-list">
-                {["Male", "Female"].map((gender) => (
-                  <label key={gender} className="breed-option gender-option">
-                    <div className="breed-left">
-                      <input
-                        type="radio"
-                        name="gender"
-                        checked={selectedGender === gender}
-                        onChange={() => {
-                          setSelectedGender(gender);
-                          setShowGenderPopup(false);
-                        }}
-                      />
-                      <span>{gender}</span>
-                    </div>
-                  </label>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* BREED POPUP */}
-        {showBreedPopup && (
-          <div className="other-popup-overlay" onClick={() => setShowBreedPopup(false)}>
-            <div className="breed-popup" onClick={(e) => e.stopPropagation()}>
-              <div className="popup-icon">🧬</div>
-              <h3>Select Breed</h3>
-
-              {breedData[selectedPet] ? (
-                <div className="breed-list">
-                  {breedData[selectedPet].map((breed) => (
-                    <label key={breed.name} className="breed-option">
-                      <div className="breed-left">
-                        <input
-                          type="radio"
-                          name="breed"
-                          checked={selectedBreed === breed.name}
-                          onChange={() => {
-                            if (breed.name === "Other") {
-                              setShowBreedPopup(false);
-                              setShowOtherBreedPopup(true);
-                            } else {
-                              setSelectedBreed(breed.name);
-                              setShowBreedPopup(false);
-                            }
-                          }}
-                        />
-                        <span>{breed.name}</span>
-                      </div>
-                      <img src={breed.image} alt={breed.name} className="breed-image" />
-                    </label>
-                  ))}
-                </div>
-              ) : (
-                <div className="custom-breed-box">
-                  <input
-                    type="text"
-                    placeholder="Enter breed..."
-                    value={selectedBreed}
-                    onChange={(e) => setSelectedBreed(e.target.value)}
-                  />
-                  <button className="save-breed-btn" onClick={() => setShowBreedPopup(false)}>
-                    Save Breed
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
 
         {/* OTHER PET TYPE POPUP */}
         {showOtherPopup && (
@@ -540,7 +741,7 @@ function ProfileCreation() {
     const [dob, setDob] = useState("");
     const [years, setYears] = useState("");
     const [months, setMonths] = useState("");
-    const progress = 42;
+    const progress = 75;
 
     return (
       <div className="pet-age-container">
@@ -627,182 +828,9 @@ function ProfileCreation() {
   };
 
   // ============================================================
-  // STEP 4 — Location
+  // STEP 4 — Confirm + Submit
   // ============================================================
   const Step4 = () => {
-    const [form, setForm] = useState({ pincode: "", city: "", state: "" });
-    const progress = 56;
-
-    const handleChange = (e) => {
-      setForm({ ...form, [e.target.name]: e.target.value });
-    };
-
-    return (
-      <div className="location-container">
-        <StepProgress progress={progress} stepNumber={4} />
-
-        <h2>
-          Where is your pet located? <span> 🐾</span>
-        </h2>
-
-        <div className="location-image">
-          <img
-            src="https://cdn-icons-png.flaticon.com/512/684/684908.png"
-            alt="location"
-          />
-        </div>
-
-        <div className="input-box">
-          <span className="icon">📍</span>
-          <div className="input-content">
-            <label>
-              Pincode <span>*</span>
-            </label>
-            <input
-              type="text"
-              placeholder="e.g. 641001"
-              name="pincode"
-              value={form.pincode}
-              onChange={handleChange}
-            />
-          </div>
-        </div>
-
-        <div className="input-box">
-          <span className="icon">🏙️</span>
-          <div className="input-content">
-            <label>
-              City <span>*</span>
-            </label>
-            <input
-              type="text"
-              placeholder="e.g. Coimbatore"
-              name="city"
-              value={form.city}
-              onChange={handleChange}
-            />
-          </div>
-        </div>
-
-        <div className="input-box">
-          <span className="icon">🗺️</span>
-          <div className="input-content">
-            <label>
-              State <span>*</span>
-            </label>
-            <input
-              type="text"
-              placeholder="e.g. Tamil Nadu"
-              name="state"
-              value={form.state}
-              onChange={handleChange}
-            />
-          </div>
-        </div>
-
-        <button
-          className="next-btn"
-          onClick={() => {
-            if (!form.pincode || !form.city || !form.state) {
-              alert("Please fill all fields.");
-              return;
-            }
-            goNext(form);
-          }}
-        >
-          Next
-        </button>
-      </div>
-    );
-  };
-
-  // ============================================================
-  // STEP 5 — Care Crew (vet + emergency contact)
-  // ============================================================
-  const Step5 = () => {
-    const [form, setForm] = useState({
-      clinicName: "",
-      veterinarian: "",
-      clinicContact: "",
-      emergencyName: "",
-      relationship: "",
-      emergencyContact: "",
-    });
-
-    const handleChange = (e) => {
-      setForm({ ...form, [e.target.name]: e.target.value });
-    };
-
-    const InputField = ({ icon, placeholder, name, value }) => (
-      <div className="input-box">
-        <span className="input-icon">{icon}</span>
-        <input
-          type="text"
-          placeholder={placeholder}
-          name={name}
-          value={value}
-          onChange={handleChange}
-        />
-      </div>
-    );
-
-    return (
-      <div className="pet-care-container">
-        <h1>Pet Care Crew 🐾</h1>
-        <p className="subtitle">Add veterinary and emergency contact information.</p>
-
-        <div className="section">
-          <div className="section-head">
-            <h3>Primary Veterinarian</h3>
-            <span>Optional</span>
-          </div>
-
-          <InputField icon="🏥" placeholder="Clinic Name" name="clinicName" value={form.clinicName} />
-          <InputField icon="🩺" placeholder="Clinic Veterinarian" name="veterinarian" value={form.veterinarian} />
-          <InputField icon="📞" placeholder="Clinic Contact" name="clinicContact" value={form.clinicContact} />
-        </div>
-
-        <div className="section">
-          <div className="section-head">
-            <h3>Emergency Contact</h3>
-            <span className="required">Required</span>
-          </div>
-
-          <InputField icon="👤" placeholder="Contact Name" name="emergencyName" value={form.emergencyName} />
-          <InputField icon="🤝" placeholder="Relationship" name="relationship" value={form.relationship} />
-          <InputField icon="📱" placeholder="Contact Number" name="emergencyContact" value={form.emergencyContact} />
-        </div>
-
-        {submitError && <div className="submit-error">{submitError}</div>}
-
-        <button
-          className="next-btn"
-          onClick={() => {
-            if (!form.emergencyName.trim() || !form.emergencyContact.trim()) {
-              setSubmitError("Emergency Contact Name and Contact Number are required.");
-              return;
-            }
-            setSubmitError("");
-            goNext({
-              clinicName: form.clinicName,
-              vetName: form.veterinarian,
-              vetContact: form.clinicContact,
-              emergencyContactName: form.emergencyName,
-              emergencyRelationship: form.relationship,
-              emergencyContactNumber: form.emergencyContact,
-            });
-          }}
-        >
-          Next
-        </button>
-      </div>
-    );
-  };
-
-  // ============================================================
-  // STEP 6 — Confirm + Submit
-  // ============================================================
-  const Step6 = () => {
     const progress = 100;
 
     const handleGenerate = async () => {
@@ -819,7 +847,6 @@ function ProfileCreation() {
         if (petData.approxAge) formData.append("approx_age", petData.approxAge);
         if (petData.petPhotoFile) formData.append("pet_photo", petData.petPhotoFile);
 
-        if (petData.city) formData.append("city", petData.city);
         const storedUserData = localStorage.getItem("user");
         if (storedUserData) {
           try {
@@ -850,28 +877,6 @@ function ProfileCreation() {
 
         const petProfileId = profileData.pet_profile_id;
         const petolifeId = profileData.petolife_id;
-
-        const careTeamResponse = await fetch(`${API_BASE}/api/care-team`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            pet_profile_id: petProfileId,
-            clinic_name: petData.clinicName?.trim() || null,
-            vet_name: petData.vetName?.trim() || null,
-            vet_contact: petData.vetContact?.trim() || null,
-            emergency_contact_name: petData.emergencyContactName?.trim(),
-            emergency_relationship: petData.emergencyRelationship?.trim() || null,
-            emergency_contact_number: petData.emergencyContactNumber?.trim(),
-          }),
-        });
-
-        const careTeamData = await careTeamResponse.json();
-
-        if (!careTeamResponse.ok) {
-          throw new Error(
-            careTeamData.detail || careTeamData.error || "Failed to save care team details."
-          );
-        }
 
         const localUser = localStorage.getItem("user");
         const userId = localUser ? JSON.parse(localUser).id : "guest";
@@ -912,7 +917,7 @@ function ProfileCreation() {
 
     return (
       <div className="confirm-container">
-        <StepProgress progress={progress} stepNumber={6} />
+        <StepProgress progress={progress} stepNumber={4} />
 
         <h2 className="confirm-title">Confirm Pet Details</h2>
 
@@ -936,26 +941,6 @@ function ProfileCreation() {
           <div className="confirm-row">
             <span>🐾 Age / DOB:</span>
             <strong>{petData.birthDate || petData.approxAge || "[Not Added]"}</strong>
-          </div>
-          <div className="confirm-row">
-            <span>📍 Pincode:</span>
-            <strong>{petData.pincode || "[Not Added]"}</strong>
-          </div>
-          <div className="confirm-row">
-            <span>🏙 City:</span>
-            <strong>{petData.city || "[Not Added]"}</strong>
-          </div>
-          <div className="confirm-row">
-            <span>🗺 State:</span>
-            <strong>{petData.state || "[Not Added]"}</strong>
-          </div>
-          <div className="confirm-row">
-            <span>👨‍⚕️ Veterinary:</span>
-            <strong>{petData.vetName || "[Not Added]"}</strong>
-          </div>
-          <div className="confirm-row">
-            <span>☎ Emergency:</span>
-            <strong>{petData.emergencyContactName || "[Not Added]"}</strong>
           </div>
 
           <div className="dog-preview">
@@ -996,10 +981,6 @@ function ProfileCreation() {
       return <Step3 />;
     case 4:
       return <Step4 />;
-    case 5:
-      return <Step5 />;
-    case 6:
-      return <Step6 />;
     default:
       return <Step1 />;
   }
