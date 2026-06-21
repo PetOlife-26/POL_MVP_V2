@@ -21,8 +21,12 @@ RUN npm ci --legacy-peer-deps
 COPY . .
 
 # Production build:
-# - VITE_API_BASE_URL is empty → app uses relative URLs (/api/v1/...)
-# - Nginx reverse proxy handles routing on same origin — no hardcoded host needed
+# VITE_API_BASE_URL defaults to "" → app uses relative URLs (/api/...)
+# Nginx reverse-proxies /api/* to the backend container on the same origin.
+# Pass a different value via: docker build --build-arg VITE_API_BASE_URL=https://petolife.com
+# (but empty / relative URLs are preferred for same-origin Docker deployments)
+ARG VITE_API_BASE_URL=""
+ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 RUN npm run build
 
 # ─── Stage 2: Production Nginx Server ────────────────────────────────────────
