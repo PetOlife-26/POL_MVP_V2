@@ -13,7 +13,7 @@ const ProfileCreate = lazy(
 const PostIdScreen = lazy(
   () => import("./components/postidscreen/postidscreen"),
 );
-const PetCard = lazy(() => import("./components/PetCard/PetCard"));
+const PetCard = lazy(() => import("./components/petcard/petcard"));
 
 function LoadingFallback() {
   return (

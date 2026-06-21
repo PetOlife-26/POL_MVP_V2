@@ -1,4 +1,4 @@
-import "./PetCard.css";
+import "./petcard.css";
 import { Calendar, User, Shield, Cpu, Phone, Mail } from "lucide-react";
 
 const PetCard = (props) => {
