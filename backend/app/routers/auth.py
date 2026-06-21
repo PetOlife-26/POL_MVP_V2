@@ -142,7 +142,8 @@ async def google_oauth(request: Request):
             {
                 "provider": "google",
                 "options": {
-                    "redirect_to": redirect_url,
+                    # Redirect to our callback page which handles token storage
+                    "redirect_to": f"{FRONTEND_URL}/auth/callback",
                 },
             }
         )
@@ -163,6 +164,39 @@ async def google_oauth(request: Request):
             status_code=503,
             detail="Google OAuth is not configured yet. Please set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in your .env and configure Google provider in Supabase Dashboard.",
         )
+
+
+@router.get("/callback")
+async def oauth_callback(code: str):
+    """
+    Exchanges the OAuth PKCE code (from ?code=...) for a session.
+    Called by the frontend AuthCallback page after Google redirects back.
+    """
+    try:
+        from supabase import create_client
+        from app.config import SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
+        temp_supabase = create_client(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
+        result = temp_supabase.auth.exchange_code_for_session({"auth_code": code})
+
+        if result.session is None:
+            raise HTTPException(status_code=401, detail="Failed to exchange code for session")
+
+        return {
+            "message": "OAuth login successful",
+            "access_token": result.session.access_token,
+            "refresh_token": result.session.refresh_token,
+            "user": {
+                "id": result.user.id,
+                "email": result.user.email,
+                "user_metadata": result.user.user_metadata,
+            },
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"OAuth callback error: {e}")
+        raise HTTPException(status_code=401, detail="OAuth code exchange failed")
 
 
 @router.get("/me")
