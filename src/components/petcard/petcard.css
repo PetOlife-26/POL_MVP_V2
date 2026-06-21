@@ -1,280 +1,222 @@
-/* petcard.css - Landscape Pet ID Card styling */
-
-.petcard-landscape-wrapper {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  padding: 16px 0;
-}
-
-.petcard-landscape {
-  width: 100%;
-  max-width: 800px;
-  background: #ffffff;
-  border-radius: 20px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
-  border: 1px solid #e2e8f0;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  font-family: 'Inter', sans-serif;
-  color: #1e293b;
-}
-
-/* Header */
-.pl-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 24px 32px 16px;
-}
-
-.pl-logo {
-  font-size: 32px;
-  font-weight: 800;
-  color: #0c6b3a;
-  display: flex;
-  align-items: center;
-  letter-spacing: -1px;
-}
-.pl-logo-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: #7bb07d;
-  margin: 0 2px;
-}
-
-.pl-title-center {
-  text-align: center;
-}
-.pl-shield-title {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  color: #0c6b3a;
-}
-.pl-shield-icon {
-  background: #0c6b3a;
-  color: white;
-  border-radius: 8px;
-  padding: 4px;
-  display: flex;
-}
-.pl-shield-title h2 {
-  font-size: 24px;
-  font-weight: 800;
+* {
   margin: 0;
-  letter-spacing: 1px;
-}
-.pl-title-center p {
-  margin: 4px 0 0;
-  font-size: 14px;
-  color: #475569;
-  font-weight: 500;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-.pl-qr-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  background: #eef7ee;
-  border: 2px solid #b7dbb8;
-  border-radius: 12px;
-  padding: 8px;
-}
-.pl-qr-text {
-  font-size: 10px;
-  text-align: center;
-  color: #334155;
-  margin-top: 6px;
-  font-weight: 600;
-  line-height: 1.2;
-}
+/* ============================
+   FIXED HERO CARD
+   Always renders the "desktop" 3-column
+   layout (image | details | owner+QR),
+   regardless of screen size. The whole
+   card just scales down as one block —
+   it never restacks.
+   ============================ */
 
-/* Body Layout */
-.pl-body {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  padding: 0 32px 32px;
-  align-items: center;
-  text-align: center;
-}
-
-/* Photo Column */
-.pl-photo-col {
+.petcard-wrapper {
   width: 100%;
-  max-width: 280px;
   display: flex;
   justify-content: center;
-}
-.pl-photo-container {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 4/5;
-  border-radius: 16px;
-  background: #eef7ee;
-  overflow: hidden;
-  box-shadow: inset 0 2px 10px rgba(0,0,0,0.05);
-}
-.pl-photo {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.pl-photo-placeholder {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0.3;
-}
-.pl-photo-shield {
-  position: absolute;
-  bottom: -4px;
-  left: -4px;
-  background: #ffffff;
-  border-radius: 50%;
-  padding: 4px;
-  display: flex;
-}
-.pl-photo-shield svg {
-  background: #0c6b3a;
-  color: white;
-  border-radius: 50%;
-  padding: 6px;
-  width: 28px;
-  height: 28px;
+  padding: 12px;
+  container-type: inline-size; /* lets us measure available width below */
 }
 
-/* Details Column */
-.pl-details-col {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.pl-pet-id-badge {
-  display: inline-flex;
-  flex-direction: column;
-  background: #f8faf8;
-  border: 1px solid #e0eee1;
-  padding: 8px 16px;
-  border-radius: 12px;
-  margin-bottom: 16px;
-  align-self: center;
-}
-.pl-pet-id-label {
-  font-size: 11px;
-  font-weight: 800;
-  color: #0c6b3a;
-  letter-spacing: 1px;
-  margin-bottom: 2px;
-}
-.pl-pet-id-value {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 18px;
-  font-weight: 800;
-  color: #0a3d22;
-}
-
-.pl-name-row {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  margin-bottom: 12px;
-}
-.pl-pet-name {
-  font-size: 42px;
-  font-weight: 900;
-  color: #0a3d22;
-  margin: 0;
-  text-transform: uppercase;
-  letter-spacing: -1px;
-}
-.pl-breed-pill {
-  display: inline-block;
-  background: #eef7ee;
-  color: #0c6b3a;
-  font-size: 16px;
-  font-weight: 600;
-  padding: 8px 20px;
-  border-radius: 999px;
-  align-self: center;
-}
-
-/* Footer */
-.pl-footer {
-  background: #376344;
-  padding: 20px 32px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  color: white;
-}
-.pl-footer-left, .pl-footer-right {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-.pl-footer span {
-  font-size: 15px;
-  font-weight: 500;
-  line-height: 1.4;
-}
-.pl-footer-shield {
-  border: 2px solid white;
-  border-radius: 50%;
-  padding: 8px;
-  display: flex;
-}
-.pl-footer-divider {
-  width: 1px;
-  height: 40px;
-  background: rgba(255, 255, 255, 0.3);
-}
-.pl-footer-phone-icon {
-  border: 2px solid white;
-  border-radius: 50%;
-  padding: 8px;
-  display: flex;
-}
-
-/* Loading & Empty states */
-.petcard-id-wrapper {
-  padding: 40px;
-  text-align: center;
-  color: #64748b;
-  font-weight: 500;
+.petcard {
+  width: 900px; /* fixed "poster" size — never reflows */
+  flex-shrink: 0;
   background: white;
-  border-radius: 16px;
-  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  transform: scale(var(--petcard-scale, 1));
+  transform-origin: center center;
 }
 
-/* Responsive */
-@media (max-width: 900px) {
-  .pl-body {
-    grid-template-columns: 200px 1fr 240px;
-    gap: 16px;
-    padding: 0 20px 20px;
+/* Auto-shrink the whole card as one block when the
+   wrapper is narrower than the card's natural 900px+padding.
+   Add ~24px back for wrapper padding on each side. */
+@container (max-width: 948px) {
+  .petcard {
+    --petcard-scale: 0.9;
   }
-  .pl-header { padding: 20px 20px 16px; }
-  .pl-footer { padding: 16px 20px; flex-direction: column; gap: 16px; text-align: center; }
-  .pl-footer-divider { display: none; }
-  .pl-logo { font-size: 24px; }
-  .pl-shield-title h2 { font-size: 20px; }
+}
+@container (max-width: 850px) {
+  .petcard {
+    --petcard-scale: 0.8;
+  }
+}
+@container (max-width: 750px) {
+  .petcard {
+    --petcard-scale: 0.65;
+  }
+}
+@container (max-width: 600px) {
+  .petcard {
+    --petcard-scale: 0.5;
+  }
+}
+@container (max-width: 460px) {
+  .petcard {
+    --petcard-scale: 0.38;
+  }
+}
+@container (max-width: 340px) {
+  .petcard {
+    --petcard-scale: 0.3;
+  }
 }
 
-@media (max-width: 768px) {
-  .pl-header { flex-direction: column; gap: 16px; text-align: center; }
-  .pl-body { grid-template-columns: 1fr; }
-  .pl-photo-col { max-width: 280px; margin: 0 auto; }
-  .pl-name-row { justify-content: center; }
-  .pl-breed-pill { align-self: center; }
-  .pl-info-table { max-width: 400px; margin: 0 auto; }
+/* HEADER */
+
+.petcard-header {
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.logo {
+  font-size: 1.8rem;
+  font-weight: 800;
+  margin-bottom: 4px;
+}
+
+.logo-green {
+  color: #2f9d58;
+}
+
+.logo-dark {
+  color: #14532d;
+}
+
+.title-section h1 {
+  font-size: 1.6rem;
+  color: #14532d;
+  margin-bottom: 3px;
+}
+
+.title-section p {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+/* BODY — always 3 columns: image | details | owner */
+
+.petcard-body {
+  display: grid;
+  grid-template-columns: 220px 1fr 280px;
+  gap: 24px;
+  align-items: start;
+}
+
+/* IMAGE */
+
+.pet-image-section {
+  width: 100%;
+}
+
+.pet-image {
+  width: 100%;
+  height: 260px;
+  object-fit: cover;
+  border-radius: 14px;
+  display: block;
+  background: #eef5ee; /* placeholder if image 404s */
+}
+
+/* PET DETAILS */
+
+.pet-details {
+  padding-top: 6px;
+}
+
+.pet-details h2 {
+  font-size: 1.7rem;
+  color: #14532d;
+  font-weight: 800;
+  margin-bottom: 10px;
+}
+
+.breed-tag {
+  display: inline-block;
+  background: #edf7ed;
+  padding: 8px 18px;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  margin-bottom: 18px;
+}
+
+.info-list {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+
+.info-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 9px;
+  border-bottom: 1px solid #eee;
+  font-size: 0.92rem;
+}
+
+.info-row span {
+  min-width: 95px;
+  color: #555;
+}
+
+.info-row strong {
+  margin-left: auto;
+  color: #111;
+  text-align: right;
+  word-break: break-word;
+}
+
+/* OWNER — always its own column, never full-width */
+
+.owner-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.owner-card {
+  border: 1px solid #e8e8e8;
+  border-radius: 16px;
+  padding: 18px;
+}
+
+.owner-card h3 {
+  color: #2f9d58;
+  margin-bottom: 12px;
+  font-size: 0.95rem;
+}
+
+.owner-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  font-size: 0.88rem;
+  word-break: break-word;
+}
+
+.qr-section {
+  text-align: center;
+  margin-top: 16px;
+}
+
+.qr-image {
+  width: 160px;
+  height: 160px;
+  object-fit: contain;
+  border: 4px solid #d8f0d8;
+  border-radius: 14px;
+  display: block;
+  margin: 0 auto;
+}
+
+.qr-section p {
+  margin-top: 8px;
+  color: #444;
+  font-weight: 600;
+  font-size: 0.8rem;
 }
