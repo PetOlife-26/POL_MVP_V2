@@ -11,7 +11,9 @@ import "./Profilecreation.css";
 
 
 const TOTAL_STEPS = 4; // photo, pet-id details, age, confirm
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+// Use relative URLs in production so Nginx proxies /api/* to the backend.
+// Falls back to empty string (relative) — NOT localhost:8000.
+const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
 
 const dogBreeds = [
   "Afghan Hound",
