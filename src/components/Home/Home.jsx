@@ -1,9 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import AppShell from "../AppShell/AppShell";
-import FamilyManagement from "../FamilyAccess/FamilyManagement";
-import FamilyAccessCard from "../FamilyAccess/FamilyAccessCard";
 import MedicalRecords from "../medical/MedicalRecords";
 import PetCard from "../petcard/petcard";
 import HealthTab from "../HealthTab/HealthTab";
@@ -244,7 +242,6 @@ export default function Home() {
   const [hasMedicalRecords, setHasMedicalRecords] = useState(false);
   const [activePetId, setActivePetId] = useState(null);
   const [userId, setUserId] = useState(null);
-  const [showFamilyMgmt, setShowFamilyMgmt] = useState(false);
   const [medicalRecords, setMedicalRecords] = useState([]);
   const [pets, setPets] = useState([]);
 
@@ -319,7 +316,7 @@ export default function Home() {
   };
 
   // When MedicalRecords uploads a record, set the completion flag
-  const handleSetMedicalRecords = (updater) => {
+  const handleSetMedicalRecords = useCallback((updater) => {
     setMedicalRecords((prev) => {
       const newRecords = typeof updater === 'function' ? updater(prev) : updater;
       if (newRecords.length > 0 && userId) {
@@ -328,7 +325,7 @@ export default function Home() {
       }
       return newRecords;
     });
-  };
+  }, [userId]);
 
   const renderContent = () => {
     switch (activeTab) {
@@ -357,10 +354,6 @@ export default function Home() {
           return (
             <div className="profile-tab-wrapper" style={{ display: "flex", flexDirection: "column", height: "100%", paddingBottom: "100px" }}>
               <PetCard />
-              <div style={{ padding: "16px 20px" }}>
-                <h3 style={{ fontSize: "18px", fontWeight: 800, color: "var(--brand-dark, #111827)", marginBottom: "8px" }}>Household</h3>
-                <FamilyAccessCard userId={userId} onManageClick={() => setShowFamilyMgmt(true)} />
-              </div>
             </div>
           );
         }
@@ -391,10 +384,6 @@ export default function Home() {
   return (
     <AppShell activeTab={activeTab} onTabChange={setActiveTab} hasPets={hasPets}>
       {renderContent()}
-      {/* Family Management Overlay */}
-      {showFamilyMgmt && userId && (
-        <FamilyManagement userId={userId} onClose={() => setShowFamilyMgmt(false)} />
-      )}
     </AppShell>
   );
 }

@@ -93,10 +93,12 @@ function RegistrationScreen({ onLogin, onSuccess }) {
   const [form, setForm] = useState({
     name: "",
     mobile: "",
+    password: "",
     pincode: "",
     city: "",
     state: "",
   });
+  const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [pincodeLoading, setPincodeLoading] = useState(false);
@@ -154,6 +156,9 @@ function RegistrationScreen({ onLogin, onSuccess }) {
     if (!form.mobile.trim() || form.mobile.replace(/\D/g, "").length < 10) {
       setError("Please enter a valid 10-digit mobile number."); return;
     }
+    if (!form.password || form.password.length < 6) {
+      setError("Password must be at least 6 characters."); return;
+    }
     if (form.pincode.length !== 6) { setError("Please enter a valid 6-digit pincode."); return; }
     if (!form.city) { setError("Could not determine city from pincode."); return; }
 
@@ -165,8 +170,7 @@ function RegistrationScreen({ onLogin, onSuccess }) {
     if (phone.length === 10) phone = "+91" + phone;
     else if (!phone.startsWith("+")) phone = "+" + phone;
 
-    // Auto-generate a password from phone tail
-    const autoPassword = phone.slice(-4) + "Pet@Life";
+    const userPassword = form.password;
 
     try {
       // 1. Sign up
@@ -175,7 +179,7 @@ function RegistrationScreen({ onLogin, onSuccess }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           phone,
-          password: autoPassword,
+          password: userPassword,
           full_name: form.name.trim(),
         }),
       });
@@ -186,7 +190,7 @@ function RegistrationScreen({ onLogin, onSuccess }) {
       const loginRes = await fetch(`${API_BASE}/api/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone, password: autoPassword }),
+        body: JSON.stringify({ phone, password: userPassword }),
       });
       const loginData = await loginRes.json();
       if (!loginRes.ok) throw new Error(loginData.detail || "Auto-login failed");
@@ -269,6 +273,23 @@ function RegistrationScreen({ onLogin, onSuccess }) {
             maxLength={10}
             autoComplete="tel"
           />
+        </div>
+      </div>
+
+      {/* Password */}
+      <div className="form-group">
+        <label>Password</label>
+        <div className="input-with-icon">
+          <input
+            type={showPass ? "text" : "password"}
+            placeholder="Create a password (min 6 chars)"
+            value={form.password}
+            onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
+            autoComplete="new-password"
+          />
+          <button className="eye-btn" type="button" onClick={() => setShowPass(!showPass)}>
+            <EyeIcon open={showPass} />
+          </button>
         </div>
       </div>
 

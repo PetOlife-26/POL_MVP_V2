@@ -6,14 +6,9 @@ import Home from "./components/Home/Home";
 import "./App.css";
 
 // Lazy-loaded routes
-const Homepg = lazy(() => import("./components/homepg/Homepg"));
-const ProfileCreate = lazy(
-  () => import("./components/profilecreation/Profilecreation"),
-);
-const PostIdScreen = lazy(
-  () => import("./components/postidscreen/postidscreen"),
-);
-const PetCard = lazy(() => import("./components/petcard/petcard"));
+const Homepg = lazy(() => import('./components/homepg/Homepg'));
+const ProfileCreate = lazy(() => import('./components/profilecreation/Profilecreation'));
+const PostIdScreen = lazy(() => import('./components/postidscreen/postidscreen'));
 
 function LoadingFallback() {
   return (
@@ -43,7 +38,6 @@ function App() {
           <Route path="/home" element={<Home />} />
           <Route path="/create-pet-profile" element={<ProfileCreate />} />
           <Route path="/post-id-success" element={<PostIdScreen />} />
-          <Route path="/pet-card" element={<PetCard />} />
         </Routes>
       </Suspense>
     </Router>

@@ -11,7 +11,9 @@ import time
 from typing import Optional
 
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException
+from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
+from app.config import FRONTEND_URL
 
 class PetProfileUpdate(BaseModel):
     pet_name: Optional[str] = None
@@ -210,8 +212,16 @@ async def update_pet_profile(profile_id: str, updates: PetProfileUpdate):
 
 
 @router.get("/by-petolife-id/{petolife_id:path}")
-async def get_by_petolife_id(petolife_id: str):
-    """Fetch pet profile by PetOLife ID (for QR scan)."""
+async def get_by_petolife_id_redirect(petolife_id: str):
+    """QR scan endpoint — redirects browser to the frontend pet profile UI."""
+    frontend_base = FRONTEND_URL or "http://localhost:5173"
+    redirect_url = f"{frontend_base}/pet/{petolife_id}"
+    return RedirectResponse(url=redirect_url, status_code=302)
+
+
+@router.get("/public/{petolife_id:path}")
+async def get_public_pet_data(petolife_id: str):
+    """JSON data endpoint — called by the frontend pet profile UI page."""
     result = (
         supabase.table("pet_profiles")
         .select("*")
@@ -232,16 +242,21 @@ async def get_by_petolife_id(petolife_id: str):
         .execute()
     )
 
-    # Fetch care team
-    care_result = (
-        supabase.table("care_team")
-        .select("*")
-        .eq("pet_profile_id", profile["id"])
-        .execute()
-    )
+    # Fetch owner info
+    owner_info = None
+    user_id = profile.get("user_id")
+    if user_id:
+        owner_result = (
+            supabase.table("user_profiles")
+            .select("full_name, phone, email")
+            .eq("id", user_id)
+            .execute()
+        )
+        if owner_result.data:
+            owner_info = owner_result.data[0]
 
     return {
         **profile,
         "pet_ids": ids_result.data or [],
-        "care_team": care_result.data[0] if care_result.data else None,
+        "owner_info": owner_info,
     }

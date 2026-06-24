@@ -56,3 +56,21 @@ CREATE TABLE IF NOT EXISTS pet_health_ids (
   sequence_number INTEGER NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+-- MEDICAL RECORDS TABLE
+CREATE TABLE IF NOT EXISTS medical_records (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  pet_profile_id UUID REFERENCES pet_profiles(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  category TEXT NOT NULL,
+  file_url TEXT NOT NULL,
+  file_name TEXT NOT NULL,
+  file_type TEXT,
+  file_size INTEGER,
+  storage_path TEXT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- STORAGE BUCKETS TO CREATE IN SUPABASE (Public):
+-- 1. "pet-photos"
+-- 2. "medical-docs"

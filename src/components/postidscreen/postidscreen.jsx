@@ -121,7 +121,7 @@ export default function PostIdScreen() {
     <div className="page">
       <ConfettiLayer />
       <PawWatermarks />
-      <header className="hero">
+      <header className="postid-hero">
         <div className="check-badge">
           <Check size={30} strokeWidth={3} color="var(--green-700)" />
         </div>
