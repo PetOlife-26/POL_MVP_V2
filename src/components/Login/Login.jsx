@@ -104,6 +104,7 @@ function SuccessScreen({ type, userName, onContinue }) {
   const finalPetType =
   form.petType === "Other" ? form.customPetType.trim() : form.petType;
   const [showOtherPetInput, setShowOtherPetInput] = useState(false);
+  const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [pincodeLoading, setPincodeLoading] = useState(false);
