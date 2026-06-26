@@ -1,0 +1,78 @@
+.pet-progress-container {
+  width: 100%;
+  margin-bottom: 22px;
+}
+
+.progress-labels {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  padding: 0 2px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #53755b;
+}
+
+.pet-progress-track {
+  position: relative;
+  width: 100%;
+  height: 12px;
+  background: #e8f3e6;
+  border-radius: 999px;
+  overflow: visible;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.pet-progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #55b96a 0%, #7ccf7a 100%);
+  box-shadow: 0 4px 12px rgba(89, 184, 103, 0.22);
+  transition: width 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  position: relative;
+}
+
+.pet-progress-fill::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 42px;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.28) 45%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  border-radius: inherit;
+}
+
+.running-pet {
+  position: absolute;
+  top: -14px;
+  font-size: 24px;
+  line-height: 1;
+  z-index: 4;
+  transition: left 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+  will-change: left, transform;
+  animation: dogHop 1s ease-in-out infinite;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.08));
+}
+
+@keyframes dogHop {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  25%       { transform: translateY(-2px) rotate(-4deg); }
+  50%       { transform: translateY(-5px) rotate(2deg); }
+  75%       { transform: translateY(-2px) rotate(-2deg); }
+}
+
+.step-text {
+  margin-top: 12px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: #4d7a57;
+}

@@ -157,6 +157,9 @@ function MedicalRecords({ records = [], setRecords, pets = [], activePetId }) {
             important medical records securely in one place.
           </p>
         </div>
+              <div className="hero-visual">
+                
+              </div>
       </section>
 
       <div className="records-container">

@@ -367,23 +367,25 @@ ul, ol { list-style: none; margin: 0; padding: 0; }
 /* Hero component styles */
 /* --------------------------------------------------- */
 .hero {
-  min-height: auto;
   padding: 120px 0 40px;
+  background-color: #eef9f2;
 }
 
 .hero-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  align-items: center;
-  gap: 40px;
+  align-items: stretch;   /* makes both left and right columns equal height */
+  gap: 5px;
 }
 
 .hero-content {
-  text-align: left;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .hero-title {
-  font-size: 4rem;
+  font-size: 1.5rem;
   line-height: 1.1;
   margin-bottom: 20px;
 }
@@ -400,16 +402,16 @@ ul, ol { list-style: none; margin: 0; padding: 0; }
 }
 
 .hero-visual {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  height: 100%;
+  min-height: 220px;  /* prevents collapse on short content */
 }
 
 .hero-image {
   width: 100%;
-  max-width: 700px;
-  height: auto;
-  object-fit: contain;
+  height: 100%;
+  object-fit: cover;  /* was: contain */
+  border-radius: 12px;
+  display: block;
 }
 /* --------------------------------------------------- */
 /* Solution component styles */

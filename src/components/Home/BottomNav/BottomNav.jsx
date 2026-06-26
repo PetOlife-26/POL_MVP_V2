@@ -1,0 +1,97 @@
+import React from "react";
+import "./BottomNav.css";
+
+const NAV_ITEMS = [
+  {
+    key: "home",
+    label: "Home",
+    icon: (active) => (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill={active ? "#138a36" : "none"} stroke={active ? "#138a36" : "#888"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z" />
+        <polyline points="9 21 9 12 15 12 15 21" />
+      </svg>
+    ),
+  },
+  {
+    key: "checklist",
+    label: "Checklist",
+    icon: (active) => (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active ? "#138a36" : "#888"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="3" width="18" height="18" rx="3" />
+        <line x1="9" y1="9" x2="15" y2="9" />
+        <line x1="9" y1="12" x2="15" y2="12" />
+        <line x1="9" y1="15" x2="13" y2="15" />
+        <polyline points="6 9 7.5 10.5 6 12" stroke={active ? "#138a36" : "#888"} strokeWidth="1.8"/>
+      </svg>
+    ),
+  },
+  {
+    key: "add",
+    label: "",
+    icon: () => null, // rendered as centre FAB
+    isFab: true,
+    
+  },
+  {
+    key: "medicalrecords",
+    label: "Records",
+    icon: (active) => (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active ? "#138a36" : "#888"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+        <polyline points="14 2 14 8 20 8" />
+        <line x1="12" y1="11" x2="12" y2="17" />
+        <line x1="9" y1="14" x2="15" y2="14" />
+      </svg>
+    ),
+  },
+  {
+    key: "profile",
+    label: "Profile",
+    icon: (active) => (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active ? "#138a36" : "#888"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="8" r="4" />
+        <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+      </svg>
+    ),
+  },
+];
+
+const BottomNav = ({ active = "home", onNavigate, onFabPress }) => {
+  return (
+    <nav className="bottomnav" aria-label="Main navigation">
+      {NAV_ITEMS.map((item) => {
+        if (item.isFab) {
+          return (
+            <button
+              key={item.key}
+              className="bottomnav__fab"
+              aria-label="Add"
+              onClick={onFabPress}
+            >
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+            </button>
+          );
+        }
+
+        const isActive = active === item.key;
+        return (
+          <button
+            key={item.key}
+            className={`bottomnav__item ${isActive ? "bottomnav__item--active" : ""}`}
+            aria-label={item.label}
+            aria-current={isActive ? "page" : undefined}
+            onClick={() => onNavigate && onNavigate(item.key)}
+          >
+            <span className="bottomnav__icon">{item.icon(isActive)}</span>
+            <span className="bottomnav__label">{item.label}</span>
+          </button>
+        );
+      })}
+    </nav>
+  );
+};
+
+export default BottomNav;

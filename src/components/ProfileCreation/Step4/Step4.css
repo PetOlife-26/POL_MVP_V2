@@ -1,0 +1,228 @@
+.confirm-container {
+  max-width: 430px;
+  margin: 0 auto;
+  padding: 18px 16px 22px;
+  min-height: 100vh;
+  background: #f6f7f5;
+}
+
+.confirm-header {
+  margin-top: 10px;
+  margin-bottom: 22px;
+  text-align: center;
+}
+
+.confirm-title {
+  margin: 0;
+  font-size: 24px;
+  line-height: 1.2;
+  font-weight: 800;
+  color: #1c2430;
+  letter-spacing: -0.02em;
+}
+
+.confirm-subtitle {
+  margin: 12px auto 0;
+  max-width: 315px;
+  color: #5f6875;
+  font-size: 15px;
+  line-height: 1.75;
+  font-weight: 500;
+}
+
+/* CARD */
+.confirm-card {
+  border-radius: 24px;
+  background: #ffffff;
+  border: 1px solid #edf1ea;
+  box-shadow: 0 8px 30px rgba(18,35,22,0.05);
+  padding: 18px 16px 8px;
+  overflow: hidden;
+}
+
+.pet-summary-top {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 4px 0 18px;
+  margin-bottom: 4px;
+}
+
+.pet-avatar-wrap { flex-shrink: 0; }
+
+.pet-avatar,
+.placeholder-avatar {
+  width: 92px;
+  height: 92px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, #fbfdf9 0%, #f0f5ec 100%);
+  border: 2px solid #eef4ea;
+  font-size: 36px;
+  overflow: hidden;
+}
+
+.pet-summary-meta { flex: 1; min-width: 0; }
+
+.pet-summary-meta h3 {
+  margin: 0;
+  color: #1b2430;
+  font-size: 19px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.pet-summary-meta p {
+  margin: 6px 0 12px;
+  color: #6a717d;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.45;
+}
+
+.pet-summary-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: #eef8ea;
+  color: #177d2b;
+  font-size: 13px;
+  font-weight: 700;
+  box-shadow: inset 0 0 0 1px rgba(23,125,43,0.06);
+}
+
+.pet-summary-badge-icon { font-size: 13px; line-height: 1; }
+
+/* ROWS */
+.confirm-details { display: flex; flex-direction: column; }
+
+.confirm-row {
+  min-height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 0 2px;
+  border-top: 1px solid #eff2ee;
+}
+
+.confirm-row-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.confirm-row-icon {
+  width: 20px;
+  min-width: 20px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  color: #1c8f31;
+  font-size: 17px;
+  line-height: 1;
+  transform: translateY(-1px);
+}
+
+.confirm-row .label {
+  color: #4f5967;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.confirm-row strong {
+  color: #1b2430;
+  font-size: 15px;
+  font-weight: 600;
+  text-align: right;
+  max-width: 48%;
+  word-break: break-word;
+}
+
+/* EDIT BUTTON */
+.edit-profile-btn {
+  width: 100%;
+  height: 56px;
+  margin-top: 16px;
+  border: none;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #f4f8f1 0%, #edf3e9 100%);
+  color: #147c29;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.edit-profile-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(31,154,52,0.08);
+}
+
+/* GENERATE BUTTON */
+.generate-btn {
+  width: 100%;
+  margin-top: 18px;
+  height: 58px;
+  border: none;
+  border-radius: 18px;
+  background: linear-gradient(90deg, #168a2c 0%, #1ea337 100%);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-size: 17px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 14px 28px rgba(30,163,55,0.22);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.generate-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 30px rgba(30,163,55,0.28);
+}
+
+.generate-btn:disabled { opacity: 0.9; cursor: not-allowed; }
+
+/* SPINNER */
+.btn-spinner {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.35);
+  border-top-color: #ffffff;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ERROR */
+.submit-error {
+  margin-top: 16px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: #fff4f4;
+  border: 1px solid #ffd9d9;
+  color: #cf4242;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+@media (max-width: 480px) {
+  .confirm-title { font-size: 22px; }
+  .confirm-subtitle { font-size: 14px; }
+}
