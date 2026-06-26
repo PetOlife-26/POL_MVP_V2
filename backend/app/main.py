@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 
 from app.config import PORT, FRONTEND_URL
-from app.routers import auth, care_team, location, pet_profile, pet_health_id
+from app.routers import auth, location, pet_profile, pet_health_id, medical_records
 from app.supabase_client import supabase
 
 app = FastAPI(
@@ -42,9 +42,9 @@ app.add_middleware(
 # Register routers from both files
 app.include_router(auth.router, prefix="/api/auth", tags=["Auth"])
 app.include_router(pet_profile.router, prefix="/api/pet-profile", tags=["Pet Profile"])
-app.include_router(care_team.router, prefix="/api/care-team", tags=["Care Team"])
 app.include_router(location.router, prefix="/api/location", tags=["Location"])
 app.include_router(pet_health_id.router, prefix="/api/pet-health-id", tags=["Pet Health ID"])
+app.include_router(medical_records.router, prefix="/api/medical-records", tags=["Medical Records"])
 
 
 @app.get("/")

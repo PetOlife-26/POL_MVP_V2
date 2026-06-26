@@ -64,6 +64,51 @@ function MedicalRecords({ records = [], setRecords, pets = [], activePetId }) {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
+  const [isFetching, setIsFetching] = useState(false);
+
+  const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+
+  // ---- Fetch records for selected pet ----
+  useEffect(() => {
+    if (!selectedPet) return;
+    
+    const fetchRecords = async () => {
+      setIsFetching(true);
+      try {
+        const res = await fetch(`${API_BASE}/api/medical-records/${selectedPet}`);
+        if (res.ok) {
+          const data = await res.json();
+          // Map DB schema to frontend state
+          const mappedRecords = data.map(r => ({
+            id: r.id,
+            petId: r.pet_profile_id,
+            name: r.title,
+            category: r.category,
+            file_url: r.file_url,
+            type: r.file_type || "",
+            size: r.file_size || 0,
+            date: new Date(r.created_at).toLocaleDateString("en-GB"),
+            time: new Date(r.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+            thumbnail: r.file_type && r.file_type.startsWith("image/") ? r.file_url : null
+          }));
+          
+          // Only update local records for this pet
+          setRecords(prev => {
+            const otherPets = prev.filter(p => p.petId !== selectedPet);
+            return [...mappedRecords, ...otherPets];
+          });
+        }
+      } catch (err) {
+        console.error("Failed to fetch medical records:", err);
+      } finally {
+        setIsFetching(false);
+      }
+    };
+    
+    fetchRecords();
+  }, [selectedPet, setRecords, API_BASE]);
 
   // ---- records list / search / filter state ----
   const [showAllRecords, setShowAllRecords] = useState(false);
@@ -77,34 +122,60 @@ function MedicalRecords({ records = [], setRecords, pets = [], activePetId }) {
     setShowModal(true);
   };
 
-  const saveRecord = () => {
-    const uploadedFiles = pendingFiles.map((file) => ({
-      id: Date.now() + Math.random(),
-      petId: selectedPet,
-      name: recordTitle || file.name,
-      file,
-      type: file.type,
-      size: file.size,
-      date: new Date().toLocaleDateString("en-GB"),
-      time: new Date().toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
-      thumbnail: file.type.startsWith("image/")
-        ? URL.createObjectURL(file)
-        : null,
-      category: selectedCategory,
-    }));
+  const saveRecord = async () => {
+    if (!selectedPet || pendingFiles.length === 0) return;
+    
+    setIsUploading(true);
+    setUploadError("");
+    
+    try {
+      // For now, MVP uploads the first file if multiple selected
+      const fileToUpload = pendingFiles[0];
+      const formData = new FormData();
+      formData.append("pet_profile_id", selectedPet);
+      formData.append("title", recordTitle || fileToUpload.name);
+      formData.append("category", selectedCategory);
+      formData.append("file", fileToUpload);
+      
+      const res = await fetch(`${API_BASE}/api/medical-records/upload`, {
+        method: "POST",
+        body: formData,
+      });
+      
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.detail || "Upload failed");
+      }
+      
+      // Add the new record to state
+      const r = data.record;
+      const newRecord = {
+        id: r.id,
+        petId: r.pet_profile_id,
+        name: r.title,
+        category: r.category,
+        file_url: r.file_url,
+        type: r.file_type || "",
+        size: r.file_size || 0,
+        date: new Date(r.created_at).toLocaleDateString("en-GB"),
+        time: new Date(r.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        thumbnail: r.file_type && r.file_type.startsWith("image/") ? r.file_url : null
+      };
 
-    setRecords((prev) => [...uploadedFiles, ...prev]);
-    setShowSuccess(true);
+      setRecords((prev) => [newRecord, ...prev]);
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 2000);
 
-    setTimeout(() => setShowSuccess(false), 2000);
-
-    setShowModal(false);
-    setSelectedCategory("");
-    setRecordTitle("");
-    setPendingFiles([]);
+      setShowModal(false);
+      setSelectedCategory("");
+      setRecordTitle("");
+      setPendingFiles([]);
+    } catch (err) {
+      console.error(err);
+      setUploadError(err.message || "Something went wrong.");
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   // ---- derived data ----
@@ -449,17 +520,21 @@ function MedicalRecords({ records = [], setRecords, pets = [], activePetId }) {
 
             {selectedFile.type?.includes("pdf") ? (
               <iframe
-                src={URL.createObjectURL(selectedFile.file)}
+                src={selectedFile.file_url}
                 title="PDF Preview"
                 className="pdf-frame"
               />
             ) : (
               <img
-                src={selectedFile.thumbnail}
+                src={selectedFile.file_url || selectedFile.thumbnail}
                 alt={selectedFile.name}
                 className="preview-image"
               />
             )}
+            
+            <a href={selectedFile.file_url} target="_blank" rel="noopener noreferrer" className="download-btn" style={{display: 'block', textAlign: 'center', marginTop: '12px', color: '#2ea862', fontWeight: 600}}>
+              Open File in New Tab
+            </a>
           </div>
         </div>
       )}
@@ -489,12 +564,14 @@ function MedicalRecords({ records = [], setRecords, pets = [], activePetId }) {
               ))}
             </select>
 
+            {uploadError && <div style={{color: 'red', fontSize: '14px', marginBottom: '10px'}}>{uploadError}</div>}
+
             <button
               className="save-record-btn"
               onClick={saveRecord}
-              disabled={!selectedCategory}
+              disabled={!selectedCategory || isUploading}
             >
-              Save Record
+              {isUploading ? "Uploading..." : "Save Record"}
             </button>
           </div>
         </div>

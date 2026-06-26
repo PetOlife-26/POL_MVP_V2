@@ -9,10 +9,8 @@ GET  /api/auth/me         — Get current user from access token
 """
 
 from typing import Optional
-
 from fastapi import APIRouter, HTTPException, Request, Header
 from pydantic import BaseModel
-
 from app.supabase_client import supabase
 from app.config import FRONTEND_URL
 
