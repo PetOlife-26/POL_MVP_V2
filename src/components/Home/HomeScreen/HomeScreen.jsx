@@ -8,6 +8,7 @@ import HeroSection from "../HeroSection/HeroSection";
 import AddPetCard  from "../AddPetCard/AddPetCard";
 import HealthBanner from "../HealthBanner/HealthBanner";
 import BottomNav   from "../BottomNav/BottomNav";
+import ChecklistPage from "../../Checklist/Checklistpage/Checklistpage";
 
 /**
  * HomeScreen — root screen that wires all components together.
@@ -33,6 +34,15 @@ const handleAddPet = () => {
   const handleFab = () => {
     navigate("/create-pet-profile");
   };
+
+  if (activeTab === "checklist") {
+    return (
+      <ChecklistPage
+        onNavigate={setActiveTab}
+        onFabPress={handleFab}
+      />
+    );
+  }
 
   return (
     <div className="homescreen">

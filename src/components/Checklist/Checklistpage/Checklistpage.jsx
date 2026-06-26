@@ -49,7 +49,7 @@ function CircularProgress({ completed, total }) {
   );
 }
 
-export default function ChecklistPage({ onCalendarClick }) {
+export default function ChecklistPage({ onCalendarClick, onNavigate, onFabPress }) {
   const [tasks, setTasks] = useState(INITIAL_TASKS);
   const [status, setStatus] = useState({}); // { [id]: "yes" | "no" }
   const [showPopup, setShowPopup] = useState(false);
@@ -212,7 +212,7 @@ const addTask = () => {
         </div>
         )}      
 
-      <BottomNav active="checklist" />
+      <BottomNav active="checklist" onNavigate={onNavigate} onFabPress={onFabPress} />
     </div>
   );
 }
