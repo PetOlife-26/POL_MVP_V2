@@ -46,6 +46,10 @@ class RegisterInterestRequest(BaseModel):
     clinicName: Optional[str] = None
 
 
+class ForgotPasswordRequest(BaseModel):
+    email: str
+
+
 @router.post("/signup")
 async def signup(body: SignupRequest):
     """Create a new user account with email/phone and password."""
@@ -222,3 +226,15 @@ async def register_interest(body: RegisterInterestRequest):
     except Exception as e:
         print(f"[register-interest] Error saving record: {e}")
         return {"message": "Thanks! You're on the early access list. We'll reach out soon."}
+
+@router.post("/forgot-password")
+async def forgot_password(body: ForgotPasswordRequest):
+    """Send a password reset email."""
+    try:
+        # Supabase API for reset password
+        supabase.auth.reset_password_for_email(body.email, {"redirect_to": f"{FRONTEND_URL}/reset-password"})
+        return {"message": "Password reset email sent successfully."}
+    except Exception as e:
+        error_msg = str(e)
+        print(f"Forgot password error: {error_msg}")
+        raise HTTPException(status_code=400, detail=error_msg)
