@@ -55,9 +55,17 @@ function SmallSpinner() {
   return <span className="pincode-spinner" />;
 }
 
-/* ── Success Screen ── */
+/* ── Success Screen — auto-redirects after 3 seconds ── */
 function SuccessScreen({ type, userName, onContinue }) {
   const isSignup = type === "signup";
+  const [countdown, setCountdown] = useState(3);
+
+  useEffect(() => {
+    if (countdown <= 0) { onContinue(); return; }
+    const timer = setTimeout(() => setCountdown((c) => c - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [countdown, onContinue]);
+
   return (
     <div className="screen success-screen">
       <div className="success-icon-wrap">
@@ -79,9 +87,12 @@ function SuccessScreen({ type, userName, onContinue }) {
         <svg width="18" height="18" viewBox="0 0 24 24" fill="#06402B"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
         <span>PetOLife Member</span>
       </div>
-      <button className="btn-primary success-btn" onClick={onContinue}>
-        {isSignup ? "Continue to App" : "Continue to App"}
-      </button>
+      <p className="success-countdown" style={{marginTop: 16, color: '#666', fontSize: '14px'}}>
+        Redirecting in {countdown}s…
+      </p>
+      <div className="countdown-bar" style={{width: '120px', height: '4px', background: '#e0e0e0', borderRadius: '2px', margin: '8px auto 0', overflow: 'hidden'}}>
+        <div style={{height: '100%', background: '#138a36', borderRadius: '2px', width: `${((3 - countdown) / 3) * 100}%`, transition: 'width 1s linear'}} />
+      </div>
     </div>
   );
 }
@@ -216,8 +227,9 @@ function SuccessScreen({ type, userName, onContinue }) {
       const loginData = await loginRes.json();
       if (!loginRes.ok) throw new Error(loginData.detail || "Auto-login failed");
 
-      // 3. Persist session
+      // 3. Persist session (store both access + refresh tokens)
       if (loginData.access_token) localStorage.setItem("access_token", loginData.access_token);
+      if (loginData.refresh_token) localStorage.setItem("refresh_token", loginData.refresh_token);
       if (loginData.user) {
         // Enrich user data with location
       const enrichedUser = {
@@ -471,6 +483,7 @@ function LoginScreen({ onSignUp, onSuccess }) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showForgot, setShowForgot] = useState(false);
 
   const handleLogin = async () => {
     if (!identifier || !password) { setError("Please fill in all fields."); return; }
@@ -492,8 +505,9 @@ function LoginScreen({ onSignUp, onSuccess }) {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.detail || data.error || "Login failed");
-      // Store token
+      // Store tokens
       if (data.access_token) localStorage.setItem("access_token", data.access_token);
+      if (data.refresh_token) localStorage.setItem("refresh_token", data.refresh_token);
       if (data.user) localStorage.setItem("user", JSON.stringify(data.user));
       onSuccess({ type: "login", name: data.user?.user_metadata?.full_name || identifier.split("@")[0] });
     } catch (err) {
@@ -542,8 +556,10 @@ function LoginScreen({ onSignUp, onSuccess }) {
       </div>
 
       <div className="forgot-row">
-        <span className="link-green">Forgot Password?</span>
+        <span className="link-green" onClick={() => setShowForgot(true)}>Forgot Password?</span>
       </div>
+
+      {showForgot && <ForgotPasswordForm onBack={() => setShowForgot(false)} />}
 
       <button className="btn-primary" onClick={handleLogin} disabled={loading}>
         {loading ? "Logging in…" : "Login"}
@@ -559,6 +575,72 @@ function LoginScreen({ onSignUp, onSuccess }) {
         New user?{" "}
         <span className="link-green" onClick={onSignUp}>Create Account</span>
       </p>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════
+   FORGOT PASSWORD INLINE FORM
+   ══════════════════════════════════════════════════════ */
+function ForgotPasswordForm({ onBack }) {
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleReset = async () => {
+    if (!email.trim() || !email.includes("@")) {
+      setError("Please enter a valid email address.");
+      return;
+    }
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch(`${API_BASE}/api/auth/forgot-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "Failed to send reset email");
+      setSent(true);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (sent) {
+    return (
+      <div className="forgot-form" style={{marginTop: 12, padding: '16px', background: '#f0faf3', borderRadius: '12px'}}>
+        <p style={{color: '#138a36', fontWeight: 600, marginBottom: 4}}>✓ Reset email sent!</p>
+        <p style={{color: '#555', fontSize: '13px'}}>Check your inbox for a password reset link.</p>
+        <button className="link-green" onClick={onBack} style={{marginTop: 8, cursor: 'pointer', border: 'none', background: 'none', color: '#138a36', fontWeight: 600}}>Back to Login</button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="forgot-form" style={{marginTop: 12, padding: '16px', background: '#f8f9fa', borderRadius: '12px'}}>
+      <h4 style={{margin: '0 0 8px', fontSize: '15px', color: '#333'}}>Reset Password</h4>
+      <p style={{margin: '0 0 12px', fontSize: '13px', color: '#666'}}>Enter your email and we'll send a reset link.</p>
+      {error && <p className="auth-error" style={{fontSize: '13px', marginBottom: 8}}>{error}</p>}
+      <input
+        type="email"
+        placeholder="Enter your email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        style={{width: '100%', padding: '10px 14px', border: '1px solid #ddd', borderRadius: '8px', fontSize: '14px', marginBottom: 10, boxSizing: 'border-box'}}
+      />
+      <div style={{display: 'flex', gap: '8px'}}>
+        <button className="btn-primary" onClick={handleReset} disabled={loading} style={{flex: 1, fontSize: '14px', padding: '10px'}}>
+          {loading ? "Sending…" : "Send Reset Link"}
+        </button>
+        <button onClick={onBack} style={{flex: 0, padding: '10px 16px', border: '1px solid #ddd', borderRadius: '8px', background: '#fff', cursor: 'pointer', fontSize: '14px', color: '#555'}}>
+          Cancel
+        </button>
+      </div>
     </div>
   );
 }

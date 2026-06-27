@@ -13,16 +13,18 @@ import {
   ChevronRight,
 } from 'lucide-react';
 
-export default function PostIdScreen() {
+export default function PostIdScreen({ inlineData }) {
   const location = useLocation();
   const navigate = useNavigate();
+
+  const dataToUse = inlineData || location.state || {};
 
   const {
     petName = 'Pet',
     petolifeId = 'ID',
     petPhotoUrl = '',
     petProfileId = '',
-  } = location.state || {};
+  } = dataToUse;
 
   const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
   const qrValue = `${window.location.origin}/api/pet-profile/by-petolife-id/${encodeURIComponent(petolifeId)}`;
@@ -100,8 +102,8 @@ export default function PostIdScreen() {
     </button>
   );
 
-  // If no route state at all, redirect to home
-  if (!location.state) {
+  // If no data at all, redirect to home
+  if (!inlineData && !location.state) {
     return (
       <div className="page" style={{ alignItems: 'center', justifyContent: 'center' }}>
         <p style={{ color: '#fff', fontSize: '1rem' }}>No pet data found.</p>

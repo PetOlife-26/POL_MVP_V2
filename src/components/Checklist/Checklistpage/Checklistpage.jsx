@@ -1,7 +1,7 @@
 import { useState } from "react";
-import BottomNav from "../BottomNav/BottomNav";
+import BottomNav from "../../common/BottomNav/BottomNav";
 import "./ChecklistPage.css";
-import TopNav from "../TopNav/TopNav";
+import TopNav from "../../common/TopNav/TopNav";
 import checklist from "./checklist.png";
 import bottompet from "./bottom-pet.png";
 

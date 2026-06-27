@@ -3,6 +3,7 @@ import Step1 from "../Step1/Step1";
 import Step2 from "../Step2/Step2";
 import Step3 from "../Step3/Step3";
 import Step4 from "../Step4/Step4";
+import PostIdScreen from "../../postidscreen/postidscreen";
 
 /**
  * ProfileCreation — self-contained, no react-router-dom or framer-motion.
@@ -86,8 +87,16 @@ function ProfileCreation({ onNavigateBack, onNavigateToPetHome }) {
           setIsSubmitting={setIsSubmitting}
           submitError={submitError}
           setSubmitError={setSubmitError}
-          onNavigateToPetHome={navigateToPetHome}
+          onNavigateToPetHome={(data) => {
+             // Instead of navigating, save response and go to step 5
+             setPetData(prev => ({...prev, createdPet: data}));
+             setStep(5);
+          }}
         />
+      );
+    case 5:
+      return (
+        <PostIdScreen inlineData={petData.createdPet} />
       );
     default:
       return (

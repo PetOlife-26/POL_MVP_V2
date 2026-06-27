@@ -1,78 +1,137 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./HomeScreen.css";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
-
-import TopNav      from "../TopNav/TopNav";
+import TopNav from "../../common/TopNav/TopNav";
+import BottomNav from "../../common/BottomNav/BottomNav";
 import HeroSection from "../HeroSection/HeroSection";
-import AddPetCard  from "../AddPetCard/AddPetCard";
+import AddPetCard from "../AddPetCard/AddPetCard";
 import HealthBanner from "../HealthBanner/HealthBanner";
-import BottomNav   from "../BottomNav/BottomNav";
 import ChecklistPage from "../../Checklist/Checklistpage/Checklistpage";
+import MedicalRecords from "../../medical/MedicalRecords";
+import PetHomePage from "../../Pethome/PetHomePage";
+import fetchWithAuth from "../../../utils/fetchWithAuth";
+import useAuth from "../../../hooks/useAuth";
 
-/**
- * HomeScreen — root screen that wires all components together.
- *
- * Props:
- *   logoSrc  — path to your PetOlife wordmark image
- *   heroSrc  — path to your dog+cat illustration
- *
- * Usage in App.jsx:
- *   import petolifeLogo from "./assets/petolife-logo.png";
- *   import heroPets     from "./assets/hero-pets.png";
- *   <HomeScreen logoSrc={petolifeLogo} heroSrc={heroPets} />
- */
 const HomeScreen = () => {
-    const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("home");
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { user } = useAuth();
+  
+  // Set tab from navigation state if available
+  const [activeTab, setActiveTab] = useState(location.state?.tab || "home");
+  
+  const [pets, setPets] = useState([]);
+  const [activePetId, setActivePetId] = useState(null);
+  const [loadingPets, setLoadingPets] = useState(true);
 
-const handleAddPet = () => {
-  navigate("/create-pet-profile");
-};
+  useEffect(() => {
+    if (location.state?.tab) {
+      setActiveTab(location.state.tab);
+    }
+  }, [location.state]);
 
+  useEffect(() => {
+    const fetchPets = async () => {
+      if (!user) return;
+      setLoadingPets(true);
+      try {
+        // Try local storage first
+        const localPets = localStorage.getItem(`pets_${user.id}`);
+        if (localPets) {
+          const parsed = JSON.parse(localPets);
+          setPets(parsed);
+          const savedActive = localStorage.getItem(`active_pet_id_${user.id}`);
+          if (savedActive && parsed.some(p => p.id === savedActive)) {
+            setActivePetId(savedActive);
+          } else if (parsed.length > 0) {
+            setActivePetId(parsed[0].id);
+          }
+        }
+
+        // Fetch fresh from backend
+        const res = await fetchWithAuth("/api/pet-profile/");
+        if (res.ok) {
+          const data = await res.json();
+          setPets(data);
+          localStorage.setItem(`pets_${user.id}`, JSON.stringify(data));
+          
+          const savedActive = localStorage.getItem(`active_pet_id_${user.id}`);
+          if (savedActive && data.some(p => p.id === savedActive)) {
+            setActivePetId(savedActive);
+          } else if (data.length > 0) {
+            setActivePetId(data[0].id);
+            localStorage.setItem(`active_pet_id_${user.id}`, data[0].id);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch pets", err);
+      } finally {
+        setLoadingPets(false);
+      }
+    };
+    fetchPets();
+  }, [user]);
+
+  const handleAddPet = () => {
+    navigate("/create-pet-profile");
+  };
 
   const handleFab = () => {
     navigate("/create-pet-profile");
   };
 
-  if (activeTab === "checklist") {
+  const renderContent = () => {
+    if (activeTab === "checklist") {
+      return <ChecklistPage onNavigate={setActiveTab} onFabPress={handleFab} activePetId={activePetId} pets={pets} />;
+    }
+    
+    if (activeTab === "medicalrecords" || activeTab === "docs") {
+      return (
+        <div style={{ paddingBottom: '70px', height: '100vh', overflowY: 'auto' }}>
+          <MedicalRecords pets={pets} activePetId={activePetId} setRecords={() => {}} />
+        </div>
+      );
+    }
+
+    if (activeTab === "profile") {
+      return (
+        <div style={{ paddingBottom: '70px', height: '100vh', overflowY: 'auto' }}>
+           <PetHomePage pets={pets} activePetId={activePetId} />
+        </div>
+      );
+    }
+
+    // HOME TAB
     return (
-      <ChecklistPage
-        onNavigate={setActiveTab}
-        onFabPress={handleFab}
-      />
+      <div className="homescreen" style={{ height: '100vh', overflowY: 'auto' }}>
+        <TopNav />
+        <main className="homescreen__body">
+          <HeroSection />
+
+          <div className="homescreen__section">
+            <AddPetCard onAddPet={handleAddPet} />
+          </div>
+
+          <div className="homescreen__section">
+            <HealthBanner />
+          </div>
+
+          <div className="homescreen__nav-spacer" style={{ height: '80px' }} />
+        </main>
+      </div>
     );
-  }
+  };
 
   return (
-    <div className="homescreen">
-      {/* ── Sticky top nav ── */}
-      <TopNav />
-
-      {/* ── Scrollable body ── */}
-      <main className="homescreen__body">
-        <HeroSection />
-
-        <div className="homescreen__section">
-          <AddPetCard onAddPet={handleAddPet} />
-
-        </div>
-
-        <div className="homescreen__section">
-          <HealthBanner />
-        </div>
-
-        {/* Bottom padding so last content clears the fixed nav */}
-        <div className="homescreen__nav-spacer" />
-      </main>
-
-      {/* ── Fixed bottom nav ── */}
+    <>
+      {renderContent()}
       <BottomNav
         active={activeTab}
         onNavigate={setActiveTab}
         onFabPress={handleFab}
       />
-    </div>
+    </>
   );
 };
 
