@@ -1,37 +1,18 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { lazy, Suspense } from "react";
-import { Navigate } from "react-router-dom";
 import Login from "./components/Login/Login";
-import Home from "./components/Home/HomeScreen/HomeScreen";
-
+import ProtectedRoute from "./components/ProtectedRoute";
 import "./App.css";
 
 // Lazy-loaded routes
-const Homepg = lazy(() => import("./components/homepg/Homepg"));
-const ProfileCreate = lazy(
-  () => import("./components/ProfileCreation/ProfileCreation/ProfileCreation"),
-);
-const PostIdScreen = lazy(
-  () => import("./components/postidscreen/postidscreen"),
-);
+const LandingPg = lazy(() => import("./components/LandingPg/LandingPg"));
+const Home = lazy(() => import("./components/Home/HomeScreen/HomeScreen"));
+const ProfileCreate = lazy(() => import("./components/ProfileCreation/ProfileCreation/ProfileCreation"));
 const PetCard = lazy(() => import("./components/petcard/petcard"));
-
-const PetHome = lazy(() =>
-  import("./components/Pethome/PetHomePage")
-);
 
 function LoadingFallback() {
   return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        height: "100vh",
-        fontFamily: "Inter, sans-serif",
-        color: "#9ca3af",
-      }}
-    >
+    <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh", fontFamily: "Inter, sans-serif", color: "#9ca3af" }}>
       Loading…
     </div>
   );
@@ -42,15 +23,20 @@ function App() {
     <Router>
       <Suspense fallback={<LoadingFallback />}>
         <Routes>
+          {/* Public Routes */}
           <Route path="/" element={<Navigate to="/landing" replace />} />
-          <Route path="/landing" element={<Homepg />} />
+          <Route path="/landing" element={<LandingPg />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/home" element={<Home />} />
-          <Route path="/create-pet-profile" element={<ProfileCreate />} />
-          <Route path="/post-id-success" element={<PostIdScreen />} />
-          <Route path="/pet-card" element={<PetCard />} />
-          <Route path="/pet-page" element={<PetHome />} />
+          <Route path="/pet/:id" element={<PetCard />} />
           
+          {/* Protected Routes */}
+          <Route element={<ProtectedRoute />}>
+            <Route path="/home" element={<Home />} />
+            <Route path="/create-pet-profile" element={<ProfileCreate />} />
+          </Route>
+          
+          {/* Fallback */}
+          <Route path="*" element={<Navigate to="/landing" replace />} />
         </Routes>
       </Suspense>
     </Router>

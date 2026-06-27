@@ -118,6 +118,19 @@ function MedicalRecords({ records = [], setRecords, pets = [], activePetId }) {
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
+    
+    // Client-side validation
+    const file = files[0];
+    if (file.size > 10 * 1024 * 1024) { // 10MB limit
+       alert("File is too large. Maximum size is 10MB.");
+       return;
+    }
+    // E.g. Check file type
+    if (!file.type.includes("image/") && !file.type.includes("pdf")) {
+       alert("Invalid file type. Only images and PDFs are allowed.");
+       return;
+    }
+
     setPendingFiles(files);
     setShowModal(true);
   };
@@ -323,7 +336,7 @@ function MedicalRecords({ records = [], setRecords, pets = [], activePetId }) {
               </div>
             </div>
 
-            <small>Minimum 1 MB file allowed</small>
+            <small>Maximum 10 MB file allowed</small>
           </div>
         </div>
 
