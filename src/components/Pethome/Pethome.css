@@ -1,0 +1,47 @@
+/* ===========================
+   PetHome.css — PetOlife Home
+   =========================== */
+
+/* Root tokens */
+:root {
+  --green-primary: #3a9e5f;
+  --green-light: #e8f5ee;
+  --green-mid: #c2e6cf;
+  --purple-primary: #7b5ea7;
+  --purple-light: #ede8f8;
+  --orange-accent: #f4a01c;
+  --orange-light: #fff8ed;
+  --text-dark: #1a1a2e;
+  --text-mid: #444;
+  --text-muted: #888;
+  --bg-page: #f5f5f5;
+  --white: #ffffff;
+  --radius-card: 16px;
+  --radius-btn: 50px;
+  --shadow-card: 0 2px 10px rgba(0, 0, 0, 0.07);
+}
+
+/* Page wrapper */
+.pet-home {
+  background: var(--bg-page);
+  padding: 16px 16px 32px;
+  max-width: 420px;
+  margin: 0 auto;
+  min-height: 100vh;
+  font-family: "Inter", "Segoe UI", sans-serif;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ── Responsive ─────────────────── */
+@media (max-width: 360px) {
+  .quick-actions-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .health-banner-icon img {
+    width: 52px;
+    height: 52px;
+  }
+}

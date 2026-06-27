@@ -2,19 +2,22 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { lazy, Suspense } from "react";
 import { Navigate } from "react-router-dom";
 import Login from "./components/Login/Login";
-import Home from "./components/Home/Home";
+import Home from "./components/Home/HomeScreen/HomeScreen";
+
 import "./App.css";
 
 // Lazy-loaded routes
 const Homepg = lazy(() => import("./components/homepg/Homepg"));
 const ProfileCreate = lazy(
-  () => import("./components/profilecreation/Profilecreation"),
+  () => import("./components/ProfileCreation/ProfileCreation/ProfileCreation"),
 );
 const PostIdScreen = lazy(
   () => import("./components/postidscreen/postidscreen"),
 );
-const MedicalRecords = lazy(
-  () => import("./components/MedicalRecords/MedicalRecords"),
+const PetCard = lazy(() => import("./components/petcard/petcard"));
+
+const PetHome = lazy(() =>
+  import("./components/Pethome/PetHomePage")
 );
 
 function LoadingFallback() {
@@ -45,7 +48,9 @@ function App() {
           <Route path="/home" element={<Home />} />
           <Route path="/create-pet-profile" element={<ProfileCreate />} />
           <Route path="/post-id-success" element={<PostIdScreen />} />
-          <Route path="/medical-records" element={<MedicalRecords />} />
+          <Route path="/pet-card" element={<PetCard />} />
+          <Route path="/pet-page" element={<PetHome />} />
+          
         </Routes>
       </Suspense>
     </Router>

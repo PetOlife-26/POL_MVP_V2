@@ -1,0 +1,64 @@
+/* ── Reminder Card ──────────────── */
+.reminder-card {
+  background: var(--orange-light);
+  border-radius: var(--radius-card);
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: var(--shadow-card);
+  gap: 12px;
+}
+
+.reminder-left {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.reminder-icon img {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+}
+
+.reminder-label {
+  font-size: 0.72rem;
+  color: var(--orange-accent);
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.reminder-title {
+  margin: 0 0 2px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+.reminder-sub {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.reminder-view-btn {
+  flex-shrink: 0;
+  padding: 7px 14px;
+  background: var(--white);
+  border: 1.5px solid var(--orange-accent);
+  border-radius: var(--radius-btn);
+  color: var(--orange-accent);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+
+.reminder-view-btn:hover {
+  background: var(--orange-accent);
+  color: var(--white);
+}

@@ -1,0 +1,311 @@
+
+/* ── Profile Card ───────────────── */
+.profile-card {
+  background: var(--white);
+  border-radius: var(--radius-card);
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: var(--shadow-card);
+  position: relative;
+}
+
+.profile-avatar {
+  flex-shrink: 0;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid var(--green-mid);
+}
+
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-info {
+  flex: 1;
+}
+
+.profile-name-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.profile-name {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+.profile-chevron {
+  font-size: 1.2rem;
+  color: var(--text-mid);
+  line-height: 1;
+}
+
+.profile-breed {
+  margin: 2px 0 6px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.profile-meta {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.78rem;
+  color: var(--text-mid);
+}
+
+.meta-icon {
+  width: 14px;
+  height: 14px;
+  object-fit: contain;
+}
+
+.profile-paw {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  opacity: 0.2;
+}
+
+.profile-paw img {
+  width: 28px;
+  height: 28px;
+}
+
+
+/* Shared card */
+.action-card {
+  border-radius: var(--radius-card);
+  padding: 16px 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+  box-shadow: var(--shadow-card);
+  min-height: 150px;
+}
+
+.action-card--green {
+  background: var(--green-light);
+}
+
+.action-card--purple {
+  background: var(--purple-light);
+}
+
+.action-card-icon img {
+  width: 52px;
+  height: 52px;
+  object-fit: contain;
+}
+
+.action-card-content {
+  flex: 1;
+}
+
+.action-card-title {
+  margin: 0 0 4px;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.action-card-title--green {
+  color: var(--green-primary);
+}
+
+.action-card-title--purple {
+  color: var(--purple-primary);
+}
+
+.action-card-desc {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--text-mid);
+  line-height: 1.4;
+}
+
+.action-card-btn {
+  align-self: flex-end;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.action-card-btn:hover {
+  opacity: 0.8;
+}
+
+.action-card-btn--green {
+  background: var(--green-primary);
+  color: var(--white);
+}
+
+.action-card-btn--purple {
+  background: var(--purple-primary);
+  color: var(--white);
+}
+/* =========================
+   PROFILE + FLOATING SWITCHER
+========================= */
+.profile-wrapper {
+  position: relative;
+  margin-bottom: 18px;
+}
+
+.clickable {
+  cursor: pointer;
+}
+
+.profile-chevron {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: #17843a;
+  transition: transform 0.28s ease;
+  margin-left: 6px;
+}
+
+.profile-chevron.rotate {
+  transform: rotate(180deg);
+}
+
+/* Floating switcher card */
+.pet-switcher {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  width: 100%;
+  background: #fff;
+  border-radius: 22px;
+  padding: 10px;
+  box-shadow: 0 16px 40px rgba(18, 38, 24, 0.12);
+  border: 1px solid #edf2ed;
+  z-index: 50;
+
+  opacity: 0;
+  transform: translateY(-10px) scale(0.98);
+  pointer-events: none;
+  transition:
+    opacity 0.25s ease,
+    transform 0.25s ease;
+}
+
+.pet-switcher.open {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+/* pet item */
+.pet-switcher__item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: background 0.18s ease, transform 0.18s ease;
+}
+
+.pet-switcher__item:hover {
+  background: #f6faf6;
+}
+
+.pet-switcher__item:active {
+  transform: scale(0.99);
+}
+
+.pet-switcher__item.active {
+  background: #eef8ef;
+}
+
+.pet-switcher__avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.pet-switcher__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.pet-switcher__info h4 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #162018;
+  line-height: 1.2;
+}
+
+.pet-switcher__info p {
+  margin: 3px 0 0;
+  font-size: 13px;
+  color: #6a746c;
+  line-height: 1.3;
+}
+
+/* green selected tick */
+.pet-switcher__tick {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #138a36;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  box-shadow: 0 6px 14px rgba(19, 138, 54, 0.22);
+  flex-shrink: 0;
+}
+
+/* add pet button */
+.pet-switcher__add-btn {
+  width: 100%;
+  margin-top: 8px;
+  border: none;
+  outline: none;
+  background: linear-gradient(90deg, #14953f 0%, #0f7f33 100%);
+  color: #fff;
+  border-radius: 16px;
+  padding: 13px 14px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.18s ease, opacity 0.18s ease;
+}
+
+.pet-switcher__add-btn:hover {
+  opacity: 0.96;
+}
+
+.pet-switcher__add-btn:active {
+  transform: scale(0.985);
+}

@@ -89,8 +89,11 @@ function SuccessScreen({ type, userName, onContinue }) {
 /* ══════════════════════════════════════════════════════
    REGISTRATION SCREEN (default — "Join as Pet Parent")
    ══════════════════════════════════════════════════════ */
-function RegistrationScreen({ onLogin, onSuccess }) {
-  const [form, setForm] = useState({
+  function RegistrationScreen({ onLogin, onSuccess }) {
+    const [form, setForm] = useState({
+    petName: "",
+    petType: "",
+    customPetType: "",
     name: "",
     mobile: "",
     password: "",
@@ -98,6 +101,9 @@ function RegistrationScreen({ onLogin, onSuccess }) {
     city: "",
     state: "",
   });
+  const finalPetType =
+  form.petType === "Other" ? form.customPetType.trim() : form.petType;
+  const [showOtherPetInput, setShowOtherPetInput] = useState(false);
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -152,6 +158,21 @@ function RegistrationScreen({ onLogin, onSuccess }) {
   }, [form.pincode, lookupPincode]);
 
   const handleRegister = async () => {
+        if (!form.petName.trim()) {
+          setError("Please enter your pet name.");
+          return;
+        }
+
+        if (!form.petType) {
+          setError("Please select your pet type.");
+          return;
+        }
+
+        if (form.petType === "Other" && !form.customPetType.trim()) {
+          setError("Please enter your pet type.");
+          return;
+        }
+
     if (!form.name.trim()) { setError("Please enter your name."); return; }
     if (!form.mobile.trim() || form.mobile.replace(/\D/g, "").length < 10) {
       setError("Please enter a valid 10-digit mobile number."); return;
@@ -199,15 +220,17 @@ function RegistrationScreen({ onLogin, onSuccess }) {
       if (loginData.access_token) localStorage.setItem("access_token", loginData.access_token);
       if (loginData.user) {
         // Enrich user data with location
-        const enrichedUser = {
-          ...loginData.user,
-          user_metadata: {
-            ...loginData.user.user_metadata,
-            pincode: form.pincode,
-            city: form.city,
-            state: form.state,
-          },
-        };
+      const enrichedUser = {
+        ...loginData.user,
+        user_metadata: {
+          ...loginData.user.user_metadata,
+          pet_name: form.petName,
+          pet_type: finalPetType,
+          pincode: form.pincode,
+          city: form.city,
+          state: form.state,
+        },
+      };
         localStorage.setItem("user", JSON.stringify(enrichedUser));
       }
 
@@ -242,7 +265,82 @@ function RegistrationScreen({ onLogin, onSuccess }) {
       </div>
 
       {error && <p className="auth-error">{error}</p>}
+      {/* Pet Name */}
+<div className="form-group">
+  <label>Pet Name</label>
+  <input
+    type="text"
+    placeholder="Enter your pet name"
+    value={form.petName}
+    onChange={set("petName")}
+  />
+</div>
+{/* Pet Type */}
+<div className="form-group">
+  <label>Pet Type</label>
 
+  <div className="pet-type-options">
+    <button
+      type="button"
+      className={`pet-type-btn ${form.petType === "Dog" ? "active" : ""}`}
+      onClick={() => {
+        setForm((prev) => ({
+          ...prev,
+          petType: "Dog",
+          customPetType: "",
+        }));
+        setShowOtherPetInput(false);
+      }}
+    >
+      Dog
+    </button>
+
+    <button
+      type="button"
+      className={`pet-type-btn ${form.petType === "Cat" ? "active" : ""}`}
+      onClick={() => {
+        setForm((prev) => ({
+          ...prev,
+          petType: "Cat",
+          customPetType: "",
+        }));
+        setShowOtherPetInput(false);
+      }}
+    >
+      Cat
+    </button>
+
+    <button
+      type="button"
+      className={`pet-type-btn ${showOtherPetInput ? "active" : ""}`}
+      onClick={() => {
+        setForm((prev) => ({
+          ...prev,
+          petType: "Other",
+        }));
+        setShowOtherPetInput(true);
+      }}
+    >
+      Other
+    </button>
+  </div>
+
+  {showOtherPetInput && (
+    <div className="other-pet-input-wrap">
+      <input
+        type="text"
+        placeholder="Enter pet type"
+        value={form.customPetType}
+        onChange={(e) =>
+          setForm((prev) => ({
+            ...prev,
+            customPetType: e.target.value,
+          }))
+        }
+      />
+    </div>
+  )}
+</div>
       {/* Pet Parent Name */}
       <div className="form-group">
         <label>Pet Parent Name</label>
@@ -259,7 +357,7 @@ function RegistrationScreen({ onLogin, onSuccess }) {
       <div className="form-group">
         <label>Mobile Number</label>
         <div className="phone-input-group">
-          <span className="phone-prefix">+91</span>
+          
           <input
             type="tel"
             placeholder="Enter 10-digit mobile number"

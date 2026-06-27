@@ -1,0 +1,23 @@
+.step-header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin-bottom: 14px;
+}
+
+.step-back-btn {
+  border: none;
+  background: transparent;
+  color: #0f7a23;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 4px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.step-back-btn svg {
+  font-size: 18px;
+}
