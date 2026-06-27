@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import fetchWithAuth from "../../../utils/fetchWithAuth";
 import BottomNav from "../../common/BottomNav/BottomNav";
 import "./ChecklistPage.css";
 import TopNav from "../../common/TopNav/TopNav";
@@ -49,13 +50,34 @@ function CircularProgress({ completed, total }) {
   );
 }
 
-export default function ChecklistPage({ onCalendarClick, onNavigate, onFabPress }) {
+export default function ChecklistPage({ onNavigate, onFabPress, activePetId, pets = [] }) {
   const [tasks, setTasks] = useState(INITIAL_TASKS);
   const [status, setStatus] = useState({}); // { [id]: "yes" | "no" }
   const [showPopup, setShowPopup] = useState(false);
-  const [pet, setPet] = useState(null);
+  const [newTask, setNewTask] = useState("");
+  
+  const pet = pets.find(p => p.id === activePetId) || pets[0];
+  const currentDate = new Date().toISOString().split("T")[0];
 
-const [newTask, setNewTask] = useState("");
+  useEffect(() => {
+    if (!pet) return;
+    const loadTasks = async () => {
+      try {
+        const res = await fetchWithAuth(`/api/checklist/${pet.id}?date=${currentDate}`);
+        if (res.ok) {
+          const data = await res.json();
+          const newStatus = {};
+          data.forEach(log => {
+            newStatus[log.task_id] = log.completed ? "yes" : "no";
+          });
+          setStatus(newStatus);
+        }
+      } catch (err) {
+        console.error("Failed to load checklist", err);
+      }
+    };
+    loadTasks();
+  }, [pet, currentDate]);
 
 const addTask = () => {
   if (!newTask.trim()) return;
@@ -76,13 +98,28 @@ const addTask = () => {
 };
   const completed = Object.values(status).filter(v => v === "yes").length;
 
-  const mark = (id, val) => {
+  const mark = async (id, val) => {
     setStatus(prev => {
       const next = { ...prev };
       if (next[id] === val) delete next[id]; // toggle off
       else next[id] = val;
       return next;
     });
+    
+    if (pet) {
+      try {
+        await fetchWithAuth(`/api/checklist/${pet.id}`, {
+          method: "POST",
+          body: JSON.stringify({
+             task_id: id,
+             completed: val === "yes",
+             date: currentDate
+          })
+        });
+      } catch (err) {
+        console.error("Failed to update task", err);
+      }
+    }
   };
 
   const motivational = completed === tasks.length
@@ -101,15 +138,15 @@ const addTask = () => {
         <div className="cl-pet-card">
             <div className="cl-pet-info">
             <div className="cl-avatar">
-            {pet?.image ? (
-                <img src={pet.image} alt={pet.name} />
+            {pet?.pet_photo_url ? (
+                <img src={pet.pet_photo_url} alt={pet.pet_name} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
             ) : (
                 "🐶"
             )}
             </div>
             <div>
                 <h2 className="cl-pet-name">
-                {pet?.name || "Add Pet"}
+                {pet?.pet_name || "Add Pet"}
                 <span className="cl-chevron">▾</span>
                 </h2>
 
