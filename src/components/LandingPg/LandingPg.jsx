@@ -1,7 +1,7 @@
 // Homepg.jsx - Consolidated standalone component
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import "./Homepg.css"; // merged stylesheet
+import "./LandingPg.css"; // merged stylesheet
 
 // ---------- Navbar ----------
 import logo from "../../assets/logo.png";
@@ -422,7 +422,7 @@ const ThankYouModal = ({ isOpen, onClose, type }) => {
 };
 
 // ---------- Main Homepg Component ----------
-function Homepg() {
+function LandingPg() {
   const navigate = useNavigate();
   const [modalOpen, setModalOpen] = useState(false);
   const [modalType, setModalType] = useState('parent');
@@ -450,4 +450,4 @@ function Homepg() {
   );
 }
 
-export default Homepg;
+export default LandingPg;
