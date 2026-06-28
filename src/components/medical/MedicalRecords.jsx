@@ -21,11 +21,14 @@ import {
 } from "react-icons/fi";
 
 const CATEGORIES = [
-  "Vaccination Record",
+  "Deworming",
+  "Deticking",
+  "Vaccination",
+  "Anti-Rabies",
+  "Medical Checkup",
   "Prescription",
-  "Lab Report",
-  "Medical Report",
-  "Other",
+  "Lab Reports",
+  "Others",
 ];
 
 function MedicalRecords({ records = [], setRecords, pets = [], activePetId }) {
@@ -209,13 +212,17 @@ function MedicalRecords({ records = [], setRecords, pets = [], activePetId }) {
   const counts = useMemo(() => {
     const getCount = (cat) =>
       petRecords.filter((r) => r.category === cat).length;
+
     return {
       total: petRecords.length,
-      lab: getCount("Lab Report"),
+      deworming: getCount("Deworming"),
+      deticking: getCount("Deticking"),
+      vaccination: getCount("Vaccination"),
+      antiRabies: getCount("Anti-Rabies"),
+      medical: getCount("Medical Checkup"),
       prescription: getCount("Prescription"),
-      vaccine: getCount("Vaccination Record"),
-      medical: getCount("Medical Report"),
-      other: getCount("Other"),
+      lab: getCount("Lab Reports"),
+      others: getCount("Others"),
     };
   }, [petRecords]);
 
@@ -421,39 +428,61 @@ function MedicalRecords({ records = [], setRecords, pets = [], activePetId }) {
                 All ({counts.total})
               </button>
               <button
-                className={`chip chip-lab ${activeTab === "Lab Report" ? "active" : ""}`}
-                onClick={() => setActiveTab("Lab Report")}
+                className={`chip ${activeTab === "Deworming" ? "active" : ""}`}
+                onClick={() => setActiveTab("Deworming")}
               >
-                Lab ({counts.lab})
+                Deworming ({counts.deworming})
               </button>
+
               <button
-                className={`chip chip-rx ${activeTab === "Prescription" ? "active" : ""}`}
-                onClick={() => setActiveTab("Prescription")}
+                className={`chip ${activeTab === "Deticking" ? "active" : ""}`}
+                onClick={() => setActiveTab("Deticking")}
               >
-                Rx ({counts.prescription})
+                Deticking ({counts.deticking})
               </button>
+
               <button
-                className={`chip chip-vac ${
-                  activeTab === "Vaccination Record" ? "active" : ""
-                }`}
-                onClick={() => setActiveTab("Vaccination Record")}
+                className={`chip ${activeTab === "Vaccination" ? "active" : ""}`}
+                onClick={() => setActiveTab("Vaccination")}
               >
-                Vaccine ({counts.vaccine})
+                Vaccination ({counts.vaccination})
               </button>
+
               <button
-                className={`chip chip-med ${
-                  activeTab === "Medical Report" ? "active" : ""
-                }`}
-                onClick={() => setActiveTab("Medical Report")}
+                className={`chip ${activeTab === "Anti-Rabies" ? "active" : ""}`}
+                onClick={() => setActiveTab("Anti-Rabies")}
               >
-                Medical ({counts.medical})
+                Anti-Rabies ({counts.antiRabies})
               </button>
+
               <button
-                className={`chip chip-other ${activeTab === "Other" ? "active" : ""}`}
-                onClick={() => setActiveTab("Other")}
+                className={`chip ${activeTab === "Medical Checkup" ? "active" : ""}`}
+                onClick={() => setActiveTab("Medical Checkup")}
               >
-                Other ({counts.other})
-              </button>
+                Medical Checkup ({counts.medical})
+            </button>
+
+            <button
+              className={`chip ${activeTab === "Prescription" ? "active" : ""}`}
+              onClick={() => setActiveTab("Prescription")}
+            >
+              Prescription ({counts.prescription})
+            </button>
+
+            <button
+              className={`chip ${activeTab === "Lab Reports" ? "active" : ""}`}
+              onClick={() => setActiveTab("Lab Reports")}
+            >
+              Lab Reports ({counts.lab})
+            </button>
+
+            <button
+              className={`chip ${activeTab === "Others" ? "active" : ""}`}
+              onClick={() => setActiveTab("Others")}
+            >
+              Others ({counts.others})
+            </button>
+
             </div>
 
             <div className="medical-list">
