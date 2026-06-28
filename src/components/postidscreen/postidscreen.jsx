@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import './postidscreen.css';
 import { QRCodeSVG } from 'qrcode.react';
@@ -11,11 +11,19 @@ import {
   Home,
   FilePlus2,
   ChevronRight,
+  Share2,
+  Copy,
+  MessageCircle,
+  X,
+  CheckCircle2,
 } from 'lucide-react';
 
 export default function PostIdScreen({ inlineData }) {
   const location = useLocation();
   const navigate = useNavigate();
+
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const dataToUse = inlineData || location.state || {};
 
@@ -26,8 +34,32 @@ export default function PostIdScreen({ inlineData }) {
     petProfileId = '',
   } = dataToUse;
 
-  const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
   const qrValue = `${window.location.origin}/api/pet-profile/by-petolife-id/${encodeURIComponent(petolifeId)}`;
+  const shareUrl = `${window.location.origin}/pet/${encodeURIComponent(petolifeId)}`;
+  const shareText = `Try petolife and see my pet card: ${shareUrl}`;
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(shareText);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleWhatsApp = () => {
+    const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
+    window.open(url, '_blank');
+  };
+
+  const handleNativeShare = () => {
+    if (navigator.share) {
+      navigator.share({
+        title: `${petName}'s Pet Card`,
+        text: `Try petolife and see my pet card`,
+        url: shareUrl,
+      }).catch(() => {});
+    } else {
+      handleCopy();
+    }
+  };
 
   // Deterministic pseudo-random confetti layout
   const useConfetti = (count = 26) => {
@@ -175,7 +207,7 @@ export default function PostIdScreen({ inlineData }) {
           tone="primary"
           icon={<UserPlus size={18} strokeWidth={2.2} />}
           label="Invite Family Member"
-          onClick={() => navigate('/home', { state: { tab: 'profile' } })}
+          onClick={() => setShowShareModal(true)}
         />
         <ActionButton
           tone="secondary"
@@ -186,10 +218,49 @@ export default function PostIdScreen({ inlineData }) {
         <ActionButton
           tone="secondary"
           icon={<FilePlus2 size={18} strokeWidth={2.2} />}
-          label="Upload Medical Records Later"
-          onClick={() => navigate('/home', { state: { tab: 'docs' } })}
+          label="Upload Medical Records"
+          onClick={() => navigate('/home', { state: { tab: 'medicalrecords' } })}
         />
       </nav>
+
+      {/* SHARE / INVITE FAMILY MODAL */}
+      {showShareModal && (
+        <div className="share-modal-overlay" onClick={() => setShowShareModal(false)}>
+          <div className="share-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="share-header">
+              <h3>Invite & Share Pet Card</h3>
+              <button type="button" className="share-close" onClick={() => setShowShareModal(false)}>
+                <X size={20} />
+              </button>
+            </div>
+
+            <p className="share-sub">Share {petName}'s pet card with family or friends!</p>
+
+            <div className="share-text-box">
+              <span>{shareText}</span>
+            </div>
+
+            <div className="share-options">
+              <button type="button" className="share-opt-btn whatsapp" onClick={handleWhatsApp}>
+                <MessageCircle size={20} />
+                <span>Send to WhatsApp</span>
+              </button>
+
+              <button type="button" className="share-opt-btn copy" onClick={handleCopy}>
+                {copied ? <CheckCircle2 size={20} color="#0c6b3a" /> : <Copy size={20} />}
+                <span>{copied ? 'Copied to Clipboard!' : 'Copy Text & Link'}</span>
+              </button>
+
+              {navigator.share && (
+                <button type="button" className="share-opt-btn native" onClick={handleNativeShare}>
+                  <Share2 size={20} />
+                  <span>Share via Apps</span>
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

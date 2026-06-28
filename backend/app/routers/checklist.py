@@ -8,6 +8,7 @@ router = APIRouter()
 
 class TaskLogRequest(BaseModel):
     task_id: int
+    task_title: str = ""
     completed: bool
     date: str # YYYY-MM-DD
 
@@ -29,6 +30,7 @@ async def update_checklist(pet_id: str, body: TaskLogRequest):
         log_data = {
             "pet_id": pet_id,
             "task_id": body.task_id,
+            "task_title": body.task_title,
             "completed": body.completed,
             "date": body.date,
             "updated_at": datetime.now().isoformat()
@@ -36,7 +38,7 @@ async def update_checklist(pet_id: str, body: TaskLogRequest):
         # Check if exists to determine if we update or insert
         existing = supabase.table("daily_task_logs").select("*").eq("pet_id", pet_id).eq("task_id", body.task_id).eq("date", body.date).execute()
         if existing.data:
-            supabase.table("daily_task_logs").update({"completed": body.completed, "updated_at": datetime.now().isoformat()}).eq("id", existing.data[0]["id"]).execute()
+            supabase.table("daily_task_logs").update({"completed": body.completed, "task_title": body.task_title, "updated_at": datetime.now().isoformat()}).eq("id", existing.data[0]["id"]).execute()
         else:
             supabase.table("daily_task_logs").insert(log_data).execute()
         

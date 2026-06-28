@@ -268,13 +268,14 @@ html, body {
   box-shadow: 0 0 0 3px rgba(10, 106, 112, 0.08);
 }
 /* ─── Phone Input with +91 prefix ─── */
-.phone-input-group {
+.form-group .phone-input-group {
   position: relative;
   display: flex;
   align-items: center;
+  width: 100%;
 }
 
-.phone-prefix {
+.form-group .phone-input-group .phone-prefix {
   position: absolute;
   left: 16px;
   top: 50%;
@@ -283,12 +284,12 @@ html, body {
   font-weight: 700;
   color: #06402B;
   pointer-events: none;
-  z-index: 1;
+  z-index: 2;
   user-select: none;
 }
 
-.phone-input-group input {
-  padding-left: 52px;
+.form-group .phone-input-group input {
+  padding-left: 56px !important;
 }
 
 /* ─── Pincode Row (City + State side-by-side) ─── */
@@ -344,8 +345,8 @@ html, body {
 }
 
 /* ─── Eye button ─── */
-.input-with-icon { position: relative; }
-.input-with-icon input { padding-right: 52px; }
+.form-group .input-with-icon { position: relative; width: 100%; }
+.form-group .input-with-icon input { padding-right: 52px !important; }
 
 .eye-btn {
   position: absolute;

@@ -11,8 +11,6 @@ const HeroSection = () => {
   return (
     <section className="hero">
       {/* Scattered decorative elements */}
-      <span className="hero__deco hero__deco--heart1" aria-hidden="true">🤍</span>
-      <span className="hero__deco hero__deco--heart2" aria-hidden="true">🤍</span>
       <span className="hero__deco hero__deco--paw1" aria-hidden="true">🐾</span>
       <span className="hero__deco hero__deco--paw2" aria-hidden="true">🐾</span>
 

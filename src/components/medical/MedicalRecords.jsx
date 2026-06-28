@@ -1,635 +1,731 @@
-import React, { useState, useMemo, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import "./MedicalRecords.css";
 
-import heroBg from "../../assets/hero-bg.png";
-import dogImg from "../../assets/upload.png";
-import doctorDogImg from "../../assets/doctor-check-dog.png";
-import emptyRecords from "../../assets/empty.png";
-import brunoImg from "../../assets/bruno.png";
-import bellaImg from "../../assets/cat.png";
-
 import {
-  FiUploadCloud,
-  FiCamera,
-  FiImage,
-  FiFileText,
-  FiSearch,
-  FiChevronRight,
-  FiMoreVertical,
-  FiEye,
-} from "react-icons/fi";
+  FolderOpen,
+  Upload,
+  Camera,
+  Image,
+  FileText,
+  ArrowLeft,
+  FileImage,
+  File,
+  ChevronRight,
+  CheckCircle2,
+  X,
+  Trash2,
+} from "lucide-react";
+import heroImage from "../../assets/medical-banner.png";
+import emptyDog from "../../assets/empty-dog.png";
+import ProfileCard from "../Pethome/ProfileCard/ProfileCard";
+import "../Pethome/ProfileCard/ProfileCard.css";
+import TopNav from "../common/TopNav/TopNav";
 
-const CATEGORIES = [
-  "Deworming",
-  "Deticking",
-  "Vaccination",
-  "Anti-Rabies",
-  "Medical Checkup",
+const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
+
+const categories = [
+  "Quick Access",
   "Prescription",
   "Lab Reports",
-  "Others",
+  "Vaccination",
+  "Deworming",
+  "Deticking",
+  "Anti-rabies",
+  "Treatment",
+  "Other",
 ];
 
-function MedicalRecords({ records = [], setRecords, pets = [], activePetId }) {
-  const navigate = useNavigate();
-
-  // ---- shared pet selection (drives both upload + records list) ----
-  const [selectedPet, setSelectedPet] = useState(activePetId || (pets.length > 0 ? pets[0].id : null));
-  const [showPetDropdown, setShowPetDropdown] = useState(false);
-
-  // Keep selectedPet in sync if activePetId changes from parent
-  useEffect(() => {
-    if (activePetId) setSelectedPet(activePetId);
-  }, [activePetId]);
-
-  const currentPet = pets.find((p) => p.id === selectedPet) || pets[0] || {};
-
-  // Helper to calculate age (similar to PetCard)
-  const getAge = (birthDate) => {
-    if (!birthDate) return "Unknown Age";
-    const dob = new Date(birthDate);
-    if (isNaN(dob.getTime())) return "Unknown Age";
-    const diff = Date.now() - dob.getTime();
-    const ageDate = new Date(diff);
-    const y = Math.abs(ageDate.getUTCFullYear() - 1970);
-    const m = ageDate.getUTCMonth();
-    if (y === 0 && m === 0) return 'Newborn';
-    if (y === 0) return `${m} month${m > 1 ? 's' : ''}`;
-    if (m === 0) return `${y} year${y > 1 ? 's' : ''}`;
-    return `${y}y ${m}m`;
+export default function MedicalRecords({ pets, activePetId, onPetSelect, onAddPet }) {
+  const [activeCategory, setActiveCategory] = useState("Quick Access");
+  const [showUploadSheet, setShowUploadSheet] = useState(false);
+  const imageInputRef = useRef(null);
+  const pdfInputRef = useRef(null);
+  const cameraInputRef = useRef(null);
+  const handleChooseImage = () => {
+    imageInputRef.current?.click();
   };
-
-  // ---- upload flow state ----
-  const [pendingFiles, setPendingFiles] = useState([]);
-  const [showModal, setShowModal] = useState(false);
-  const [recordTitle, setRecordTitle] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("");
-  const [showSuccess, setShowSuccess] = useState(false);
+  const handleChoosePDF = () => {
+    pdfInputRef.current?.click();
+  };
+  const handleTakePhoto = () => {
+    cameraInputRef.current?.click();
+  };
   const [selectedFile, setSelectedFile] = useState(null);
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadError, setUploadError] = useState("");
-  const [isFetching, setIsFetching] = useState(false);
+  const [showUploadProgress, setShowUploadProgress] = useState(false);
+  const [uploadType, setUploadType] = useState("");
+  const [progress, setProgress] = useState(0);
+  const [showPreview, setShowPreview] = useState(false);
+  const [viewRecord, setViewRecord] = useState(null);
 
-  const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+  // DB-backed records
+  const [dbRecords, setDbRecords] = useState([]);
+  const [loadingRecords, setLoadingRecords] = useState(false);
 
-  // ---- Fetch records for selected pet ----
-  useEffect(() => {
-    if (!selectedPet) return;
-    
-    const fetchRecords = async () => {
-      setIsFetching(true);
-      try {
-        const res = await fetch(`${API_BASE}/api/medical-records/${selectedPet}`);
-        if (res.ok) {
-          const data = await res.json();
-          // Map DB schema to frontend state
-          const mappedRecords = data.map(r => ({
-            id: r.id,
-            petId: r.pet_profile_id,
-            name: r.title,
-            category: r.category,
-            file_url: r.file_url,
-            type: r.file_type || "",
-            size: r.file_size || 0,
-            date: new Date(r.created_at).toLocaleDateString("en-GB"),
-            time: new Date(r.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-            thumbnail: r.file_type && r.file_type.startsWith("image/") ? r.file_url : null
-          }));
-          
-          // Only update local records for this pet
-          setRecords(prev => {
-            const otherPets = prev.filter(p => p.petId !== selectedPet);
-            return [...mappedRecords, ...otherPets];
-          });
+  const activePet = pets?.find((p) => p.id === activePetId) || pets?.[0];
+  const petProfileId = activePet?.id;
+
+  // Fetch records from backend
+  const fetchRecords = useCallback(async () => {
+    if (!petProfileId) return;
+    setLoadingRecords(true);
+    try {
+      const token = localStorage.getItem("access_token");
+      const res = await fetch(
+        `${API_BASE}/api/medical-records/${petProfileId}`,
+        {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
         }
-      } catch (err) {
-        console.error("Failed to fetch medical records:", err);
-      } finally {
-        setIsFetching(false);
+      );
+      if (res.ok) {
+        const data = await res.json();
+        setDbRecords(data);
       }
-    };
-    
+    } catch (err) {
+      console.error("Failed to fetch medical records:", err);
+    } finally {
+      setLoadingRecords(false);
+    }
+  }, [petProfileId]);
+
+  useEffect(() => {
     fetchRecords();
-  }, [selectedPet, setRecords, API_BASE]);
+  }, [fetchRecords]);
 
-  // ---- records list / search / filter state ----
-  const [showAllRecords, setShowAllRecords] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [activeTab, setActiveTab] = useState("All");
-
-  const handleFileChange = (e) => {
-    const files = Array.from(e.target.files);
-    if (files.length === 0) return;
-    
-    // Client-side validation
-    const file = files[0];
-    if (file.size > 10 * 1024 * 1024) { // 10MB limit
-       alert("File is too large. Maximum size is 10MB.");
-       return;
+  // Filter records by category
+  const getRecordsForCategory = (cat) => {
+    if (!cat || cat === "Quick Access") {
+      return dbRecords; // Show all records in Quick Access
     }
-    // E.g. Check file type
-    if (!file.type.includes("image/") && !file.type.includes("pdf")) {
-       alert("Invalid file type. Only images and PDFs are allowed.");
-       return;
-    }
-
-    setPendingFiles(files);
-    setShowModal(true);
+    const target = cat.toLowerCase().trim();
+    return dbRecords.filter((r) => {
+      const recCat = (r.category || "").toLowerCase().trim();
+      return recCat === target || recCat.includes(target) || target.includes(recCat);
+    });
   };
 
-  const saveRecord = async () => {
-    if (!selectedPet || pendingFiles.length === 0) return;
-    
-    setIsUploading(true);
-    setUploadError("");
-    
+  const currentRecords = getRecordsForCategory(activeCategory);
+
+  // Upload to backend
+  const uploadToBackend = async (file, title, category) => {
+    if (!petProfileId || !file) return false;
     try {
-      // For now, MVP uploads the first file if multiple selected
-      const fileToUpload = pendingFiles[0];
       const formData = new FormData();
-      formData.append("pet_profile_id", selectedPet);
-      formData.append("title", recordTitle || fileToUpload.name);
-      formData.append("category", selectedCategory);
-      formData.append("file", fileToUpload);
-      
+      formData.append("pet_profile_id", petProfileId);
+      formData.append("title", title || file.name);
+      formData.append("category", category || "Other");
+      formData.append("file", file);
+
+      const token = localStorage.getItem("access_token");
       const res = await fetch(`${API_BASE}/api/medical-records/upload`, {
         method: "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
         body: formData,
       });
-      
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.detail || "Upload failed");
+
+      if (res.ok) {
+        await fetchRecords(); // Refresh records
+        return true;
       }
-      
-      // Add the new record to state
-      const r = data.record;
-      const newRecord = {
-        id: r.id,
-        petId: r.pet_profile_id,
-        name: r.title,
-        category: r.category,
-        file_url: r.file_url,
-        type: r.file_type || "",
-        size: r.file_size || 0,
-        date: new Date(r.created_at).toLocaleDateString("en-GB"),
-        time: new Date(r.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-        thumbnail: r.file_type && r.file_type.startsWith("image/") ? r.file_url : null
-      };
-
-      setRecords((prev) => [newRecord, ...prev]);
-      setShowSuccess(true);
-      setTimeout(() => setShowSuccess(false), 2000);
-
-      setShowModal(false);
-      setSelectedCategory("");
-      setRecordTitle("");
-      setPendingFiles([]);
+      return false;
     } catch (err) {
-      console.error(err);
-      setUploadError(err.message || "Something went wrong.");
-    } finally {
-      setIsUploading(false);
+      console.error("Upload error:", err);
+      return false;
     }
   };
 
-  // ---- derived data ----
-  const petRecords = useMemo(
-    () => records.filter((r) => r.petId === selectedPet),
-    [records, selectedPet]
+  const startUpload = (file) => {
+    setSelectedFile(file);
+    setShowUploadSheet(false);
+    setShowUploadProgress(true);
+    setProgress(0);
+
+    let value = 0;
+
+    const timer = setInterval(() => {
+      value += 10;
+      setProgress(value);
+
+      if (value >= 100) {
+        clearInterval(timer);
+        setProgress(100);
+      }
+    }, 200);
+  };
+
+  const [showMetaForm, setShowMetaForm] = useState(false);
+  const [formData, setFormData] = useState({
+    recordName: "",
+    category: "Prescription",
+    date: "",
+    notes: "",
+  });
+
+  // Mobile-friendly category picker state
+  const [showCategoryPicker, setShowCategoryPicker] = useState(false);
+
+  const allCategories = [
+    "Prescription",
+    "Lab Reports",
+    "Vaccination",
+    "Deworming",
+    "Deticking",
+    "Anti-rabies",
+    "Treatment",
+    "Other",
+  ];
+
+  const saveCategoryRecord = async () => {
+    if (!selectedFile) return;
+
+    const category = formData.category || "Other";
+    const title = formData.recordName || selectedFile.name;
+
+    // Upload to backend
+    const success = await uploadToBackend(selectedFile, title, category);
+
+    setShowMetaForm(false);
+    setSelectedFile(null);
+    setFormData({
+      recordName: "",
+      category: "Prescription",
+      date: "",
+      notes: "",
+    });
+    setShowPreview(false);
+    setShowUploadSheet(false);
+
+    if (!success) {
+      alert("Failed to upload record. Please try again.");
+    }
+  };
+
+  const handleFormChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const EmptyState = ({ message }) => (
+    <div className="empty-card">
+      <img src={emptyDog} alt="empty" className="empty-dog" />
+      <h3>No Record Found</h3>
+      <p>{message}</p>
+    </div>
   );
 
-  const filteredRecords = useMemo(() => {
-    return petRecords.filter((record) => {
-      const name = (record.name || "").toLowerCase();
-      const matchesSearch = name.includes(searchQuery.toLowerCase());
-      if (activeTab === "All") return matchesSearch;
-      return matchesSearch && record.category === activeTab;
-    });
-  }, [petRecords, searchQuery, activeTab]);
+  const deleteRecord = async (recordId) => {
+    if (!recordId) return;
+    try {
+      const token = localStorage.getItem("access_token");
+      const res = await fetch(`${API_BASE}/api/medical-records/${recordId}`, {
+        method: "DELETE",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (res.ok) {
+        setViewRecord(null);
+        await fetchRecords();
+      }
+    } catch (err) {
+      console.error("Delete error:", err);
+    }
+  };
 
-  const counts = useMemo(() => {
-    const getCount = (cat) =>
-      petRecords.filter((r) => r.category === cat).length;
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-    return {
-      total: petRecords.length,
-      deworming: getCount("Deworming"),
-      deticking: getCount("Deticking"),
-      vaccination: getCount("Vaccination"),
-      antiRabies: getCount("Anti-Rabies"),
-      medical: getCount("Medical Checkup"),
-      prescription: getCount("Prescription"),
-      lab: getCount("Lab Reports"),
-      others: getCount("Others"),
-    };
-  }, [petRecords]);
-
-  // Quick preview list (top 3) shown right under the upload card,
-  // expands into the full searchable/filterable list on "View All".
-  const previewRecords = petRecords.slice(0, 3);
+  // Helper to format file size
+  const formatSize = (bytes) => {
+    if (!bytes) return "";
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  };
 
   return (
-    <div className="medical-records-page">
-      {/* ===================== HERO ===================== */}
-      <section
-        className="hero"
-        style={{ backgroundImage: `url(${heroBg})` }}
-      >
-        <div className="hero-content">
-          <h1>
-            Your Pet's <br />
-            <span>Digital Medical</span> <br />
-            Vault
-          </h1>
-          <p>
-            Store prescriptions, lab reports, vaccination cards, and other
-            important medical records securely in one place.
-          </p>
+    <div className="medical-records">
+      {/* HEADER */}
+      <TopNav />
+
+      {/* PET PROFILE CARD WITH SWITCHER */}
+      {pets && pets.length > 0 && (
+        <div style={{ padding: '16px 16px 0' }}>
+          <ProfileCard
+            pets={pets}
+            selectedPet={activePet}
+            handlePetSelect={onPetSelect}
+            onAddPet={onAddPet}
+          />
         </div>
-              <div className="hero-visual">
-                
-              </div>
+      )}
+
+      {/* HERO IMAGE */}
+      <section className="hero-banner">
+        <img src={heroImage} alt="Medical Banner" />
       </section>
 
-      <div className="records-container">
-        {/* ===================== PET SELECTOR ===================== */}
-        <div className="pet-selector-section">
-          <h3>Select Pet</h3>
+      {/* ACTION BUTTONS */}
+      <section className="action-grid">
+        <button
+          className="action-card"
+          onClick={() => {
+            setUploadType("quick-access");
+            setShowUploadSheet(true);
+          }}
+        >
+          <div className="card-icon">
+            <FolderOpen size={28} strokeWidth={2} />
+          </div>
+          <h3>Quick Access</h3>
 
-          <div
-            className="selected-pet-card"
-            onClick={() => setShowPetDropdown(!showPetDropdown)}
-          >
-            <div className="selected-pet-left">
-              <img
-                src={currentPet.pet_photo_url || brunoImg}
-                alt={currentPet.pet_name || "Pet"}
-                className="selected-pet-avatar"
-              />
-              <div>
-                <h4>{currentPet.pet_name || "No Pet Selected"}</h4>
-                <span>
-                  {currentPet.breed || currentPet.pet_type || "Unknown"} • {getAge(currentPet.birth_date)}
-                </span>
-              </div>
-            </div>
+          <p>View your important records instantly.</p>
+        </button>
 
-            <div className={`dropdown-arrow ${showPetDropdown ? "rotate" : ""}`}>
-              ▾
-            </div>
+        <button
+          className="action-card"
+          onClick={() => {
+            setUploadType("category");
+            setShowUploadSheet(true);
+          }}
+        >
+          <div className="card-icon">
+            <Upload size={28} strokeWidth={2} />
           </div>
 
-          {showPetDropdown && (
-            <div className="pet-dropdown-menu">
-              {pets.map((pet) => (
-                <div
-                  key={pet.id}
-                  className={`dropdown-pet ${
-                    selectedPet === pet.id ? "active-pet" : ""
-                  }`}
-                  onClick={() => {
-                    setSelectedPet(pet.id);
-                    setShowPetDropdown(false);
-                  }}
-                >
-                  <img src={pet.pet_photo_url || brunoImg} alt={pet.pet_name} />
-                  <div>
-                    <h4>{pet.pet_name}</h4>
-                    <span>{pet.breed || pet.pet_type}</span>
-                  </div>
-                </div>
-              ))}
-              <button className="add-pet-btn" onClick={() => navigate("/create-pet-profile")}>+ Add New Pet</button>
-            </div>
-          )}
+          <h3>Upload via Category</h3>
+
+          <p>Organize and upload records by type.</p>
+        </button>
+      </section>
+
+      {/* RECORDS */}
+      <section className="records-section">
+        <div className="section-header">
+          <h2>View Records</h2>
         </div>
 
-        {/* ===================== UPLOAD CARD ===================== */}
-        <div className="upload-card">
-          <div className="drop-area">
-            <FiUploadCloud className="upload-icon" />
-            <h3>Drag or Drop Files Here</h3>
-            <p>or tap to browse</p>
-
-            <input
-              type="file"
-              id="fileUpload"
-              multiple
-              hidden
-              accept="image/*,.pdf"
-              onChange={handleFileChange}
-            />
-
-            <img src={dogImg} alt="Dog" className="upload-dog" />
-
-            <label htmlFor="fileUpload" className="browse-btn">
-              Browse Files
-            </label>
-
-            <div className="file-options">
-              <div className="option-card">
-                <FiCamera />
-                <span>Camera</span>
-              </div>
-              <div className="option-card">
-                <FiImage />
-                <span>Image</span>
-              </div>
-              <div className="option-card">
-                <FiFileText />
-                <span>PDF</span>
-              </div>
-            </div>
-
-            <small>Maximum 10 MB file allowed</small>
-          </div>
+        <div className="category-scroll">
+          {categories.map((item) => (
+            <button
+              key={item}
+              className={`chip ${activeCategory === item ? "active" : ""}`}
+              onClick={() => setActiveCategory(item)}
+            >
+              {item}
+            </button>
+          ))}
         </div>
 
-        {/* ===================== QUICK PREVIEW LIST ===================== */}
-        {!showAllRecords && petRecords.length > 0 && (
-          <div className="records-section">
-            <div className="records-header-row">
-              <h2>Medical Records</h2>
-              <span
-                className="view-all-link"
-                onClick={() => setShowAllRecords(true)}
-              >
-                <FiEye className="eye-icon" />
-                View All
-              </span>
-            </div>
+        {/* RECORDS LIST or EMPTY STATE */}
+        <div className="empty-state">
+          {/* 1. UPLOAD PROGRESS */}
+          {showUploadProgress && (
+            <div className="uploading-placeholder">
+              {progress < 100 ? (
+                <>
+                  <div className="upload-spinner"></div>
+                  <h3>Uploading...</h3>
+                </>
+              ) : (
+                <>
+                  <div className="upload-success-icon">
+                    <CheckCircle2 size={52} strokeWidth={2.4} />
+                  </div>
+                  <h3 className="upload-success-text">
+                    Uploaded Successfully
+                  </h3>
+                </>
+              )}
 
-            <div className="records-list">
-              {previewRecords.map((record) => (
+              <p>{selectedFile?.name}</p>
+
+              <div className="progress-bar">
                 <div
-                  className="record-card"
-                  key={record.id}
-                  onClick={() => setSelectedFile(record)}
-                >
-                  <div className="record-thumbnail">
-                    {record.thumbnail ? (
-                      <img src={record.thumbnail} alt={record.name} />
-                    ) : (
-                      <div className="pdf-box">
-                        <FiFileText />
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="record-details">
-                    <h4>{record.name}</h4>
-                    <span className="category-chip">{record.category}</span>
-                    <div className="record-meta">
-                      <span>{record.date}</span>
-                      <span>
-                        {record.size > 1024 * 1024
-                          ? `${(record.size / 1024 / 1024).toFixed(1)} MB`
-                          : `${(record.size / 1024).toFixed(0)} KB`}
-                      </span>
-                    </div>
-                  </div>
-
-                  <FiChevronRight className="record-arrow" />
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* ===================== FULL RECORDS VIEW (search + chips) ===================== */}
-        {showAllRecords && (
-          <div className="full-records-section">
-            <div className="top-bar">
-              <span
-                className="view-all-link back-link"
-                onClick={() => setShowAllRecords(false)}
-              >
-                ← Back
-              </span>
-
-              <div className="search-wrapper">
-                <FiSearch className="search-icon" />
-                <input
-                  type="text"
-                  placeholder="Search records..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="progress-fill"
+                  style={{ width: `${progress}%` }}
                 />
               </div>
-            </div>
 
-            <div className="chips-container">
-              <button
-                className={`chip chip-all ${activeTab === "All" ? "active" : ""}`}
-                onClick={() => setActiveTab("All")}
-              >
-                All ({counts.total})
-              </button>
-              <button
-                className={`chip ${activeTab === "Deworming" ? "active" : ""}`}
-                onClick={() => setActiveTab("Deworming")}
-              >
-                Deworming ({counts.deworming})
-              </button>
+              <span>{progress}%</span>
 
-              <button
-                className={`chip ${activeTab === "Deticking" ? "active" : ""}`}
-                onClick={() => setActiveTab("Deticking")}
-              >
-                Deticking ({counts.deticking})
-              </button>
-
-              <button
-                className={`chip ${activeTab === "Vaccination" ? "active" : ""}`}
-                onClick={() => setActiveTab("Vaccination")}
-              >
-                Vaccination ({counts.vaccination})
-              </button>
-
-              <button
-                className={`chip ${activeTab === "Anti-Rabies" ? "active" : ""}`}
-                onClick={() => setActiveTab("Anti-Rabies")}
-              >
-                Anti-Rabies ({counts.antiRabies})
-              </button>
-
-              <button
-                className={`chip ${activeTab === "Medical Checkup" ? "active" : ""}`}
-                onClick={() => setActiveTab("Medical Checkup")}
-              >
-                Medical Checkup ({counts.medical})
-            </button>
-
-            <button
-              className={`chip ${activeTab === "Prescription" ? "active" : ""}`}
-              onClick={() => setActiveTab("Prescription")}
-            >
-              Prescription ({counts.prescription})
-            </button>
-
-            <button
-              className={`chip ${activeTab === "Lab Reports" ? "active" : ""}`}
-              onClick={() => setActiveTab("Lab Reports")}
-            >
-              Lab Reports ({counts.lab})
-            </button>
-
-            <button
-              className={`chip ${activeTab === "Others" ? "active" : ""}`}
-              onClick={() => setActiveTab("Others")}
-            >
-              Others ({counts.others})
-            </button>
-
-            </div>
-
-            <div className="medical-list">
-              {filteredRecords.length === 0 ? (
-                <div className="empty-state">
-                  <img src={emptyRecords} alt="empty" />
-                  <h3>No Records Yet</h3>
-                  <p>
-                    Upload prescriptions, lab reports, vaccination records and
-                    more.
-                  </p>
-                </div>
-              ) : (
-                filteredRecords.map((record) => (
-                  <div
-                    className="medical-card"
-                    key={record.id}
-                    onClick={() => setSelectedFile(record)}
+              {progress === 100 && (
+                <div className="upload-actions">
+                  <button
+                    className="preview-btn"
+                    onClick={() => setShowPreview(true)}
                   >
-                    <div className="card-left-section">
-                      {record.thumbnail ? (
-                        <img
-                          src={record.thumbnail}
-                          alt={record.name}
-                          className="card-thumb"
-                        />
-                      ) : (
-                        <div className="card-thumb pdf-fallback">
-                          <FiFileText />
-                        </div>
-                      )}
+                    Preview
+                  </button>
 
-                      <div className="card-info">
-                        <span
-                          className={`badge badge-${record.category
-                            .toLowerCase()
-                            .replace(/\s+/g, "-")}`}
-                        >
-                          {record.category || "Other"}
-                        </span>
-                        <h3>{record.name}</h3>
-                        <div className="card-timestamp">
-                          <span className="date-text">{record.date}</span>
-                          <span className="divider-dot">•</span>
-                          <span className="time-text">
-                            {record.time || "12:00 PM"}
-                          </span>
-                        </div>
-                      </div>
+                  <button
+                    className="save-btn"
+                    onClick={async () => {
+                      // Upload to backend as quick access
+                      await uploadToBackend(
+                        selectedFile,
+                        selectedFile.name,
+                        "Quick Access"
+                      );
+                      setShowUploadProgress(false);
+                      setShowPreview(false);
+                      setSelectedFile(null);
+                      setProgress(0);
+                    }}
+                  >
+                    Save
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* 2. RECORDS FROM DB */}
+          {!showUploadProgress &&
+            (loadingRecords ? (
+              <div className="records-loading">
+                <div className="upload-spinner"></div>
+                <p>Loading records...</p>
+              </div>
+            ) : currentRecords.length > 0 ? (
+              <div className="records-list">
+                {currentRecords.map((record) => (
+                  <div
+                    key={record.id}
+                    className="record-card"
+                    onClick={() => setViewRecord(record)}
+                  >
+                    <div className="record-icon">
+                      {record.file_type?.includes("pdf") ? (
+                        <File size={30} />
+                      ) : (
+                        <FileImage size={30} />
+                      )}
                     </div>
 
-                    <div className="card-right-actions">
-                      <FiMoreVertical className="action-dots" />
-                      <FiChevronRight className="action-arrow" />
+                    <div className="record-details">
+                      <h4>{record.title || record.file_name}</h4>
+                      <p>{record.category}</p>
+                      <span>
+                        {record.created_at
+                          ? new Date(record.created_at).toLocaleDateString()
+                          : ""}
+                        {record.file_size
+                          ? ` · ${formatSize(record.file_size)}`
+                          : ""}
+                      </span>
+                    </div>
+
+                    <div className="record-chevron">
+                      <ChevronRight size={18} color="#999" />
                     </div>
                   </div>
-                ))
+                ))}
+              </div>
+            ) : (
+              <EmptyState
+                message={
+                  activeCategory === "Quick Access"
+                    ? "Start by uploading your medical records"
+                    : `No records in ${activeCategory}`
+                }
+              />
+            ))}
+        </div>
+      </section>
+
+      {/* FILE CHOOSING UPLOAD POPUP */}
+      {showUploadSheet && (
+        <div
+          className="sheet-overlay"
+          onClick={() => setShowUploadSheet(false)}
+        >
+          <div className="upload-sheet" onClick={(e) => e.stopPropagation()}>
+            <div className="sheet-handle"></div>
+
+            <div className="upload-icon">
+              <Upload size={36} strokeWidth={2.2} />
+            </div>
+
+            <h3>Upload Medical File</h3>
+
+            <button className="upload-option" onClick={handleTakePhoto}>
+              <Camera size={20} />
+              <span>Take Photo</span>
+            </button>
+            {/* Camera */}
+            <input
+              ref={cameraInputRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              hidden
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+
+                if (!file) return;
+
+                if (uploadType === "quick-access") {
+                  startUpload(file);
+                } else if (uploadType === "category") {
+                  setSelectedFile(file);
+                  setShowUploadSheet(false);
+                  setShowMetaForm(true);
+                }
+              }}
+            />
+
+            <button className="upload-option" onClick={handleChooseImage}>
+              <Image size={20} />
+              <span>Choose Image</span>
+            </button>
+            {/* Gallery */}
+            <input
+              ref={imageInputRef}
+              type="file"
+              accept="image/*"
+              hidden
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+
+                if (!file) return;
+
+                if (uploadType === "quick-access") {
+                  startUpload(file);
+                } else if (uploadType === "category") {
+                  setSelectedFile(file);
+                  setShowUploadSheet(false);
+                  setShowMetaForm(true);
+                }
+              }}
+            />
+
+            <button className="upload-option" onClick={handleChoosePDF}>
+              <FileText size={20} />
+              <span>Select PDF</span>
+            </button>
+            {/* PDF */}
+            <input
+              ref={pdfInputRef}
+              type="file"
+              accept=".pdf,application/pdf"
+              hidden
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+
+                if (!file) return;
+
+                if (uploadType === "quick-access") {
+                  startUpload(file);
+                } else if (uploadType === "category") {
+                  setSelectedFile(file);
+                  setShowUploadSheet(false);
+                  setShowMetaForm(true);
+                }
+              }}
+            />
+
+            <button
+              className="cancel-btn"
+              onClick={() => setShowUploadSheet(false)}
+            >
+              ✖ Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* PREVIEW IMAGE (for newly selected file) */}
+      {showPreview && selectedFile && (
+        <div className="preview-overlay">
+          <div className="preview-card">
+            <button
+              className="back-btn"
+              onClick={() => {
+                setShowPreview(false);
+              }}
+            >
+              <ArrowLeft size={22} />
+            </button>
+
+            {selectedFile.type.startsWith("image") ? (
+              <img
+                src={URL.createObjectURL(selectedFile)}
+                alt=""
+                className="preview-image"
+              />
+            ) : (
+              <iframe
+                title="pdf"
+                src={`${URL.createObjectURL(selectedFile)}#toolbar=0&navpanes=0&scrollbar=0`}
+                className="preview-pdf"
+              />
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* VIEW RECORD (from DB — uses URL) */}
+      {viewRecord && (
+        <div className="file-view-overlay" onClick={() => setViewRecord(null)}>
+          <div
+            className="file-view-card"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              className="close-btn"
+              onClick={() => setViewRecord(null)}
+            >
+              <X size={22} />
+            </button>
+
+            <div className="file-view-header">
+              <h3>{viewRecord.title || viewRecord.file_name}</h3>
+              <p>
+                {viewRecord.category}
+                {viewRecord.created_at &&
+                  ` · ${new Date(viewRecord.created_at).toLocaleDateString()}`}
+              </p>
+            </div>
+
+            <div className="file-view-content">
+              {viewRecord.file_type?.startsWith("image") ? (
+                <img src={viewRecord.file_url} alt="Medical record" />
+              ) : (
+                <iframe
+                  src={`${viewRecord.file_url}#toolbar=0&navpanes=0`}
+                  title="PDF"
+                />
               )}
             </div>
 
-            <div className="banner-illustration">
-              <img src={doctorDogImg} alt="Doctor checking dog" />
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* ===================== PREVIEW MODAL ===================== */}
-      {selectedFile && (
-        <div className="preview-overlay" onClick={() => setSelectedFile(null)}>
-          <div className="preview-modal" onClick={(e) => e.stopPropagation()}>
-            <button className="close-btn" onClick={() => setSelectedFile(null)}>
-              ×
+            <button
+              className="delete-btn"
+              onClick={() => setShowDeleteConfirm(true)}
+            >
+              <Trash2 size={20} />
+              Delete Record
             </button>
 
-            <h3>{selectedFile.name}</h3>
-
-            {selectedFile.type?.includes("pdf") ? (
-              <iframe
-                src={selectedFile.file_url}
-                title="PDF Preview"
-                className="pdf-frame"
-              />
-            ) : (
-              <img
-                src={selectedFile.file_url || selectedFile.thumbnail}
-                alt={selectedFile.name}
-                className="preview-image"
-              />
+            {showDeleteConfirm && (
+              <div className="confirm-dialog">
+                <p>Delete this record?</p>
+                <div className="confirm-actions">
+                  <button
+                    className="confirm-yes"
+                    onClick={() => {
+                      deleteRecord(viewRecord.id);
+                      setShowDeleteConfirm(false);
+                    }}
+                  >
+                    Yes, Delete
+                  </button>
+                  <button
+                    className="confirm-no"
+                    onClick={() => setShowDeleteConfirm(false)}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
             )}
-            
-            <a href={selectedFile.file_url} target="_blank" rel="noopener noreferrer" className="download-btn" style={{display: 'block', textAlign: 'center', marginTop: '12px', color: '#2ea862', fontWeight: 600}}>
-              Open File in New Tab
-            </a>
           </div>
         </div>
       )}
 
-      {/* ===================== CATEGORY / TITLE MODAL ===================== */}
-      {showModal && (
-        <div className="preview-overlay">
-          <div className="category-modal">
+      {/* CATEGORY META FORM */}
+      {showMetaForm && selectedFile && (
+        <div className="meta-overlay">
+          <div className="meta-modal">
             <h3>Record Details</h3>
 
+            {/* Record Name */}
             <input
-              type="text"
-              placeholder="Record Title"
-              value={recordTitle}
-              onChange={(e) => setRecordTitle(e.target.value)}
+              name="recordName"
+              placeholder="Enter record name"
+              value={formData.recordName}
+              onChange={handleFormChange}
+              className="input"
             />
 
-            <select
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-            >
-              <option value="">Select Category</option>
-              {CATEGORIES.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
-                </option>
-              ))}
-            </select>
+            {/* Category — Mobile-friendly picker */}
+            <div className="category-row">
+              <button
+                type="button"
+                className="category-picker-btn"
+                onClick={() => setShowCategoryPicker(true)}
+              >
+                <span>{formData.category}</span>
+                <ChevronRight size={18} />
+              </button>
+            </div>
 
-            {uploadError && <div style={{color: 'red', fontSize: '14px', marginBottom: '10px'}}>{uploadError}</div>}
+            {/* Date */}
+            <input
+              type="date"
+              name="date"
+              value={formData.date}
+              onChange={handleFormChange}
+              className="input"
+            />
 
-            <button
-              className="save-record-btn"
-              onClick={saveRecord}
-              disabled={!selectedCategory || isUploading}
-            >
-              {isUploading ? "Uploading..." : "Save Record"}
-            </button>
+            {/* Notes */}
+            <textarea
+              name="notes"
+              placeholder="Notes (optional)"
+              value={formData.notes}
+              onChange={handleFormChange}
+              className="textarea"
+            />
+
+            {/* ACTION BUTTONS */}
+            <div className="form-actions">
+              <button onClick={saveCategoryRecord}>Save</button>
+              <button
+                className="form-cancel-btn"
+                onClick={() => {
+                  setShowMetaForm(false);
+                  setSelectedFile(null);
+                }}
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       )}
 
-      {/* ===================== SUCCESS TOAST ===================== */}
-      {showSuccess && (
-        <div className="success-overlay">
-          <div className="success-box">
-            <div className="success-check">✓</div>
-            <h3>Uploaded Successfully</h3>
+      {/* MOBILE CATEGORY PICKER BOTTOM SHEET */}
+      {showCategoryPicker && (
+        <div
+          className="sheet-overlay"
+          onClick={() => setShowCategoryPicker(false)}
+        >
+          <div
+            className="category-sheet"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="sheet-handle"></div>
+            <h3>Select Category</h3>
+            <div className="category-options">
+              {allCategories.map((cat) => (
+                <button
+                  key={cat}
+                  className={`category-option ${formData.category === cat ? "active" : ""}`}
+                  onClick={() => {
+                    setFormData((prev) => ({ ...prev, category: cat }));
+                    setShowCategoryPicker(false);
+                  }}
+                >
+                  <span className="category-option-text">{cat}</span>
+                  {formData.category === cat && (
+                    <CheckCircle2 size={20} className="category-check" />
+                  )}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       )}
     </div>
   );
 }
-
-export default MedicalRecords;

@@ -51,21 +51,6 @@ function Step1({ goNext, onNavigateBack }) {
         </p>
       </div>
 
-      <label className="upload-card">
-        {image ? (
-          <img src={image} alt="preview" />
-        ) : (
-          <>
-            <div className="upload-icon">
-              <FiCamera />
-            </div>
-            <h3>Upload Pet Photo</h3>
-            <p>JPG, PNG up to 10MB</p>
-          </>
-        )}
-        <input type="file" accept="image/*" hidden onChange={handleImageUpload} />
-      </label>
-
       <button
         type="button"
         className="skip-btn"

@@ -10,6 +10,16 @@ from app.supabase_client import supabase
 
 router = APIRouter()
 
+def ensure_bucket_exists():
+    try:
+        buckets = supabase.storage.list_buckets()
+        bucket_names = [b.name for b in buckets] if buckets else []
+        if "medical-docs" not in bucket_names:
+            supabase.storage.create_bucket("medical-docs", options={"public": True})
+            print("[Storage] Created public bucket 'medical-docs'")
+    except Exception as e:
+        print(f"[Storage] Note during bucket check: {e}")
+
 @router.post("/upload")
 async def upload_medical_record(
     pet_profile_id: str = Form(...),
@@ -22,24 +32,21 @@ async def upload_medical_record(
         if not pet_profile_id or not title or not category:
             raise HTTPException(status_code=400, detail="Missing required fields")
 
+        ensure_bucket_exists()
+
         # 1) Upload to Storage Bucket 'medical-docs'
         timestamp = int(time.time() * 1000)
-        # Clean filename to avoid URL issues
         safe_filename = file.filename.replace(" ", "_") if file.filename else "document"
         
-        # Path structure: {category}/{pet_profile_id}/{timestamp}-{filename}
-        # e.g., Vaccination_Record/123e4567-e89b-12d3-a456-426614174000/1684332000-vax.pdf
-        # Clean category for path (replace spaces with underscores)
-        safe_category = category.replace(" ", "_")
-        storage_path = f"{safe_category}/{pet_profile_id}/{timestamp}-{safe_filename}"
+        # Clean path: {pet_profile_id}/{timestamp}-{filename}
+        storage_path = f"{pet_profile_id}/{timestamp}-{safe_filename}"
         
         file_bytes = await file.read()
         file_size = len(file_bytes)
         
-        if file_size > 5 * 1024 * 1024: # 5MB limit
-             raise HTTPException(status_code=400, detail="File too large. Maximum size is 5MB.")
+        if file_size > 10 * 1024 * 1024: # 10MB limit
+             raise HTTPException(status_code=400, detail="File too large. Maximum size is 10MB.")
 
-        # Ensure the bucket exists manually in Supabase UI before this runs!
         res = supabase.storage.from_("medical-docs").upload(
             storage_path,
             file_bytes,
@@ -49,7 +56,16 @@ async def upload_medical_record(
         # Get the public URL for the file
         public_url = supabase.storage.from_("medical-docs").get_public_url(storage_path)
         
-        # 2) Insert record into DB
+        # 2) Fetch user_id tied to the pet_profile_id
+        user_id = None
+        try:
+            pet_res = supabase.table("pet_profiles").select("user_id").eq("id", pet_profile_id).execute()
+            if pet_res.data and len(pet_res.data) > 0:
+                user_id = pet_res.data[0].get("user_id")
+        except Exception as p_err:
+            print(f"Notice: Could not fetch user_id for pet {pet_profile_id}: {p_err}")
+
+        # Insert record into DB
         db_record = {
             "pet_profile_id": pet_profile_id,
             "title": title,
@@ -60,8 +76,18 @@ async def upload_medical_record(
             "file_size": file_size,
             "storage_path": storage_path
         }
-        
-        db_res = supabase.table("medical_records").insert(db_record).execute()
+        if user_id:
+            db_record["user_id"] = user_id
+
+        try:
+            db_res = supabase.table("medical_records").insert(db_record).execute()
+        except Exception as ins_err:
+            # Fallback if user_id column doesn't exist in DB schema yet
+            if user_id and "user_id" in str(ins_err):
+                db_record.pop("user_id", None)
+                db_res = supabase.table("medical_records").insert(db_record).execute()
+            else:
+                raise ins_err
         
         if not db_res.data:
             # If DB insert fails, try to clean up the uploaded file

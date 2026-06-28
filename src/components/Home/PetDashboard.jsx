@@ -1,27 +1,34 @@
 import React, { useEffect, useRef, useState } from "react";
-import "./PetHome.css";
+import "./PetDashboard.css";
 
 import ProfileCard from "./ProfileCard/ProfileCard";
+import "./ProfileCard/ProfileCard.css";
 import HealthBanner from "./HealthBanner/HealthBanner";
+import "./HealthBanner/HealthBanner.css";
 import QuickActions from "./QuickActions/QuickActions";
+import "./QuickActions/QuickActions.css";
 import ReminderCard from "./ReminderCard/ReminderCard";
+import "./ReminderCard/ReminderCard.css";
 import NoRecordsCard from "./NoRecordsCard/NoRecordsCard";
+import "./NoRecordsCard/NoRecordsCard.css";
+import HeroSection from "./HeroSection/HeroSection";
+import AddPetCard from "./AddPetCard/AddPetCard";
 
 export default function PetHome({
   pets = [],
-  selectedPet,
+  selectedPet: propSelectedPet,
   setSelectedPet,
   onAddPet,
 }) {
   const [showPetDropdown, setShowPetDropdown] = useState(false);
   const dropdownRef = useRef(null);
 
-  if (!selectedPet) {
-    return <div style={{ padding: "20px" }}>No pet selected</div>;
-  }
+  const selectedPet = propSelectedPet || (pets.length > 0 ? pets[0] : null);
 
   const handlePetSelect = (pet) => {
-    setSelectedPet(pet);
+    if (typeof setSelectedPet === "function") {
+      setSelectedPet(pet);
+    }
     setShowPetDropdown(false);
   };
 
@@ -40,6 +47,24 @@ export default function PetHome({
       document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  if (!selectedPet || pets.length === 0) {
+    return (
+      <main className="pet-home">
+        <HeroSection />
+
+        <div style={{ marginTop: '24px' }}>
+          <AddPetCard onAddPet={onAddPet} />
+        </div>
+
+        <div style={{ marginTop: '24px' }}>
+          <HealthBanner />
+        </div>
+
+        <div style={{ height: '80px' }} />
+      </main>
+    );
+  }
+
   return (
     <div className="pet-home">
       <ProfileCard
@@ -55,7 +80,7 @@ export default function PetHome({
       <HealthBanner />
       <QuickActions />
       <ReminderCard />
-      <NoRecordsCard />
+      <NoRecordsCard selectedPet={selectedPet} />
     </div>
   );
 }

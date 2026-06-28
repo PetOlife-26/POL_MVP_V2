@@ -1,0 +1,33 @@
+.pet-card {
+  border: 1px solid #e0e0e0;
+}
+
+.pet-avatar {
+  border-color: #f39c12;
+}
+
+.icon-value {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.inline-icon {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+}
+
+.edit-select {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  background-color: white;
+  transition: border-color 0.2s;
+}
+
+.edit-select:focus {
+  border-color: #138a36;
+}

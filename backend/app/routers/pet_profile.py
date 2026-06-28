@@ -211,6 +211,36 @@ async def update_pet_profile(profile_id: str, updates: PetProfileUpdate):
         raise HTTPException(status_code=500, detail=f"Failed to update profile: {str(e)}")
 
 
+@router.post("/{profile_id}/photo")
+async def update_pet_photo(profile_id: str, file: UploadFile = File(...)):
+    """Upload and update pet photo."""
+    try:
+        # Verify pet exists
+        result = supabase.table("pet_profiles").select("id").eq("id", profile_id).execute()
+        if not result.data:
+            raise HTTPException(status_code=404, detail="Pet profile not found")
+
+        # Upload photo
+        file_name = f"{profile_id}-{int(time.time() * 1000)}-{file.filename.replace(' ', '-')}"
+        file_bytes = await file.read()
+        
+        supabase.storage.from_("pet-photos").upload(
+            file_name,
+            file_bytes,
+            {"content-type": file.content_type or "image/jpeg"}
+        )
+        
+        photo_url = supabase.storage.from_("pet-photos").get_public_url(file_name)
+        
+        # Update db
+        supabase.table("pet_profiles").update({"pet_photo_url": photo_url}).eq("id", profile_id).execute()
+        
+        return {"message": "Photo uploaded successfully", "pet_photo_url": photo_url}
+    except Exception as e:
+        print(f"Photo upload error: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to upload photo: {str(e)}")
+
+
 @router.get("/by-petolife-id/{petolife_id:path}")
 async def get_by_petolife_id_redirect(petolife_id: str):
     """QR scan endpoint — redirects browser to the frontend pet profile UI."""

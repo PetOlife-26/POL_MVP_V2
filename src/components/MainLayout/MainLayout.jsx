@@ -1,19 +1,17 @@
 import React, { useState, useEffect } from "react";
-import "./HomeScreen.css";
+import "./MainLayout.css";
 import { useNavigate, useLocation } from "react-router-dom";
 
-import TopNav from "../../common/TopNav/TopNav";
-import BottomNav from "../../common/BottomNav/BottomNav";
-import HeroSection from "../HeroSection/HeroSection";
-import AddPetCard from "../AddPetCard/AddPetCard";
-import HealthBanner from "../HealthBanner/HealthBanner";
-import ChecklistPage from "../../Checklist/Checklistpage/Checklistpage";
-import MedicalRecords from "../../medical/MedicalRecords";
-import PetHomePage from "../../Pethome/PetHomePage";
-import fetchWithAuth from "../../../utils/fetchWithAuth";
-import useAuth from "../../../hooks/useAuth";
+import TopNav from "../common/TopNav/TopNav";
+import BottomNav from "../common/BottomNav/BottomNav";
+import MedicalRecords from "../medical/MedicalRecords";
+import Home from "../Home/Home";
+import TimelinePage from "../Timeline/TimelinePage";
+import UserProfile from "../UserProfile/UserProfile";
+import fetchWithAuth from "../../utils/fetchWithAuth";
+import useAuth from "../../hooks/useAuth";
 
-const HomeScreen = () => {
+const MainLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
@@ -81,15 +79,28 @@ const HomeScreen = () => {
     navigate("/create-pet-profile");
   };
 
+  const handlePetSelect = (selectedPet) => {
+    if (!selectedPet) return;
+    setActivePetId(selectedPet.id);
+    if (user?.id) {
+      localStorage.setItem(`active_pet_id_${user.id}`, selectedPet.id);
+    }
+  };
+
   const renderContent = () => {
-    if (activeTab === "checklist") {
-      return <ChecklistPage onNavigate={setActiveTab} onFabPress={handleFab} activePetId={activePetId} pets={pets} />;
+    if (activeTab === "timeline" || activeTab === "checklist") {
+      return <TimelinePage />;
     }
     
     if (activeTab === "medicalrecords" || activeTab === "docs") {
       return (
         <div style={{ paddingBottom: '70px', height: '100vh', overflowY: 'auto' }}>
-          <MedicalRecords pets={pets} activePetId={activePetId} setRecords={() => {}} />
+          <MedicalRecords
+            pets={pets}
+            activePetId={activePetId}
+            onPetSelect={handlePetSelect}
+            onAddPet={handleAddPet}
+          />
         </div>
       );
     }
@@ -97,28 +108,27 @@ const HomeScreen = () => {
     if (activeTab === "profile") {
       return (
         <div style={{ paddingBottom: '70px', height: '100vh', overflowY: 'auto' }}>
-           <PetHomePage pets={pets} activePetId={activePetId} />
+          <TopNav />
+          <UserProfile
+            pets={pets}
+            activePetId={activePetId}
+            onPetSelect={handlePetSelect}
+            onAddPet={handleAddPet}
+          />
         </div>
       );
     }
 
     // HOME TAB
     return (
-      <div className="homescreen" style={{ height: '100vh', overflowY: 'auto' }}>
+      <div style={{ paddingBottom: '70px', height: '100vh', overflowY: 'auto' }}>
         <TopNav />
-        <main className="homescreen__body">
-          <HeroSection />
-
-          <div className="homescreen__section">
-            <AddPetCard onAddPet={handleAddPet} />
-          </div>
-
-          <div className="homescreen__section">
-            <HealthBanner />
-          </div>
-
-          <div className="homescreen__nav-spacer" style={{ height: '80px' }} />
-        </main>
+        <Home
+          pets={pets}
+          activePetId={activePetId}
+          onPetSelect={handlePetSelect}
+          onAddPet={handleAddPet}
+        />
       </div>
     );
   };
@@ -135,4 +145,4 @@ const HomeScreen = () => {
   );
 };
 
-export default HomeScreen;
+export default MainLayout;

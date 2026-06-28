@@ -24,68 +24,35 @@
   gap: 5px;
 }
 
-/* When you pass a real logo image */
+
+/* Logo image */
 .topnav__logo-img {
-  height: 50px;
+  height: 38px;
   width: auto;
   object-fit: contain;
 }
 
-/* Fallback text logo */
-.topnav__logo-fallback {
+
+.topnav__right {
   display: flex;
   align-items: center;
-  gap: 6px;
 }
 
-.topnav__wordmark {
-  font-size: 20px;
-  font-weight: 800;
-  color: #111;
-  letter-spacing: -0.3px;
-  line-height: 1;
-}
-
-.topnav__chevron {
-  margin-top: 2px;
-  flex-shrink: 0;
-}
-
-.topnav__tagline {
-  margin: 0;
-  font-size: 11.5px;
-  color: #666;
-  letter-spacing: 0.1px;
-  line-height: 1.3;
-}
-
-/* BELL BUTTON */
-.topnav__bell {
-  position: relative;
+.topnav__icon-btn {
   background: none;
   border: none;
+  padding: 8px;
+  color: #333;
   cursor: pointer;
-  padding: 4px;
-  margin-top: 2px;
-  color: #222;
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  transition: background 0.15s;
+  transition: background 0.2s ease;
 }
 
-.topnav__bell:hover {
+.topnav__icon-btn:hover {
   background: #f0f0f0;
 }
 
-.topnav__dot {
-  position: absolute;
-  top: 4px;
-  right: 4px;
-  width: 9px;
-  height: 9px;
-  background: #4cde7f;
-  border-radius: 50%;
-  border: 2px solid #fff;
-}

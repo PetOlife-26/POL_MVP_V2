@@ -1,9 +1,29 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
+import "./QuickActions.css";
 
 import checklistIcon from "./checklist-icon.png";
 import medicalRecordsIcon from "./medical-records-icon.png";
 
-export default function QuickActions() {
+export default function QuickActions({ onNavigateTab }) {
+  const navigate = useNavigate();
+
+  const handleTimeline = () => {
+    if (typeof onNavigateTab === "function") {
+      onNavigateTab("timeline");
+    } else {
+      navigate("/home", { state: { tab: "timeline" } });
+    }
+  };
+
+  const handleRecords = () => {
+    if (typeof onNavigateTab === "function") {
+      onNavigateTab("medicalrecords");
+    } else {
+      navigate("/home", { state: { tab: "medicalrecords" } });
+    }
+  };
+
   return (
     <section className="quick-actions-section">
       <div className="section-header">
@@ -12,7 +32,11 @@ export default function QuickActions() {
       </div>
 
       <div className="quick-actions-grid">
-        <div className="action-card action-card--green">
+        <div
+          className="action-card action-card--green"
+          style={{ cursor: "pointer" }}
+          onClick={handleTimeline}
+        >
           <div className="action-card-icon">
             <img src={checklistIcon} alt="" />
           </div>
@@ -24,12 +48,23 @@ export default function QuickActions() {
               Track care, tasks & important reminders
             </p>
           </div>
-          <button className="action-card-btn action-card-btn--green">
+          <button
+            type="button"
+            className="action-card-btn action-card-btn--green"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleTimeline();
+            }}
+          >
             →
           </button>
         </div>
 
-        <div className="action-card action-card--purple">
+        <div
+          className="action-card action-card--purple"
+          style={{ cursor: "pointer" }}
+          onClick={handleRecords}
+        >
           <div className="action-card-icon">
             <img src={medicalRecordsIcon} alt="" />
           </div>
@@ -41,7 +76,14 @@ export default function QuickActions() {
               Upload & store pet medical documents
             </p>
           </div>
-          <button className="action-card-btn action-card-btn--purple">
+          <button
+            type="button"
+            className="action-card-btn action-card-btn--purple"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleRecords();
+            }}
+          >
             →
           </button>
         </div>

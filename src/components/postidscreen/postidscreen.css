@@ -268,3 +268,114 @@
   .id-panel { flex-direction: column; align-items: center; text-align: center; }
   .id-info { align-items: center; width: 100%; }
 }
+
+/* ---------- Share Modal ---------- */
+.share-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.share-modal {
+  background: #ffffff;
+  border-radius: 28px 28px 0 0;
+  padding: 24px;
+  width: 100%;
+  max-width: 480px;
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.3);
+}
+
+.share-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.share-header h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--green-800);
+}
+
+.share-close {
+  background: #f1f5f9;
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #64748b;
+}
+
+.share-sub {
+  margin: 0 0 16px;
+  font-size: 0.9rem;
+  color: #64748b;
+}
+
+.share-text-box {
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 14px;
+  font-size: 0.88rem;
+  color: #1e293b;
+  margin-bottom: 20px;
+  word-break: break-all;
+  line-height: 1.4;
+}
+
+.share-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.share-opt-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  border-radius: 16px;
+  border: none;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+
+.share-opt-btn:active {
+  transform: scale(0.98);
+}
+
+.share-opt-btn.whatsapp {
+  background: #25d366;
+  color: #ffffff;
+}
+
+.share-opt-btn.copy {
+  background: #f1f5f9;
+  color: #1e293b;
+  border: 1.5px solid #e2e8f0;
+}
+
+.share-opt-btn.native {
+  background: var(--green-800);
+  color: #ffffff;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}

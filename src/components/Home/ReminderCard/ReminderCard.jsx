@@ -1,7 +1,19 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
+import "./ReminderCard.css";
 import reminderIcon from "./reminder-icon.png";
 
-export default function ReminderCard() {
+export default function ReminderCard({ onNavigateTab }) {
+  const navigate = useNavigate();
+
+  const handleTimeline = () => {
+    if (typeof onNavigateTab === "function") {
+      onNavigateTab("timeline");
+    } else {
+      navigate("/home", { state: { tab: "timeline" } });
+    }
+  };
+
   return (
     <div className="reminder-card">
       <div className="reminder-left">
@@ -16,7 +28,9 @@ export default function ReminderCard() {
         </div>
       </div>
 
-      <button className="reminder-view-btn">View All</button>
+      <button className="reminder-view-btn" onClick={handleTimeline}>
+        View All
+      </button>
     </div>
   );
 }

@@ -102,9 +102,6 @@ function SuccessScreen({ type, userName, onContinue }) {
    ══════════════════════════════════════════════════════ */
   function RegistrationScreen({ onLogin, onSuccess }) {
     const [form, setForm] = useState({
-    petName: "",
-    petType: "",
-    customPetType: "",
     name: "",
     mobile: "",
     password: "",
@@ -112,9 +109,6 @@ function SuccessScreen({ type, userName, onContinue }) {
     city: "",
     state: "",
   });
-  const finalPetType =
-  form.petType === "Other" ? form.customPetType.trim() : form.petType;
-  const [showOtherPetInput, setShowOtherPetInput] = useState(false);
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -169,21 +163,6 @@ function SuccessScreen({ type, userName, onContinue }) {
   }, [form.pincode, lookupPincode]);
 
   const handleRegister = async () => {
-        if (!form.petName.trim()) {
-          setError("Please enter your pet name.");
-          return;
-        }
-
-        if (!form.petType) {
-          setError("Please select your pet type.");
-          return;
-        }
-
-        if (form.petType === "Other" && !form.customPetType.trim()) {
-          setError("Please enter your pet type.");
-          return;
-        }
-
     if (!form.name.trim()) { setError("Please enter your name."); return; }
     if (!form.mobile.trim() || form.mobile.replace(/\D/g, "").length < 10) {
       setError("Please enter a valid 10-digit mobile number."); return;
@@ -213,6 +192,9 @@ function SuccessScreen({ type, userName, onContinue }) {
           phone,
           password: userPassword,
           full_name: form.name.trim(),
+          city: form.city,
+          state: form.state,
+          pincode: form.pincode,
         }),
       });
       const signupData = await signupRes.json();
@@ -236,8 +218,6 @@ function SuccessScreen({ type, userName, onContinue }) {
         ...loginData.user,
         user_metadata: {
           ...loginData.user.user_metadata,
-          pet_name: form.petName,
-          pet_type: finalPetType,
           pincode: form.pincode,
           city: form.city,
           state: form.state,
@@ -277,82 +257,7 @@ function SuccessScreen({ type, userName, onContinue }) {
       </div>
 
       {error && <p className="auth-error">{error}</p>}
-      {/* Pet Name */}
-<div className="form-group">
-  <label>Pet Name</label>
-  <input
-    type="text"
-    placeholder="Enter your pet name"
-    value={form.petName}
-    onChange={set("petName")}
-  />
-</div>
-{/* Pet Type */}
-<div className="form-group">
-  <label>Pet Type</label>
 
-  <div className="pet-type-options">
-    <button
-      type="button"
-      className={`pet-type-btn ${form.petType === "Dog" ? "active" : ""}`}
-      onClick={() => {
-        setForm((prev) => ({
-          ...prev,
-          petType: "Dog",
-          customPetType: "",
-        }));
-        setShowOtherPetInput(false);
-      }}
-    >
-      Dog
-    </button>
-
-    <button
-      type="button"
-      className={`pet-type-btn ${form.petType === "Cat" ? "active" : ""}`}
-      onClick={() => {
-        setForm((prev) => ({
-          ...prev,
-          petType: "Cat",
-          customPetType: "",
-        }));
-        setShowOtherPetInput(false);
-      }}
-    >
-      Cat
-    </button>
-
-    <button
-      type="button"
-      className={`pet-type-btn ${showOtherPetInput ? "active" : ""}`}
-      onClick={() => {
-        setForm((prev) => ({
-          ...prev,
-          petType: "Other",
-        }));
-        setShowOtherPetInput(true);
-      }}
-    >
-      Other
-    </button>
-  </div>
-
-  {showOtherPetInput && (
-    <div className="other-pet-input-wrap">
-      <input
-        type="text"
-        placeholder="Enter pet type"
-        value={form.customPetType}
-        onChange={(e) =>
-          setForm((prev) => ({
-            ...prev,
-            customPetType: e.target.value,
-          }))
-        }
-      />
-    </div>
-  )}
-</div>
       {/* Pet Parent Name */}
       <div className="form-group">
         <label>Pet Parent Name</label>
@@ -369,7 +274,7 @@ function SuccessScreen({ type, userName, onContinue }) {
       <div className="form-group">
         <label>Mobile Number</label>
         <div className="phone-input-group">
-          
+          <span className="phone-prefix">+91</span>
           <input
             type="tel"
             placeholder="Enter 10-digit mobile number"
@@ -495,7 +400,14 @@ function LoginScreen({ onSignUp, onSuccess }) {
       if (isEmail) {
         payload.email = identifier;
       } else {
-        payload.phone = identifier.replace(/\s+/g, '');
+        // Add +91 prefix for phone login
+        let phone = identifier.replace(/[\s\-\(\)]/g, '');
+        if (!phone.startsWith("+")) {
+          phone = phone.replace(/\D/g, '');
+          if (phone.length === 10) phone = "+91" + phone;
+          else if (!phone.startsWith("+")) phone = "+" + phone;
+        }
+        payload.phone = phone;
       }
 
       const res = await fetch(`${API_BASE}/api/auth/login`, {

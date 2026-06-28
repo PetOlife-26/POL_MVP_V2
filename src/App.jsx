@@ -6,9 +6,10 @@ import "./App.css";
 
 // Lazy-loaded routes
 const LandingPg = lazy(() => import("./components/LandingPg/LandingPg"));
-const Home = lazy(() => import("./components/Home/HomeScreen/HomeScreen"));
+const MainLayout = lazy(() => import("./components/MainLayout/MainLayout"));
 const ProfileCreate = lazy(() => import("./components/ProfileCreation/ProfileCreation/ProfileCreation"));
 const PetCard = lazy(() => import("./components/petcard/petcard"));
+const ResetPassword = lazy(() => import("./components/Login/ResetPassword"));
 
 function LoadingFallback() {
   return (
@@ -27,11 +28,12 @@ function App() {
           <Route path="/" element={<Navigate to="/landing" replace />} />
           <Route path="/landing" element={<LandingPg />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/pet/:id" element={<PetCard />} />
           
           {/* Protected Routes */}
           <Route element={<ProtectedRoute />}>
-            <Route path="/home" element={<Home />} />
+            <Route path="/home" element={<MainLayout />} />
             <Route path="/create-pet-profile" element={<ProfileCreate />} />
           </Route>
           

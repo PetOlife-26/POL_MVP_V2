@@ -88,8 +88,14 @@ function ProfileCreation({ onNavigateBack, onNavigateToPetHome }) {
           submitError={submitError}
           setSubmitError={setSubmitError}
           onNavigateToPetHome={(data) => {
-             // Instead of navigating, save response and go to step 5
-             setPetData(prev => ({...prev, createdPet: data}));
+             // Extract data in the shape PostIdScreen expects
+             const createdPet = {
+               petName: data.newPet?.name || data.newPet?.pet_name || '',
+               petolifeId: data.newPet?.petolife_id || '',
+               petPhotoUrl: data.newPet?.image || data.newPet?.pet_photo_url || '',
+               petProfileId: data.newPet?.id || '',
+             };
+             setPetData(prev => ({...prev, createdPet}));
              setStep(5);
           }}
         />

@@ -12,7 +12,7 @@ from typing import Optional, Literal
 from fastapi import APIRouter, HTTPException, Header
 from pydantic import BaseModel
 from app.supabase_client import supabase
-from app.config import FRONTEND_URL
+from app.config import FRONTEND_URL, SUPABASE_URL, SUPABASE_ANON_KEY
 
 router = APIRouter()
 
@@ -22,6 +22,9 @@ class SignupRequest(BaseModel):
     phone: Optional[str] = None
     password: str
     full_name: Optional[str] = None
+    city: Optional[str] = None
+    state: Optional[str] = None
+    pincode: Optional[str] = None
 
 
 class LoginRequest(BaseModel):
@@ -48,6 +51,11 @@ class RegisterInterestRequest(BaseModel):
 
 class ForgotPasswordRequest(BaseModel):
     email: str
+
+
+class ResetPasswordRequest(BaseModel):
+    access_token: str
+    new_password: str
 
 
 @router.post("/signup")
@@ -82,6 +90,9 @@ async def signup(body: SignupRequest):
                 "full_name": body.full_name or "",
                 "phone": body.phone or "",
                 "email": body.email or "",
+                "city": body.city or "",
+                "state": body.state or "",
+                "pincode": body.pincode or "",
             }).execute()
         except Exception as profile_err:
             print(f"[Auth] Warning: Could not save user_profile: {profile_err}")
@@ -100,6 +111,12 @@ async def signup(body: SignupRequest):
     except Exception as e:
         error_msg = str(e)
         print(f"Signup error: {error_msg}")
+        # Provide user-friendly error for duplicate phone/email
+        if "already been registered" in error_msg.lower() or "already exists" in error_msg.lower() or "duplicate" in error_msg.lower():
+            raise HTTPException(
+                status_code=400,
+                detail="This phone number or email is already registered. Please login instead."
+            )
         raise HTTPException(status_code=400, detail=error_msg)
 
 
@@ -116,10 +133,13 @@ async def login(body: LoginRequest):
         if body.phone:
             credentials["phone"] = body.phone
 
-        # Temporary client so global service_role client auth state is never mutated
+        # Use anon key (with service role fallback) for sign_in_with_password
         from supabase import create_client
-        from app.config import SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
-        temp_supabase = create_client(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
+        auth_key = SUPABASE_ANON_KEY
+        if not auth_key:
+            print("[Auth] WARNING: Neither SUPABASE_ANON_KEY nor SUPABASE_SERVICE_ROLE_KEY is set")
+            raise HTTPException(status_code=500, detail="Server configuration error: Supabase key not set")
+        temp_supabase = create_client(SUPABASE_URL, auth_key)
 
         result = temp_supabase.auth.sign_in_with_password(credentials)
 
@@ -238,3 +258,32 @@ async def forgot_password(body: ForgotPasswordRequest):
         error_msg = str(e)
         print(f"Forgot password error: {error_msg}")
         raise HTTPException(status_code=400, detail=error_msg)
+
+
+@router.post("/reset-password")
+async def reset_password(body: ResetPasswordRequest):
+    """Reset user password using the access token from the reset email link."""
+    try:
+        if not body.new_password or len(body.new_password) < 6:
+            raise HTTPException(status_code=400, detail="Password must be at least 6 characters.")
+
+        # Get user from access token to find user_id
+        user_result = supabase.auth.get_user(body.access_token)
+        if not user_result or not user_result.user:
+            raise HTTPException(status_code=401, detail="Invalid or expired reset token.")
+
+        user_id = user_result.user.id
+
+        # Update password via admin API
+        supabase.auth.admin.update_user_by_id(
+            user_id,
+            {"password": body.new_password}
+        )
+
+        return {"message": "Password reset successfully. You can now login with your new password."}
+    except HTTPException:
+        raise
+    except Exception as e:
+        error_msg = str(e)
+        print(f"Reset password error: {error_msg}")
+        raise HTTPException(status_code=400, detail=f"Failed to reset password: {error_msg}")
