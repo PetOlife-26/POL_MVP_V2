@@ -47,8 +47,9 @@ const MainLayout = () => {
           }
         }
 
-        // Fetch fresh from backend
-        const res = await fetchWithAuth("/api/pet-profile/");
+        // ✅ FIX: Fetch only THIS user's pets using their user.id
+        // Previously was "/api/pet-profile/" which returned ALL pets from ALL users
+        const res = await fetchWithAuth(`/api/pet-profile/by-user/${user.id}`);
         if (res.ok) {
           const data = await res.json();
           setPets(data);
