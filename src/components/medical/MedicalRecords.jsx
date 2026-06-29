@@ -17,8 +17,8 @@ import {
 } from "lucide-react";
 import heroImage from "../../assets/medical-banner.png";
 import emptyDog from "../../assets/empty-dog.png";
-import ProfileCard from "../Pethome/ProfileCard/ProfileCard";
-import "../Pethome/ProfileCard/ProfileCard.css";
+import ProfileCard from "../Home/ProfileCard/ProfileCard";
+import "../Home/ProfileCard/ProfileCard.css";
 import TopNav from "../common/TopNav/TopNav";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
