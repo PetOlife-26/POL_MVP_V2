@@ -2,6 +2,7 @@
 Pet Profile routes — ported from Express routes/petProfile.js 
 
 POST /api/pet-profile          — Create pet profile with photo upload
+GET  /api/pet-profile/by-user/{user_id} — Fetch pets for a specific user
 GET  /api/pet-profile/{id}     — Fetch by UUID
 GET  /api/pet-profile/by-petolife-id/{petolife_id} — Fetch by PetOLife ID (QR scan)
 """
@@ -148,16 +149,9 @@ async def create_pet_profile(
     }
 
 
-@router.get("/")
-async def get_all_profiles():
-    """Fetch all pet profiles from the database."""
-    try:
-        result = supabase.table("pet_profiles").select("*").order("created_at", desc=True).execute()
-        return result.data or []
-    except Exception as e:
-        print(f"Fetch profiles error: {e}")
-        raise HTTPException(status_code=500, detail=f"Failed to fetch profiles: {str(e)}")
-
+# ✅ FIX: The old GET "/" endpoint that returned ALL pets from ALL users has been removed.
+# It was: @router.get("/") → select("*") with no filter → data leak.
+# Use /by-user/{user_id} instead, which correctly filters by owner.
 
 @router.get("/by-user/{user_id}")
 async def get_pets_by_user(user_id: str):
