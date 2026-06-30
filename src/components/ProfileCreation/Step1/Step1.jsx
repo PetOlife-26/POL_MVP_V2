@@ -45,6 +45,7 @@ function Step1({ goNext, onNavigateBack }) {
           </label>
         </div>
 
+
         <h1>Add Your Pet's Photo</h1>
         <p className="subtitle">
           Help veterinarians and caregivers identify your furry friend quickly.
