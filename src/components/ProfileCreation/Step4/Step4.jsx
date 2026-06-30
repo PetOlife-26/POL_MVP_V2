@@ -3,6 +3,7 @@ import StepProgress from "../StepProgress/StepProgress";
 import StepHeaderBar from "../StepHeaderBar/StepHeaderBar";
 import { FiEdit2 } from "../icons";
 import { API_BASE } from "../constants";
+import fetchWithAuth from "../../../utils/fetchWithAuth";
 import "./Step4.css";
 
 function Step4({ goBack, petData, setStep, isSubmitting, setIsSubmitting, submitError, setSubmitError, onNavigateToPetHome }) {
@@ -37,7 +38,7 @@ function Step4({ goBack, petData, setStep, isSubmitting, setIsSubmitting, submit
         formData.append("pet_ids", JSON.stringify(validIds));
       }
 
-      const response = await fetch(`${API_BASE}/api/pet-profile/`, {
+      const response = await fetchWithAuth("/api/pet-profile/", {
         method: "POST",
         body: formData,
       });

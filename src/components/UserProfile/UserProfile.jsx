@@ -9,17 +9,15 @@ import PETS_BANNER_IMG from "../../assets/dog-cat-banner.png";
 import "./UserProfile.css";
 
 const UserProfile = ({ pets = [], activePetId, onPetSelect, onAddPet }) => {
-  const { user, signOut } = useAuth();
-  const navigate = useNavigate();
+  const { user, logout } = useAuth();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   // Fallback to first pet if no activePetId is provided but pets exist
   const selectedPet = pets.find(p => p.id === activePetId) || (pets.length > 0 ? pets[0] : null);
 
   const confirmLogout = async () => {
-    if (user?.id) {
-      localStorage.removeItem(`pets_${user.id}`);
-      localStorage.removeItem(`active_pet_id_${user.id}`);
+    if (logout) {
+      logout();
     }
 
     if (signOut) {
