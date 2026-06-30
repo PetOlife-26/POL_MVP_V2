@@ -134,8 +134,103 @@
   font-size: 14px;
   font-weight: 700;
 }
+.date-input {
+  position: relative;
+  width: 100%;
+}
 
-.date-input { position: relative; }
+.date-input .react-datepicker-wrapper {
+  width: 100%;
+}
+
+.date-input .react-datepicker__input-container {
+  width: 100%;
+}
+
+.date-input input {
+  width: 100%;
+  height: 58px;
+  padding: 0 56px 0 18px;
+  border: 2px solid #e4eadf;
+  border-radius: 18px;
+  background: #ffffff;
+  font-size: 16px;
+  font-weight: 500;
+  color: #2d3748;
+  outline: none;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+.date-input input:focus {
+  border-color: #1fa33b;
+  box-shadow: 0 0 0 4px rgba(31, 163, 59, 0.12);
+}
+
+.date-input input::placeholder {
+  color: #94a3b8;
+}
+
+.calendar-icon {
+  position: absolute;
+  right: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 22px;
+  color: #1fa33b;
+  cursor: pointer;
+  z-index: 2;
+  transition: all 0.2s ease;
+}
+
+.calendar-icon:hover {
+  color: #118232;
+  transform: translateY(-50%) scale(1.1);
+}
+
+/* Calendar popup styling */
+.react-datepicker {
+  border: none !important;
+  border-radius: 18px !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.15) !important;
+  overflow: hidden;
+  font-family: inherit;
+}
+
+.react-datepicker__header {
+  background: linear-gradient(180deg, #1fa33b 0%, #118232 100%) !important;
+  border-bottom: none !important;
+}
+
+.react-datepicker__current-month,
+.react-datepicker__day-name,
+.react-datepicker__navigation-icon::before {
+  color: white !important;
+}
+
+.react-datepicker__day--selected,
+.react-datepicker__day--keyboard-selected {
+  background: #1fa33b !important;
+  border-radius: 50%;
+}
+
+.react-datepicker__day:hover {
+  border-radius: 50%;
+  background: #e8f6eb !important;
+}
+
+.react-datepicker__year-dropdown {
+  border-radius: 12px;
+}
+.dob-input {
+  width: 100%;
+  height: 56px;
+  padding: 0 50px 0 16px;
+  border: 2px solid #e5e7eb;
+  border-radius: 14px;
+  font-size: 16px;
+  outline: none;
+}
 
 .date-input input,
 .age-field input {
@@ -160,15 +255,6 @@
   box-shadow: 0 0 0 4px rgba(159,206,143,0.18);
 }
 
-.calendar-icon {
-  position: absolute;
-  right: 15px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #17962f;
-  font-size: 18px;
-  pointer-events: none;
-}
 
 .age-row {
   display: grid;

@@ -3,6 +3,8 @@ import StepProgress from "../StepProgress/StepProgress";
 import StepHeaderBar from "../StepHeaderBar/StepHeaderBar";
 import { FiCalendar } from "../icons";
 import "./Step3.css";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 function Step3({ goNext, goBack, petData }) {
   const [knowDOB, setKnowDOB] = useState(!!petData.birthDate);
@@ -62,14 +64,21 @@ function Step3({ goNext, goBack, petData }) {
             <div className="input-group">
               <label>Date of Birth</label>
               <div className="date-input">
-                <input
-                  type="text"
-                  placeholder="DD / MM / YYYY"
-                  value={dob}
-                  onChange={(e) => setDob(e.target.value)}
-                />
-                <FiCalendar className="calendar-icon" />
-              </div>
+  <DatePicker
+    selected={dob ? new Date(dob) : null}
+    onChange={(date) =>
+      setDob(date ? date.toISOString().split("T")[0] : "")
+    }
+    dateFormat="dd/MM/yyyy"
+    placeholderText="Select Date of Birth"
+    showYearDropdown
+    scrollableYearDropdown
+    yearDropdownItemNumber={30}
+    maxDate={new Date()}
+  />
+  <FiCalendar className="calendar-icon"
+   />
+</div>
             </div>
           </div>
         )}
