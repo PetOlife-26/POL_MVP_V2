@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef } from "react";
 import "./MedicalRecords.css";
 
 import {
@@ -17,11 +17,6 @@ import {
 } from "lucide-react";
 import heroImage from "../../assets/medical-banner.png";
 import emptyDog from "../../assets/empty-dog.png";
-import ProfileCard from "../Home/ProfileCard/ProfileCard";
-import "../Home/ProfileCard/ProfileCard.css";
-import TopNav from "../common/TopNav/TopNav";
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
 
 const categories = [
   "Quick Access",
@@ -35,7 +30,7 @@ const categories = [
   "Other",
 ];
 
-export default function MedicalRecords({ pets, activePetId, onPetSelect, onAddPet }) {
+export default function MedicalRecords() {
   const [activeCategory, setActiveCategory] = useState("Quick Access");
   const [showUploadSheet, setShowUploadSheet] = useState(false);
   const imageInputRef = useRef(null);
@@ -52,86 +47,11 @@ export default function MedicalRecords({ pets, activePetId, onPetSelect, onAddPe
   };
   const [selectedFile, setSelectedFile] = useState(null);
   const [showUploadProgress, setShowUploadProgress] = useState(false);
+  const [quickAccessRecords, setQuickAccessRecords] = useState([]);
   const [uploadType, setUploadType] = useState("");
   const [progress, setProgress] = useState(0);
   const [showPreview, setShowPreview] = useState(false);
-  const [viewRecord, setViewRecord] = useState(null);
-
-  // DB-backed records
-  const [dbRecords, setDbRecords] = useState([]);
-  const [loadingRecords, setLoadingRecords] = useState(false);
-
-  const activePet = pets?.find((p) => p.id === activePetId) || pets?.[0];
-  const petProfileId = activePet?.id;
-
-  // Fetch records from backend
-  const fetchRecords = useCallback(async () => {
-    if (!petProfileId) return;
-    setLoadingRecords(true);
-    try {
-      const token = localStorage.getItem("access_token");
-      const res = await fetch(
-        `${API_BASE}/api/medical-records/${petProfileId}`,
-        {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        }
-      );
-      if (res.ok) {
-        const data = await res.json();
-        setDbRecords(data);
-      }
-    } catch (err) {
-      console.error("Failed to fetch medical records:", err);
-    } finally {
-      setLoadingRecords(false);
-    }
-  }, [petProfileId]);
-
-  useEffect(() => {
-    fetchRecords();
-  }, [fetchRecords]);
-
-  // Filter records by category
-  const getRecordsForCategory = (cat) => {
-    if (!cat || cat === "Quick Access") {
-      return dbRecords; // Show all records in Quick Access
-    }
-    const target = cat.toLowerCase().trim();
-    return dbRecords.filter((r) => {
-      const recCat = (r.category || "").toLowerCase().trim();
-      return recCat === target || recCat.includes(target) || target.includes(recCat);
-    });
-  };
-
-  const currentRecords = getRecordsForCategory(activeCategory);
-
-  // Upload to backend
-  const uploadToBackend = async (file, title, category) => {
-    if (!petProfileId || !file) return false;
-    try {
-      const formData = new FormData();
-      formData.append("pet_profile_id", petProfileId);
-      formData.append("title", title || file.name);
-      formData.append("category", category || "Other");
-      formData.append("file", file);
-
-      const token = localStorage.getItem("access_token");
-      const res = await fetch(`${API_BASE}/api/medical-records/upload`, {
-        method: "POST",
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-        body: formData,
-      });
-
-      if (res.ok) {
-        await fetchRecords(); // Refresh records
-        return true;
-      }
-      return false;
-    } catch (err) {
-      console.error("Upload error:", err);
-      return false;
-    }
-  };
+  const [viewFile, setViewFile] = useState(null);
 
   const startUpload = (file) => {
     setSelectedFile(file);
@@ -152,6 +72,7 @@ export default function MedicalRecords({ pets, activePetId, onPetSelect, onAddPe
     }, 200);
   };
 
+  const [categoryRecords, setCategoryRecords] = useState({});
   const [showMetaForm, setShowMetaForm] = useState(false);
   const [formData, setFormData] = useState({
     recordName: "",
@@ -160,10 +81,14 @@ export default function MedicalRecords({ pets, activePetId, onPetSelect, onAddPe
     notes: "",
   });
 
-  // Mobile-friendly category picker state
-  const [showCategoryPicker, setShowCategoryPicker] = useState(false);
+  const [customCategories, setCustomCategories] = useState([]);
+  const [showAddCategory, setShowAddCategory] = useState(false);
+  const [newCategory, setNewCategory] = useState("");
+  const currentRecords = categoryRecords[activeCategory] || [];
 
   const allCategories = [
+    "Quick Access",
+    ...customCategories,
     "Prescription",
     "Lab Reports",
     "Vaccination",
@@ -174,14 +99,26 @@ export default function MedicalRecords({ pets, activePetId, onPetSelect, onAddPe
     "Other",
   ];
 
-  const saveCategoryRecord = async () => {
+  const saveCategoryRecord = () => {
     if (!selectedFile) return;
 
     const category = formData.category || "Other";
-    const title = formData.recordName || selectedFile.name;
 
-    // Upload to backend
-    const success = await uploadToBackend(selectedFile, title, category);
+    const newRecord = {
+      file: selectedFile,
+      name: formData.recordName || selectedFile.name,
+      category,
+      date: formData.date,
+      notes: formData.notes,
+      type: selectedFile.type,
+      size: selectedFile.size,
+      uploadedAt: new Date().toLocaleDateString(),
+    };
+
+    setCategoryRecords((prev) => ({
+      ...prev,
+      [category]: [...(prev[category] || []), newRecord],
+    }));
 
     setShowMetaForm(false);
     setSelectedFile(null);
@@ -191,16 +128,14 @@ export default function MedicalRecords({ pets, activePetId, onPetSelect, onAddPe
       date: "",
       notes: "",
     });
+
     setShowPreview(false);
     setShowUploadSheet(false);
-
-    if (!success) {
-      alert("Failed to upload record. Please try again.");
-    }
   };
 
   const handleFormChange = (e) => {
     const { name, value } = e.target;
+
     setFormData((prev) => ({
       ...prev,
       [name]: value,
@@ -215,49 +150,33 @@ export default function MedicalRecords({ pets, activePetId, onPetSelect, onAddPe
     </div>
   );
 
-  const deleteRecord = async (recordId) => {
-    if (!recordId) return;
-    try {
-      const token = localStorage.getItem("access_token");
-      const res = await fetch(`${API_BASE}/api/medical-records/${recordId}`, {
-        method: "DELETE",
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
+  const deleteRecord = () => {
+    if (!viewFile) return;
+
+    setQuickAccessRecords((prev) =>
+      prev.filter((item) => item.file !== viewFile),
+    );
+
+    setCategoryRecords((prev) => {
+      const updated = { ...prev };
+
+      Object.keys(updated).forEach((cat) => {
+        updated[cat] = updated[cat].filter((item) => item.file !== viewFile);
       });
-      if (res.ok) {
-        setViewRecord(null);
-        await fetchRecords();
-      }
-    } catch (err) {
-      console.error("Delete error:", err);
-    }
-  };
 
+      return updated;
+    });
+
+    setViewFile(null);
+  };
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-
-  // Helper to format file size
-  const formatSize = (bytes) => {
-    if (!bytes) return "";
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-  };
 
   return (
     <div className="medical-records">
       {/* HEADER */}
-      <TopNav />
-
-      {/* PET PROFILE CARD WITH SWITCHER */}
-      {pets && pets.length > 0 && (
-        <div style={{ padding: '16px 16px 0' }}>
-          <ProfileCard
-            pets={pets}
-            selectedPet={activePet}
-            handlePetSelect={onPetSelect}
-            onAddPet={onAddPet}
-          />
-        </div>
-      )}
+      <header className="mr-header">
+        <h1>Medical Records</h1>
+      </header>
 
       {/* HERO IMAGE */}
       <section className="hero-banner">
@@ -316,7 +235,7 @@ export default function MedicalRecords({ pets, activePetId, onPetSelect, onAddPe
           ))}
         </div>
 
-        {/* RECORDS LIST or EMPTY STATE */}
+        {/* EMPTY STATE */}
         <div className="empty-state">
           {/* 1. UPLOAD PROGRESS */}
           {showUploadProgress && (
@@ -331,9 +250,7 @@ export default function MedicalRecords({ pets, activePetId, onPetSelect, onAddPe
                   <div className="upload-success-icon">
                     <CheckCircle2 size={52} strokeWidth={2.4} />
                   </div>
-                  <h3 className="upload-success-text">
-                    Uploaded Successfully
-                  </h3>
+                  <h3 className="upload-success-text">Uploaded Successfully</h3>
                 </>
               )}
 
@@ -359,13 +276,18 @@ export default function MedicalRecords({ pets, activePetId, onPetSelect, onAddPe
 
                   <button
                     className="save-btn"
-                    onClick={async () => {
-                      // Upload to backend as quick access
-                      await uploadToBackend(
-                        selectedFile,
-                        selectedFile.name,
-                        "Quick Access"
-                      );
+                    onClick={() => {
+                      setQuickAccessRecords((prev) => [
+                        ...prev,
+                        {
+                          file: selectedFile,
+                          name: formData.recordName || selectedFile.name,
+                          size: selectedFile.size,
+                          type: selectedFile.type,
+                          uploadedAt: new Date().toLocaleDateString(),
+                        },
+                      ]);
+
                       setShowUploadProgress(false);
                       setShowPreview(false);
                       setSelectedFile(null);
@@ -379,23 +301,19 @@ export default function MedicalRecords({ pets, activePetId, onPetSelect, onAddPe
             </div>
           )}
 
-          {/* 2. RECORDS FROM DB */}
+          {/* 2. QUICK ACCESS */}
           {!showUploadProgress &&
-            (loadingRecords ? (
-              <div className="records-loading">
-                <div className="upload-spinner"></div>
-                <p>Loading records...</p>
-              </div>
-            ) : currentRecords.length > 0 ? (
+            activeCategory === "Quick Access" &&
+            (quickAccessRecords.length > 0 ? (
               <div className="records-list">
-                {currentRecords.map((record) => (
+                {quickAccessRecords.map((record, index) => (
                   <div
-                    key={record.id}
+                    key={index}
                     className="record-card"
-                    onClick={() => setViewRecord(record)}
+                    onClick={() => setViewFile(record.file)}
                   >
                     <div className="record-icon">
-                      {record.file_type?.includes("pdf") ? (
+                      {record.type.includes("pdf") ? (
                         <File size={30} />
                       ) : (
                         <FileImage size={30} />
@@ -403,37 +321,54 @@ export default function MedicalRecords({ pets, activePetId, onPetSelect, onAddPe
                     </div>
 
                     <div className="record-details">
-                      <h4>{record.title || record.file_name}</h4>
-                      <p>{record.category}</p>
-                      <span>
-                        {record.created_at
-                          ? new Date(record.created_at).toLocaleDateString()
-                          : ""}
-                        {record.file_size
-                          ? ` · ${formatSize(record.file_size)}`
-                          : ""}
-                      </span>
-                    </div>
-
-                    <div className="record-chevron">
-                      <ChevronRight size={18} color="#999" />
+                      <h4>{record.name}</h4>
+                      <p>
+                        {record.type.includes("pdf")
+                          ? "PDF Document"
+                          : "Image File"}
+                      </p>
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <EmptyState
-                message={
-                  activeCategory === "Quick Access"
-                    ? "Start by uploading your medical records"
-                    : `No records in ${activeCategory}`
-                }
-              />
+              <EmptyState message="Start by uploading your medical records" />
+            ))}
+
+          {/* 3. CATEGORY RECORDS */}
+          {!showUploadProgress &&
+            activeCategory !== "Quick Access" &&
+            (currentRecords.length > 0 ? (
+              <div className="records-list">
+                {currentRecords.map((record, index) => (
+                  <div
+                    key={index}
+                    className="record-card"
+                    onClick={() => setViewFile(record.file)}
+                  >
+                    <div className="record-icon">
+                      {record.type.includes("pdf") ? (
+                        <File size={30} />
+                      ) : (
+                        <FileImage size={30} />
+                      )}
+                    </div>
+
+                    <div className="record-details">
+                      <h4>{record.name}</h4>
+                      <p>{record.category}</p>
+                      <span>{record.date}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <EmptyState message={`No records in ${activeCategory}`} />
             ))}
         </div>
       </section>
 
-      {/* FILE CHOOSING UPLOAD POPUP */}
+      {/*file choosing for upload-pop-up*/}
       {showUploadSheet && (
         <div
           className="sheet-overlay"
@@ -534,7 +469,8 @@ export default function MedicalRecords({ pets, activePetId, onPetSelect, onAddPe
         </div>
       )}
 
-      {/* PREVIEW IMAGE (for newly selected file) */}
+      {/*preview image*/}
+
       {showPreview && selectedFile && (
         <div className="preview-overlay">
           <div className="preview-card">
@@ -564,40 +500,24 @@ export default function MedicalRecords({ pets, activePetId, onPetSelect, onAddPe
         </div>
       )}
 
-      {/* VIEW RECORD (from DB — uses URL) */}
-      {viewRecord && (
-        <div className="file-view-overlay" onClick={() => setViewRecord(null)}>
-          <div
-            className="file-view-card"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              className="close-btn"
-              onClick={() => setViewRecord(null)}
-            >
+      {/*preview after upload*/}
+      {viewFile && (
+        <div className="file-view-overlay" onClick={() => setViewFile(null)}>
+          <div className="file-view-card" onClick={(e) => e.stopPropagation()}>
+            <button className="close-btn" onClick={() => setViewFile(null)}>
               <X size={22} />
             </button>
 
-            <div className="file-view-header">
-              <h3>{viewRecord.title || viewRecord.file_name}</h3>
-              <p>
-                {viewRecord.category}
-                {viewRecord.created_at &&
-                  ` · ${new Date(viewRecord.created_at).toLocaleDateString()}`}
-              </p>
-            </div>
-
             <div className="file-view-content">
-              {viewRecord.file_type?.startsWith("image") ? (
-                <img src={viewRecord.file_url} alt="Medical record" />
+              {viewFile.type.startsWith("image") ? (
+                <img src={URL.createObjectURL(viewFile)} alt="Preview" />
               ) : (
                 <iframe
-                  src={`${viewRecord.file_url}#toolbar=0&navpanes=0`}
+                  src={`${URL.createObjectURL(viewFile)}#toolbar=0&navpanes=0`}
                   title="PDF"
                 />
               )}
             </div>
-
             <button
               className="delete-btn"
               onClick={() => setShowDeleteConfirm(true)}
@@ -613,8 +533,9 @@ export default function MedicalRecords({ pets, activePetId, onPetSelect, onAddPe
                   <button
                     className="confirm-yes"
                     onClick={() => {
-                      deleteRecord(viewRecord.id);
+                      deleteRecord();
                       setShowDeleteConfirm(false);
+                      setViewFile(null);
                     }}
                   >
                     Yes, Delete
@@ -647,17 +568,32 @@ export default function MedicalRecords({ pets, activePetId, onPetSelect, onAddPe
               className="input"
             />
 
-            {/* Category — Mobile-friendly picker */}
+            {/* Category + Add Button */}
             <div className="category-row">
-              <button
-                type="button"
-                className="category-picker-btn"
-                onClick={() => setShowCategoryPicker(true)}
+              <select
+                name="category"
+                value={formData.category}
+                onChange={handleFormChange}
               >
-                <span>{formData.category}</span>
-                <ChevronRight size={18} />
-              </button>
+                {allCategories.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
+                ))}
+              </select>
             </div>
+
+            {/* Add Category Input */}
+            {showAddCategory && (
+              <div className="add-category-box">
+                <input
+                  value={newCategory}
+                  onChange={(e) => setNewCategory(e.target.value)}
+                  placeholder="New category"
+                />
+                <button onClick={addCustomCategory}>Add</button>
+              </div>
+            )}
 
             {/* Date */}
             <input
@@ -680,48 +616,6 @@ export default function MedicalRecords({ pets, activePetId, onPetSelect, onAddPe
             {/* ACTION BUTTONS */}
             <div className="form-actions">
               <button onClick={saveCategoryRecord}>Save</button>
-              <button
-                className="form-cancel-btn"
-                onClick={() => {
-                  setShowMetaForm(false);
-                  setSelectedFile(null);
-                }}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* MOBILE CATEGORY PICKER BOTTOM SHEET */}
-      {showCategoryPicker && (
-        <div
-          className="sheet-overlay"
-          onClick={() => setShowCategoryPicker(false)}
-        >
-          <div
-            className="category-sheet"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="sheet-handle"></div>
-            <h3>Select Category</h3>
-            <div className="category-options">
-              {allCategories.map((cat) => (
-                <button
-                  key={cat}
-                  className={`category-option ${formData.category === cat ? "active" : ""}`}
-                  onClick={() => {
-                    setFormData((prev) => ({ ...prev, category: cat }));
-                    setShowCategoryPicker(false);
-                  }}
-                >
-                  <span className="category-option-text">{cat}</span>
-                  {formData.category === cat && (
-                    <CheckCircle2 size={20} className="category-check" />
-                  )}
-                </button>
-              ))}
             </div>
           </div>
         </div>

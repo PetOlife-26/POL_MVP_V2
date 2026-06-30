@@ -11,9 +11,9 @@ const EditableUserCard = ({ user }) => {
     city: "",
     state: "",
     pincode: "",
-    avatar_url: ""
+    avatar_url: "",
   });
-  
+
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -37,7 +37,7 @@ const EditableUserCard = ({ user }) => {
           city: data.city || "",
           state: data.state || "",
           pincode: data.pincode || "",
-          avatar_url: data.avatar_url || ""
+          avatar_url: data.avatar_url || "",
         });
       }
     } catch (err) {
@@ -49,29 +49,29 @@ const EditableUserCard = ({ user }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setProfile(prev => ({ ...prev, [name]: value }));
+    setProfile((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleAvatarChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    
+
     // Optimistic UI
     const objectUrl = URL.createObjectURL(file);
-    setProfile(prev => ({ ...prev, avatar_url: objectUrl }));
-    
+    setProfile((prev) => ({ ...prev, avatar_url: objectUrl }));
+
     const formData = new FormData();
     formData.append("file", file);
-    
+
     try {
       const res = await fetchWithAuth(`/api/user-profile/${user.id}/avatar`, {
         method: "POST",
         body: formData,
-        headers: {} 
+        headers: {},
       });
       if (res.ok) {
         const data = await res.json();
-        setProfile(prev => ({ ...prev, avatar_url: data.avatar_url }));
+        setProfile((prev) => ({ ...prev, avatar_url: data.avatar_url }));
       } else {
         alert("Failed to upload avatar.");
       }
@@ -90,17 +90,17 @@ const EditableUserCard = ({ user }) => {
         email: profile.email,
         city: profile.city,
         state: profile.state,
-        pincode: profile.pincode
+        pincode: profile.pincode,
       };
-      
+
       const res = await fetchWithAuth(`/api/user-profile/${user.id}`, {
         method: "PUT",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(updatePayload)
+        body: JSON.stringify(updatePayload),
       });
-      
+
       if (res.ok) {
         setIsEditing(false);
       } else {
@@ -134,11 +134,22 @@ const EditableUserCard = ({ user }) => {
           </button>
         ) : (
           <div className="edit-actions">
-            <button className="cancel-btn" onClick={cancelEdit} disabled={saving}>
+            <button
+              className="cancel-btn"
+              onClick={cancelEdit}
+              disabled={saving}
+            >
               <FiX size={18} />
             </button>
+
             <button className="save-btn" onClick={handleSave} disabled={saving}>
-              {saving ? "Saving..." : <><FiCheck size={18} /> Save</>}
+              {saving ? (
+                "Saving..."
+              ) : (
+                <>
+                  <FiCheck size={18} /> Save
+                </>
+              )}
             </button>
           </div>
         )}
@@ -150,21 +161,28 @@ const EditableUserCard = ({ user }) => {
         <div className="avatar-section">
           <div className="avatar-wrapper">
             {profile.avatar_url ? (
-              <img src={profile.avatar_url} alt="Profile" className="avatar-image" />
+              <img
+                src={profile.avatar_url}
+                alt="Profile"
+                className="avatar-image"
+              />
             ) : (
               <FiUser className="avatar-placeholder" />
             )}
           </div>
           {isEditing && (
             <>
-              <label htmlFor="user-avatar-upload" className="avatar-upload-label">
+              <label
+                htmlFor="user-avatar-upload"
+                className="avatar-upload-label"
+              >
                 Change Photo
               </label>
-              <input 
-                id="user-avatar-upload" 
-                type="file" 
-                accept="image/*" 
-                className="hidden-input" 
+              <input
+                id="user-avatar-upload"
+                type="file"
+                accept="image/*"
+                className="hidden-input"
                 onChange={handleAvatarChange}
               />
             </>
@@ -175,15 +193,27 @@ const EditableUserCard = ({ user }) => {
           <div className="detail-row">
             <span className="label">Name</span>
             {isEditing ? (
-              <input type="text" name="full_name" value={profile.full_name} onChange={handleChange} />
+              <input
+                type="text"
+                name="full_name"
+                value={profile.full_name}
+                onChange={handleChange}
+              />
             ) : (
-              <span className="value">{profile.full_name || "Not provided"}</span>
+              <span className="value">
+                {profile.full_name || "Not provided"}
+              </span>
             )}
           </div>
           <div className="detail-row">
             <span className="label">Phone</span>
             {isEditing ? (
-              <input type="text" name="phone" value={profile.phone} onChange={handleChange} />
+              <input
+                type="text"
+                name="phone"
+                value={profile.phone}
+                onChange={handleChange}
+              />
             ) : (
               <span className="value">{profile.phone || "Not provided"}</span>
             )}
@@ -191,7 +221,12 @@ const EditableUserCard = ({ user }) => {
           <div className="detail-row">
             <span className="label">Email</span>
             {isEditing ? (
-              <input type="email" name="email" value={profile.email} onChange={handleChange} />
+              <input
+                type="email"
+                name="email"
+                value={profile.email}
+                onChange={handleChange}
+              />
             ) : (
               <span className="value">{profile.email || "Not provided"}</span>
             )}
@@ -199,7 +234,12 @@ const EditableUserCard = ({ user }) => {
           <div className="detail-row">
             <span className="label">City</span>
             {isEditing ? (
-              <input type="text" name="city" value={profile.city} onChange={handleChange} />
+              <input
+                type="text"
+                name="city"
+                value={profile.city}
+                onChange={handleChange}
+              />
             ) : (
               <span className="value">{profile.city || "Not provided"}</span>
             )}
