@@ -141,18 +141,20 @@ async def delete_medical_record(record_id: str, user_id: str = Depends(get_curre
     """Delete a medical record from both DB and Storage (ownership enforced)."""
     try:
         # 1) Get the record and verify ownership
-        res = supabase.table("medical_records").select("storage_path, pet_profile_id, user_id").eq("id", record_id).execute()
+        # Using select("*") prevents "column does not exist" errors if user_id hasn't been added to the DB yet
+        res = supabase.table("medical_records").select("*").eq("id", record_id).execute()
         if not res.data:
             raise HTTPException(status_code=404, detail="Record not found")
         
         record = res.data[0]
         
-        # SECURITY: Check ownership via the record's user_id or via the pet's user_id
+        # SECURITY: Fast check via record's user_id if it exists, else fallback to pet profile
         record_user_id = record.get("user_id")
-        if record_user_id and record_user_id != user_id:
-            raise HTTPException(status_code=403, detail="You do not have permission to delete this record")
-        elif not record_user_id:
-            # Fallback: check via pet profile ownership
+        
+        if record_user_id:
+            if record_user_id != user_id:
+                raise HTTPException(status_code=403, detail="You do not have permission to delete this record")
+        else:
             pet_res = supabase.table("pet_profiles").select("user_id").eq("id", record.get("pet_profile_id")).execute()
             if pet_res.data and pet_res.data[0].get("user_id") != user_id:
                 raise HTTPException(status_code=403, detail="You do not have permission to delete this record")
