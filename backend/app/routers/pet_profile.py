@@ -66,7 +66,7 @@ async def create_pet_profile(
 ):
     """Create a new pet profile with photo upload + PetOLife ID generation."""
     print("--- POST /api/pet-profile ---")
-    print(f"pet_type={pet_type}, pet_name={pet_name}")
+    print(f"pet_type={pet_type}, pet_name={pet_name}, city={city}")
 
     # SECURITY: Use the JWT-authenticated user_id, not the form field
     # This prevents a user from creating pets under another user's account
@@ -83,8 +83,10 @@ async def create_pet_profile(
         except json.JSONDecodeError:
             raise HTTPException(status_code=400, detail="Invalid pet_ids format")
 
-    # Generate unique PetOLife ID
-    petolife_id = generate_pet_health_id(city or "coimbatore", pet_type)
+    # Generate unique PetOLife ID — city comes from the signup PIN-code lookup
+    # (sent by the frontend in Step4). Falls back to "Unknown" only if the
+    # frontend genuinely couldn't determine a city.
+    petolife_id = generate_pet_health_id(city or "Unknown", pet_type)
     print(f"Generated PetOLife ID: {petolife_id}")
 
     # Upload photo to Supabase Storage if provided
@@ -288,11 +290,11 @@ async def update_pet_profile(profile_id: str, updates: PetProfileUpdate, user_id
         update_data = {k: v for k, v in updates.model_dump().items() if v is not None}
         if not update_data:
             return {"message": "No updates provided"}
-            
+
         result = supabase.table("pet_profiles").update(update_data).eq("id", profile_id).execute()
         if not result.data:
             raise HTTPException(status_code=404, detail="Pet profile not found or update failed")
-            
+
         return {"message": "Pet profile updated successfully", "data": result.data[0]}
     except HTTPException:
         raise
@@ -311,18 +313,18 @@ async def update_pet_photo(profile_id: str, file: UploadFile = File(...), user_i
         # Upload photo
         file_name = f"{profile_id}-{int(time.time() * 1000)}-{file.filename.replace(' ', '-')}"
         file_bytes = await file.read()
-        
+
         supabase.storage.from_("pet-photos").upload(
             file_name,
             file_bytes,
             {"content-type": file.content_type or "image/jpeg"}
         )
-        
+
         photo_url = supabase.storage.from_("pet-photos").get_public_url(file_name)
-        
+
         # Update db
         supabase.table("pet_profiles").update({"pet_photo_url": photo_url}).eq("id", profile_id).execute()
-        
+
         return {"message": "Photo uploaded successfully", "pet_photo_url": photo_url}
     except HTTPException:
         raise
