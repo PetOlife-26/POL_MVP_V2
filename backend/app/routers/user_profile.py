@@ -60,14 +60,28 @@ async def update_user_profile(user_id: str, profile: UserProfileUpdate, auth_use
         if not update_data:
             return {"message": "No data to update"}
             
-        # Sync email/phone changes to Supabase Auth (auth.users) so they can login with them
+        # Sync email/phone and metadata changes to Supabase Auth (auth.users) so they can login with them and metadata matches
         auth_updates = {}
+        user_metadata = {}
+        
         if "email" in update_data and update_data["email"].strip():
             auth_updates["email"] = update_data["email"].strip()
             auth_updates["email_confirm"] = True
         if "phone" in update_data and update_data["phone"].strip():
             auth_updates["phone"] = update_data["phone"].strip()
             auth_updates["phone_confirm"] = True
+            
+        if "full_name" in update_data:
+            user_metadata["full_name"] = update_data["full_name"]
+        if "city" in update_data:
+            user_metadata["city"] = update_data["city"]
+        if "state" in update_data:
+            user_metadata["state"] = update_data["state"]
+        if "pincode" in update_data:
+            user_metadata["pincode"] = update_data["pincode"]
+            
+        if user_metadata:
+            auth_updates["user_metadata"] = user_metadata
             
         if auth_updates:
             try:
