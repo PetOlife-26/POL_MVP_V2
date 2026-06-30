@@ -60,6 +60,25 @@ async def update_user_profile(user_id: str, profile: UserProfileUpdate, auth_use
         if not update_data:
             return {"message": "No data to update"}
             
+        # Sync email/phone changes to Supabase Auth (auth.users) so they can login with them
+        auth_updates = {}
+        if "email" in update_data and update_data["email"].strip():
+            auth_updates["email"] = update_data["email"].strip()
+            auth_updates["email_confirm"] = True
+        if "phone" in update_data and update_data["phone"].strip():
+            auth_updates["phone"] = update_data["phone"].strip()
+            auth_updates["phone_confirm"] = True
+            
+        if auth_updates:
+            try:
+                supabase.auth.admin.update_user_by_id(user_id, auth_updates)
+            except Exception as auth_err:
+                print(f"Failed to update auth.users credentials: {auth_err}")
+                raise HTTPException(
+                    status_code=400, 
+                    detail="Failed to update login credentials. This email or phone may already be taken."
+                )
+            
         response = supabase.table("user_profiles").update(update_data).eq("id", user_id).execute()
         if not response.data:
             raise HTTPException(status_code=404, detail="User profile not found or update failed")

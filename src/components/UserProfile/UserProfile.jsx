@@ -44,9 +44,14 @@ const UserProfile = ({ pets = [], activePetId, onPetSelect, onAddPet }) => {
       <div className="section-header">
         <h3>My Pets</h3>
         {pets.length > 0 && (
-          <a href="/pets" className="view-all-link">
+          <button 
+            type="button" 
+            className="view-all-link" 
+            onClick={() => navigate("/home", { state: { tab: "home" } })}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+          >
             View All <span className="arrow">→</span>
-          </a>
+          </button>
         )}
       </div>
 
