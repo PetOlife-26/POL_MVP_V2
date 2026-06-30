@@ -1,12 +1,17 @@
 """
-Medical Records Router
+Medical Records Router — secure, user-scoped endpoints.
 Handles uploading, fetching, and deleting pet medical documents via Supabase Storage.
+
+POST   /api/medical-records/upload          — Upload a record (ownership enforced)
+GET    /api/medical-records/{pet_profile_id} — Fetch records for a pet (ownership enforced)
+DELETE /api/medical-records/{record_id}      — Delete a record (ownership enforced)
 """
 
 import time
 from typing import Optional
-from fastapi import APIRouter, UploadFile, File, Form, HTTPException
+from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Depends
 from app.supabase_client import supabase
+from app.utils.auth import get_current_user_id
 
 router = APIRouter()
 
@@ -25,12 +30,20 @@ async def upload_medical_record(
     pet_profile_id: str = Form(...),
     title: str = Form(...),
     category: str = Form(...),
-    file: UploadFile = File(...)
+    file: UploadFile = File(...),
+    user_id: str = Depends(get_current_user_id),
 ):
     try:
         # Validate inputs
         if not pet_profile_id or not title or not category:
             raise HTTPException(status_code=400, detail="Missing required fields")
+
+        # SECURITY: Verify the pet belongs to the authenticated user
+        pet_res = supabase.table("pet_profiles").select("user_id").eq("id", pet_profile_id).execute()
+        if not pet_res.data:
+            raise HTTPException(status_code=404, detail="Pet profile not found")
+        if pet_res.data[0].get("user_id") != user_id:
+            raise HTTPException(status_code=403, detail="You do not have permission to upload records for this pet")
 
         ensure_bucket_exists()
 
@@ -55,19 +68,11 @@ async def upload_medical_record(
 
         # Get the public URL for the file
         public_url = supabase.storage.from_("medical-docs").get_public_url(storage_path)
-        
-        # 2) Fetch user_id tied to the pet_profile_id
-        user_id = None
-        try:
-            pet_res = supabase.table("pet_profiles").select("user_id").eq("id", pet_profile_id).execute()
-            if pet_res.data and len(pet_res.data) > 0:
-                user_id = pet_res.data[0].get("user_id")
-        except Exception as p_err:
-            print(f"Notice: Could not fetch user_id for pet {pet_profile_id}: {p_err}")
 
         # Insert record into DB
         db_record = {
             "pet_profile_id": pet_profile_id,
+            "user_id": user_id,
             "title": title,
             "category": category,
             "file_url": public_url,
@@ -76,14 +81,12 @@ async def upload_medical_record(
             "file_size": file_size,
             "storage_path": storage_path
         }
-        if user_id:
-            db_record["user_id"] = user_id
 
         try:
             db_res = supabase.table("medical_records").insert(db_record).execute()
         except Exception as ins_err:
             # Fallback if user_id column doesn't exist in DB schema yet
-            if user_id and "user_id" in str(ins_err):
+            if "user_id" in str(ins_err):
                 db_record.pop("user_id", None)
                 db_res = supabase.table("medical_records").insert(db_record).execute()
             else:
@@ -109,9 +112,16 @@ async def upload_medical_record(
         raise HTTPException(status_code=500, detail=f"Failed to upload document: {str(e)}")
 
 @router.get("/{pet_profile_id}")
-async def get_medical_records(pet_profile_id: str):
-    """Fetch all medical records for a specific pet."""
+async def get_medical_records(pet_profile_id: str, user_id: str = Depends(get_current_user_id)):
+    """Fetch all medical records for a specific pet (ownership enforced)."""
     try:
+        # SECURITY: Verify the pet belongs to the authenticated user
+        pet_res = supabase.table("pet_profiles").select("user_id").eq("id", pet_profile_id).execute()
+        if not pet_res.data:
+            raise HTTPException(status_code=404, detail="Pet profile not found")
+        if pet_res.data[0].get("user_id") != user_id:
+            raise HTTPException(status_code=403, detail="You do not have permission to view records for this pet")
+
         res = (
             supabase.table("medical_records")
             .select("*")
@@ -120,20 +130,34 @@ async def get_medical_records(pet_profile_id: str):
             .execute()
         )
         return res.data or []
+    except HTTPException:
+        raise
     except Exception as e:
         print(f"Fetch records error: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to fetch records: {str(e)}")
 
 @router.delete("/{record_id}")
-async def delete_medical_record(record_id: str):
-    """Delete a medical record from both DB and Storage."""
+async def delete_medical_record(record_id: str, user_id: str = Depends(get_current_user_id)):
+    """Delete a medical record from both DB and Storage (ownership enforced)."""
     try:
-        # 1) Get the storage path before deleting from DB
-        res = supabase.table("medical_records").select("storage_path").eq("id", record_id).execute()
+        # 1) Get the record and verify ownership
+        res = supabase.table("medical_records").select("storage_path, pet_profile_id, user_id").eq("id", record_id).execute()
         if not res.data:
             raise HTTPException(status_code=404, detail="Record not found")
-            
-        storage_path = res.data[0]["storage_path"]
+        
+        record = res.data[0]
+        
+        # SECURITY: Check ownership via the record's user_id or via the pet's user_id
+        record_user_id = record.get("user_id")
+        if record_user_id and record_user_id != user_id:
+            raise HTTPException(status_code=403, detail="You do not have permission to delete this record")
+        elif not record_user_id:
+            # Fallback: check via pet profile ownership
+            pet_res = supabase.table("pet_profiles").select("user_id").eq("id", record.get("pet_profile_id")).execute()
+            if pet_res.data and pet_res.data[0].get("user_id") != user_id:
+                raise HTTPException(status_code=403, detail="You do not have permission to delete this record")
+
+        storage_path = record["storage_path"]
         
         # 2) Delete from Storage
         try:
