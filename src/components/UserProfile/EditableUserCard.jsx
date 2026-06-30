@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from "react";
-import { FiUser, FiEdit2, FiCheck, FiX } from "react-icons/fi";
+import React, { useState, useEffect, useRef } from "react";
+import { FiEdit2, FiCheck, FiX, FiCamera } from "react-icons/fi";
 import fetchWithAuth from "../../utils/fetchWithAuth";
+import DEFAULT_AVATAR from "../../assets/pet-owner-avatar.png";
 import "./EditableUserCard.css";
 
 const EditableUserCard = ({ user }) => {
@@ -13,11 +14,12 @@ const EditableUserCard = ({ user }) => {
     pincode: "",
     avatar_url: ""
   });
-  
+
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     if (user?.id) {
@@ -55,28 +57,34 @@ const EditableUserCard = ({ user }) => {
   const handleAvatarChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    
-    // Optimistic UI
+
+    const prevUrl = profile.avatar_url;
     const objectUrl = URL.createObjectURL(file);
     setProfile(prev => ({ ...prev, avatar_url: objectUrl }));
-    
+    setError(null);
+
     const formData = new FormData();
     formData.append("file", file);
-    
+
     try {
       const res = await fetchWithAuth(`/api/user-profile/${user.id}/avatar`, {
         method: "POST",
         body: formData,
-        headers: {} 
+        headers: {}
       });
       if (res.ok) {
         const data = await res.json();
         setProfile(prev => ({ ...prev, avatar_url: data.avatar_url }));
       } else {
-        alert("Failed to upload avatar.");
+        setProfile(prev => ({ ...prev, avatar_url: prevUrl }));
+        setError("Failed to upload photo. Please try again.");
+        setTimeout(() => setError(null), 3000);
       }
     } catch (err) {
       console.error("Error uploading avatar:", err);
+      setProfile(prev => ({ ...prev, avatar_url: prevUrl }));
+      setError("Something went wrong uploading the photo.");
+      setTimeout(() => setError(null), 3000);
     }
   };
 
@@ -92,15 +100,13 @@ const EditableUserCard = ({ user }) => {
         state: profile.state,
         pincode: profile.pincode
       };
-      
+
       const res = await fetchWithAuth(`/api/user-profile/${user.id}`, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updatePayload)
       });
-      
+
       if (res.ok) {
         setIsEditing(false);
       } else {
@@ -115,97 +121,113 @@ const EditableUserCard = ({ user }) => {
   };
 
   const cancelEdit = () => {
-    fetchProfile(); // Reset to original data
+    fetchProfile();
     setIsEditing(false);
     setError(null);
   };
 
+  useEffect(() => {
+    if (!isEditing) setError(null);
+  }, [isEditing]);
+
+  const locationLabel = [profile.city, profile.state].filter(Boolean).join(", ");
+
   if (loading) {
-    return <div className="editable-card loading-skeleton">Loading...</div>;
+    return (
+      <div className="user-card loading-skeleton">
+        <div className="skeleton-avatar" />
+        <div className="skeleton-lines">
+          <div className="skeleton-line" />
+          <div className="skeleton-line short" />
+          <div className="skeleton-line" />
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="editable-card user-card">
-      <div className="card-header">
-        <h3>User Profile</h3>
-        {!isEditing ? (
-          <button className="edit-btn" onClick={() => setIsEditing(true)}>
-            <FiEdit2 size={16} /> Edit
+    <div className="user-card">
+      {isEditing && (
+        <div className="edit-actions">
+          <button className="cancel-btn" onClick={cancelEdit} disabled={saving} title="Discard changes">
+            <FiX size={16} />
           </button>
-        ) : (
-          <div className="edit-actions">
-            <button className="cancel-btn" onClick={cancelEdit} disabled={saving}>
-              <FiX size={18} />
-            </button>
-            <button className="save-btn" onClick={handleSave} disabled={saving}>
-              {saving ? "Saving..." : <><FiCheck size={18} /> Save</>}
-            </button>
-          </div>
+          <button className="save-btn" onClick={handleSave} disabled={saving}>
+            {saving ? "Saving…" : <><FiCheck size={15} /> Save</>}
+          </button>
+        </div>
+      )}
+
+      {error && <div className="error-banner">⚠️ {error}</div>}
+
+      <div className="avatar-wrapper">
+        <img
+          src={profile.avatar_url || DEFAULT_AVATAR}
+          alt="Profile"
+          className="avatar-img"
+        />
+        <button
+          className="edit-avatar-btn"
+          type="button"
+          title={isEditing ? "Upload photo" : "Edit profile"}
+          onClick={() => {
+            if (isEditing) {
+              fileInputRef.current?.click();
+            } else {
+              setIsEditing(true);
+            }
+          }}
+        >
+          {isEditing ? <FiCamera size={13} /> : <FiEdit2 size={13} />}
+        </button>
+        {isEditing && (
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden-input"
+            onChange={handleAvatarChange}
+          />
         )}
       </div>
 
-      {error && <p className="error-text">{error}</p>}
-
-      <div className="card-content">
-        <div className="avatar-section">
-          <div className="avatar-wrapper">
-            {profile.avatar_url ? (
-              <img src={profile.avatar_url} alt="Profile" className="avatar-image" />
-            ) : (
-              <FiUser className="avatar-placeholder" />
-            )}
-          </div>
-          {isEditing && (
-            <>
-              <label htmlFor="user-avatar-upload" className="avatar-upload-label">
-                Change Photo
-              </label>
-              <input 
-                id="user-avatar-upload" 
-                type="file" 
-                accept="image/*" 
-                className="hidden-input" 
-                onChange={handleAvatarChange}
+      {!isEditing ? (
+        <div className="user-info">
+          <h2 className="user-name">
+            {profile.full_name ? profile.full_name.toUpperCase() : "Pet Parent"}
+          </h2>
+          <p className="user-email">
+            {profile.email || <span className="detail-empty">No email provided</span>}
+          </p>
+          <p className="user-location">
+            <span className="location-pin">📍</span>
+            {locationLabel || <span className="detail-empty">Location not set</span>}
+          </p>
+        </div>
+      ) : (
+        <div className="user-info editing">
+          {[
+            { label: "Name", name: "full_name", type: "text" },
+            { label: "Phone", name: "phone", type: "tel" },
+            { label: "Email", name: "email", type: "email" },
+            { label: "City", name: "city", type: "text" },
+            { label: "State", name: "state", type: "text" },
+            { label: "Pincode", name: "pincode", type: "text" },
+          ].map(({ label, name, type }) => (
+            <div className="detail-row" key={name}>
+              <span className="detail-label">{label}</span>
+              <input
+                type={type}
+                name={name}
+                value={profile[name]}
+                onChange={handleChange}
+                placeholder={`Enter ${label.toLowerCase()}`}
+                className="detail-input"
               />
-            </>
-          )}
+            </div>
+          ))}
         </div>
-
-        <div className="details-section">
-          <div className="detail-row">
-            <span className="label">Name</span>
-            {isEditing ? (
-              <input type="text" name="full_name" value={profile.full_name} onChange={handleChange} />
-            ) : (
-              <span className="value">{profile.full_name || "Not provided"}</span>
-            )}
-          </div>
-          <div className="detail-row">
-            <span className="label">Phone</span>
-            {isEditing ? (
-              <input type="text" name="phone" value={profile.phone} onChange={handleChange} />
-            ) : (
-              <span className="value">{profile.phone || "Not provided"}</span>
-            )}
-          </div>
-          <div className="detail-row">
-            <span className="label">Email</span>
-            {isEditing ? (
-              <input type="email" name="email" value={profile.email} onChange={handleChange} />
-            ) : (
-              <span className="value">{profile.email || "Not provided"}</span>
-            )}
-          </div>
-          <div className="detail-row">
-            <span className="label">City</span>
-            {isEditing ? (
-              <input type="text" name="city" value={profile.city} onChange={handleChange} />
-            ) : (
-              <span className="value">{profile.city || "Not provided"}</span>
-            )}
-          </div>
-        </div>
-      </div>
+      )}
     </div>
   );
 };
