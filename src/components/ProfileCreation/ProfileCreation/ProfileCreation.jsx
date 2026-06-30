@@ -59,6 +59,7 @@ function ProfileCreation({ onNavigateBack, onNavigateToPetHome }) {
         <Step1
           goNext={goNext}
           onNavigateBack={navigateBack}
+          petData={petData}
         />
       );
     case 2:
@@ -109,6 +110,7 @@ function ProfileCreation({ onNavigateBack, onNavigateToPetHome }) {
         <Step1
           goNext={goNext}
           onNavigateBack={navigateBack}
+          petData={petData}
         />
       );
   }

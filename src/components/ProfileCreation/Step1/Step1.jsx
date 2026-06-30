@@ -1,25 +1,43 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import StepProgress from "../StepProgress/StepProgress";
 import StepHeaderBar from "../StepHeaderBar/StepHeaderBar";
 import { FiCamera, FiSkipForward, FiArrowRight } from "../icons";
 import { PAW_IMG } from "../constants";
 import "./Step1.css";
 
-function Step1({ goNext, onNavigateBack }) {
-  const [image, setImage] = useState(null);
-  const [photoFile, setPhotoFile] = useState(null);
-  const [photoUploaded, setPhotoUploaded] = useState(false);
 
+function Step1({ goNext, onNavigateBack, petData }) {
+
+  const [image, setImage] = useState(null);
+
+  useEffect(() => {
+    if (petData?.petPhotoPreview) {
+      setImage(petData.petPhotoPreview);
+      setPhotoFile(petData.petPhotoFile);
+      setPhotoUploaded(true);
+    }
+  }, [petData]);
+
+  const [photoFile, setPhotoFile] = useState(
+    petData?.petPhotoFile || null
+  );
+
+  const [photoUploaded, setPhotoUploaded] = useState(
+    !!petData?.petPhotoPreview
+  );
   const progress = photoUploaded ? 25 : 0;
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
+
     if (file) {
-      setImage(URL.createObjectURL(file));
+      const preview = URL.createObjectURL(file);
+
+      setImage(preview);
       setPhotoFile(file);
       setPhotoUploaded(true);
     }
-  };
+};
 
   return (
     <div className="petphoto-container step-animate-in">
@@ -55,7 +73,12 @@ function Step1({ goNext, onNavigateBack }) {
       <button
         type="button"
         className="skip-btn"
-        onClick={() => goNext({ petPhotoFile: null })}
+        onClick={() =>
+          goNext({
+            petPhotoFile: null,
+            petPhotoPreview: null,
+          })
+        }
       >
         <FiSkipForward />
         Skip for Now
@@ -63,7 +86,12 @@ function Step1({ goNext, onNavigateBack }) {
 
       <button
         className="next-btn next-btn--animated"
-        onClick={() => goNext({ petPhotoFile: photoFile })}
+        onClick={() =>
+          goNext({
+            petPhotoFile: photoFile,
+            petPhotoPreview: image,
+          })
+        }
       >
         Next
         <FiArrowRight />
