@@ -28,6 +28,11 @@ function Step4({ goBack, petData, setStep, isSubmitting, setIsSubmitting, submit
         try {
           const userObj = JSON.parse(storedUserData);
           if (userObj.id) formData.append("user_id", userObj.id);
+          // City was auto-detected from the PIN code at signup and saved
+          // into user_metadata — pass it through so the PetLife ID uses
+          // the user's real city instead of the old hardcoded default.
+          const city = userObj.user_metadata?.city;
+          if (city) formData.append("city", city);
         } catch {}
       }
 
