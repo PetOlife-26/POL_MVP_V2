@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, forwardRef } from "react";
 import StepProgress from "../StepProgress/StepProgress";
 import StepHeaderBar from "../StepHeaderBar/StepHeaderBar";
 import { FiCalendar } from "../icons";
@@ -6,15 +6,80 @@ import "./Step3.css";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
-function Step3({ goNext, goBack, petData }) {
-  const [knowDOB, setKnowDOB] = useState(!!petData.birthDate);
-  const [dob, setDob] = useState(petData.birthDate || "");
 
+
+const CustomDateInput = forwardRef(
+  ({ value, onClick, onChange }, ref) => {
+    const handleInputChange = (e) => {
+      let input = e.target.value.replace(/\D/g, "");
+
+      if (input.length > 8) input = input.slice(0, 8);
+
+      if (input.length > 4) {
+        input = `${input.slice(0, 2)}/${input.slice(2, 4)}/${input.slice(4)}`;
+      } else if (input.length > 2) {
+        input = `${input.slice(0, 2)}/${input.slice(2)}`;
+      }
+
+      // Send the formatted value back
+      onChange({
+        target: {
+          value: input,
+        },
+      });
+    };
+
+    return (
+      <div className="date-input-wrapper">
+        <input
+          ref={ref}
+          type="text"
+          value={value}
+          onClick={onClick}
+          onChange={handleInputChange}
+          placeholder="DD/MM/YYYY"
+          maxLength={10}
+          inputMode="numeric"
+          className="dob-input"
+          onKeyDown={(e) => {
+            const allowed = [
+              "Backspace",
+              "Delete",
+              "ArrowLeft",
+              "ArrowRight",
+              "Tab",
+              "Home",
+              "End",
+            ];
+
+            if (allowed.includes(e.key)) return;
+
+            if (!/^\d$/.test(e.key)) {
+              e.preventDefault();
+            }
+          }}
+        />
+
+        <FiCalendar className="calendar-icon" />
+      </div>
+    );
+  }
+);
+
+function Step3({ goNext, goBack, petData }) {
+const [knowDOB, setKnowDOB] = useState(!!petData.birthDate);
+
+const [dob, setDob] = useState(petData.birthDate || "");
+
+const [selectedDate, setSelectedDate] = useState(
+  petData.birthDate ? new Date(petData.birthDate) : null
+);
   const getApproxYears = () => {
     if (!petData.approxAge) return "";
     const match = petData.approxAge.match(/(\d+)y/);
     return match ? match[1] : "";
   };
+
 
   const getApproxMonths = () => {
     if (!petData.approxAge) return "";
@@ -22,10 +87,25 @@ function Step3({ goNext, goBack, petData }) {
     return match ? match[1] : "";
   };
 
+
+
+  
   const [years, setYears] = useState(getApproxYears());
   const [months, setMonths] = useState(getApproxMonths());
   const progress = 75;
+const handleDateInput = (e) => {
+  let value = e.target.value.replace(/\D/g, "");
 
+  if (value.length > 8) value = value.slice(0, 8);
+
+  if (value.length > 4) {
+    value = `${value.slice(0, 2)}/${value.slice(2, 4)}/${value.slice(4)}`;
+  } else if (value.length > 2) {
+    value = `${value.slice(0, 2)}/${value.slice(2)}`;
+  }
+
+  setDob(value);
+};
   return (
     <div className="pet-age-container">
       <StepHeaderBar onBack={goBack} />
@@ -64,20 +144,39 @@ function Step3({ goNext, goBack, petData }) {
             <div className="input-group">
               <label>Date of Birth</label>
               <div className="date-input">
-  <DatePicker
-    selected={dob ? new Date(dob) : null}
-    onChange={(date) =>
-      setDob(date ? date.toISOString().split("T")[0] : "")
+<div className="date-input">
+<DatePicker
+  selected={selectedDate}
+  onChange={(date) => {
+    setSelectedDate(date);
+
+    if (date) {
+      const formatted = `${String(date.getDate()).padStart(2, "0")}/${String(
+        date.getMonth() + 1
+      ).padStart(2, "0")}/${date.getFullYear()}`;
+
+      setDob(formatted);
     }
-    dateFormat="dd/MM/yyyy"
-    placeholderText="Select Date of Birth"
-    showYearDropdown
-    scrollableYearDropdown
-    yearDropdownItemNumber={30}
-    maxDate={new Date()}
-  />
-  <FiCalendar className="calendar-icon"
-   />
+  }}
+  customInput={
+    <CustomDateInput
+      value={dob}
+      onChange={(e) => setDob(e.target.value)}
+    />
+  }
+    popperPlacement="bottom-start"
+      popperModifiers={[
+    {
+      name: "flip",
+      enabled: false,
+    },
+  ]}
+  showPopperArrow={false}
+  popperClassName="custom-datepicker-popper"
+/>
+
+  <FiCalendar className="calendar-icon" />
+</div>
 </div>
             </div>
           </div>
@@ -110,21 +209,53 @@ function Step3({ goNext, goBack, petData }) {
             <div className="age-row">
               <div className="age-field">
                 <label>Years</label>
-                <input
-                  type="number"
-                  placeholder="e.g. 3"
-                  value={years}
-                  onChange={(e) => setYears(e.target.value)}
-                />
+                  <input
+                    type="number"
+                    placeholder="e.g. 3"
+                    value={years}
+                    min="0"
+                    max="100"
+                    onChange={(e) => {
+                      let value = e.target.value;
+
+                      if (value === "") {
+                        setYears("");
+                        return;
+                      }
+
+                      value = Number(value);
+
+                      if (value >= 0 && value <= 100) {
+                        setYears(value);
+                      }
+                    }}
+                  />
               </div>
               <div className="age-field">
                 <label>Months</label>
-                <input
-                  type="number"
-                  placeholder="e.g. 6"
-                  value={months}
-                  onChange={(e) => setMonths(e.target.value)}
-                />
+                  <input
+                    type="number"
+                    placeholder="e.g. 6"
+                    value={months}
+                    min="0"
+                    max="12"
+                    
+                    onChange={(e) => {
+                      let value = e.target.value;
+
+                      if (value === "") {
+                        setMonths("");
+                        return;
+
+                      }
+
+                      value = Number(value);
+
+                      if (value >= 0 && value <= 12) {
+                        setMonths(value);
+                      }
+                    }}
+                  />
               </div>
             </div>
           </div>
@@ -146,5 +277,6 @@ function Step3({ goNext, goBack, petData }) {
     </div>
   );
 }
+
 
 export default Step3;

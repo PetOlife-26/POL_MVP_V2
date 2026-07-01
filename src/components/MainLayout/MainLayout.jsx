@@ -96,6 +96,7 @@ const MainLayout = () => {
     if (activeTab === "medicalrecords" || activeTab === "docs") {
       return (
         <div style={{ paddingBottom: '70px', height: '100vh', overflowY: 'auto' }}>
+          <TopNav />
           <MedicalRecords
             pets={pets}
             activePetId={activePetId}
