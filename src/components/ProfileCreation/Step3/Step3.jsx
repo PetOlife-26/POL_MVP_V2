@@ -239,12 +239,14 @@ const handleDateInput = (e) => {
                     value={months}
                     min="0"
                     max="12"
+                    
                     onChange={(e) => {
                       let value = e.target.value;
 
                       if (value === "") {
                         setMonths("");
                         return;
+
                       }
 
                       value = Number(value);
