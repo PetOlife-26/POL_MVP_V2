@@ -209,21 +209,51 @@ const handleDateInput = (e) => {
             <div className="age-row">
               <div className="age-field">
                 <label>Years</label>
-                <input
-                  type="number"
-                  placeholder="e.g. 3"
-                  value={years}
-                  onChange={(e) => setYears(e.target.value)}
-                />
+                  <input
+                    type="number"
+                    placeholder="e.g. 3"
+                    value={years}
+                    min="0"
+                    max="100"
+                    onChange={(e) => {
+                      let value = e.target.value;
+
+                      if (value === "") {
+                        setYears("");
+                        return;
+                      }
+
+                      value = Number(value);
+
+                      if (value >= 0 && value <= 100) {
+                        setYears(value);
+                      }
+                    }}
+                  />
               </div>
               <div className="age-field">
                 <label>Months</label>
-                <input
-                  type="number"
-                  placeholder="e.g. 6"
-                  value={months}
-                  onChange={(e) => setMonths(e.target.value)}
-                />
+                  <input
+                    type="number"
+                    placeholder="e.g. 6"
+                    value={months}
+                    min="0"
+                    max="12"
+                    onChange={(e) => {
+                      let value = e.target.value;
+
+                      if (value === "") {
+                        setMonths("");
+                        return;
+                      }
+
+                      value = Number(value);
+
+                      if (value >= 0 && value <= 12) {
+                        setMonths(value);
+                      }
+                    }}
+                  />
               </div>
             </div>
           </div>
