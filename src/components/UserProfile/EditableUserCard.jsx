@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { FiEdit2, FiCheck, FiX, FiCamera } from "react-icons/fi";
 import fetchWithAuth from "../../utils/fetchWithAuth";
-import DEFAULT_AVATAR from "../../assets/pet-owner-avatar.png";
+import DEFAULT_AVATAR from "../../assets/pet-owner-avatar.svg";
 import "./EditableUserCard.css";
 
 const EditableUserCard = ({ user }) => {
