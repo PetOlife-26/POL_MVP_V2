@@ -2,11 +2,9 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Login.css";
 import logoImg from "../../assets/logo.png";
-import heroImg from "../../assets/login/hero.jpg";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 
-/* ── Shared Icons ── */
 function Logo() {
   return (
     <div className="logo-wrap">
@@ -55,8 +53,7 @@ function SmallSpinner() {
   return <span className="pincode-spinner" />;
 }
 
-/* ── Success Screen — auto-redirects after 3 seconds ── */
-export function SuccessScreen({ type, userName, onContinue }) {
+function SuccessScreen({ type, userName, onContinue }) {
   const isSignup = type === "signup";
   const [countdown, setCountdown] = useState(3);
 
@@ -67,51 +64,35 @@ export function SuccessScreen({ type, userName, onContinue }) {
   }, [countdown, onContinue]);
 
   return (
-    <div className="login-root" style={{ minHeight: '100vh', width: '100%', position: 'absolute', top: 0, left: 0, zIndex: 9999 }}>
-      <div className="login-card">
-        <div className="screen success-screen">
-          <div className="success-icon-wrap">
-            <div className="success-circle">
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="20 6 9 17 4 12"/>
-              </svg>
-            </div>
-          </div>
-          <h2 className="success-title">
-            {isSignup ? "Account Created!" : "Welcome Back!"}
-          </h2>
-          <p className="success-sub">
-            {isSignup
-              ? `Hey ${userName || "there"} 👋 Your PetOLife account is all set. Let's get started!`
-              : `Great to see you again ${userName || ""}! Your pets are waiting for you.`}
-          </p>
-          <div className="success-badge">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="#06402B"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
-            <span>PetOLife Member</span>
-          </div>
-          <p className="success-countdown" style={{marginTop: 16, color: '#666', fontSize: '14px'}}>
-            Redirecting in {countdown}s…
-          </p>
-          <div className="countdown-bar" style={{width: '120px', height: '4px', background: '#e0e0e0', borderRadius: '2px', margin: '8px auto 0', overflow: 'hidden'}}>
-            <div style={{height: '100%', background: '#138a36', borderRadius: '2px', width: `${((3 - countdown) / 3) * 100}%`, transition: 'width 1s linear'}} />
-          </div>
+    <div className="screen success-screen">
+      <div className="success-icon-wrap">
+        <div className="success-circle">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
         </div>
       </div>
+      <h2 className="success-title">
+        {isSignup ? "Account Created!" : "Welcome Back!"}
+      </h2>
+      <p className="success-sub">
+        {isSignup
+          ? `Hey ${userName || "there"} 👋 Your PetOLife account is all set. Let's get started!`
+          : `Great to see you again ${userName || ""}! Your pets are waiting for you.`}
+      </p>
+      <div className="success-badge">
+        <span>PetOLife Member</span>
+      </div>
+      <p style={{marginTop: 16, color: '#666', fontSize: '14px'}}>
+        Redirecting in {countdown}s…
+      </p>
     </div>
   );
 }
 
-/* ══════════════════════════════════════════════════════
-   REGISTRATION SCREEN (default — "Join as Pet Parent")
-   ══════════════════════════════════════════════════════ */
-  function RegistrationScreen({ onLogin, onSuccess }) {
-    const [form, setForm] = useState({
-    name: "",
-    mobile: "",
-    password: "",
-    pincode: "",
-    city: "",
-    state: "",
+function RegistrationScreen({ onLogin, onSuccess }) {
+  const [form, setForm] = useState({
+    name: "", mobile: "", password: "", pincode: "", city: "", state: "",
   });
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState("");
@@ -122,16 +103,12 @@ export function SuccessScreen({ type, userName, onContinue }) {
   const set = (k) => (e) => {
     const val = e.target.value;
     setForm((prev) => ({ ...prev, [k]: val }));
-    if (k === "pincode") {
+    if (k === "pincode" && val.length < 6) {
+      setForm((prev) => ({ ...prev, [k]: val, city: "", state: "" }));
       setPincodeError("");
-      // Reset city/state when pincode changes
-      if (val.length < 6) {
-        setForm((prev) => ({ ...prev, [k]: val, city: "", state: "" }));
-      }
     }
   };
 
-  // Auto-fetch city/state when pincode reaches 6 digits
   const lookupPincode = useCallback(async (pincode) => {
     if (pincode.length !== 6 || !/^\d{6}$/.test(pincode)) return;
     setPincodeLoading(true);
@@ -147,11 +124,7 @@ export function SuccessScreen({ type, userName, onContinue }) {
         throw new Error(data.detail || "Invalid pincode");
       }
       const data = await res.json();
-      setForm((prev) => ({
-        ...prev,
-        city: data.city || "",
-        state: data.state || "",
-      }));
+      setForm((prev) => ({ ...prev, city: data.city || "", state: data.state || "" }));
     } catch (err) {
       setPincodeError(err.message || "Could not lookup pincode");
       setForm((prev) => ({ ...prev, city: "", state: "" }));
@@ -180,7 +153,6 @@ export function SuccessScreen({ type, userName, onContinue }) {
     setLoading(true);
     setError("");
 
-    // Clean mobile → ensure +91 prefix for Supabase
     let phone = form.mobile.replace(/\D/g, "");
     if (phone.length === 10) phone = "+91" + phone;
     else if (!phone.startsWith("+")) phone = "+" + phone;
@@ -188,7 +160,6 @@ export function SuccessScreen({ type, userName, onContinue }) {
     const userPassword = form.password;
 
     try {
-      // 1. Sign up
       const signupRes = await fetch(`${API_BASE}/api/auth/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -204,7 +175,6 @@ export function SuccessScreen({ type, userName, onContinue }) {
       const signupData = await signupRes.json();
       if (!signupRes.ok) throw new Error(signupData.detail || "Signup failed");
 
-      // 2. Auto-login
       const loginRes = await fetch(`${API_BASE}/api/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -213,21 +183,21 @@ export function SuccessScreen({ type, userName, onContinue }) {
       const loginData = await loginRes.json();
       if (!loginRes.ok) throw new Error(loginData.detail || "Auto-login failed");
 
-      // 3. Persist session (store both access + refresh tokens)
       if (loginData.access_token) localStorage.setItem("access_token", loginData.access_token);
       if (loginData.refresh_token) localStorage.setItem("refresh_token", loginData.refresh_token);
       if (loginData.user) {
-        // Enrich user data with location
-      const enrichedUser = {
-        ...loginData.user,
-        user_metadata: {
-          ...loginData.user.user_metadata,
-          pincode: form.pincode,
-          city: form.city,
-          state: form.state,
-        },
-      };
+        const enrichedUser = {
+          ...loginData.user,
+          user_metadata: {
+            ...loginData.user.user_metadata,
+            pincode: form.pincode,
+            city: form.city,
+            state: form.state,
+          },
+        };
         localStorage.setItem("user", JSON.stringify(enrichedUser));
+        // Save city to its own key — survives all future logins
+        localStorage.setItem("user_city", form.city);
       }
 
       onSuccess({ type: "signup", name: form.name.trim() });
@@ -238,16 +208,6 @@ export function SuccessScreen({ type, userName, onContinue }) {
     }
   };
 
-  const handleGoogleSignup = async () => {
-    try {
-      const res = await fetch(`${API_BASE}/api/auth/google`);
-      const data = await res.json();
-      if (data.url) window.location.href = data.url;
-    } catch {
-      setError("Google signup is not available yet.");
-    }
-  };
-
   return (
     <div className="screen auth-screen">
       <Logo />
@@ -255,26 +215,14 @@ export function SuccessScreen({ type, userName, onContinue }) {
         <span className="tagline-black">Join as a<br /></span>
         <span className="tagline-green"><em>Pet Parent</em></span>
       </div>
-      <div className="vet-badge">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="#06402B"><path d="M12 21.593c-5.63-5.539-11-10.297-11-14.402 0-3.791 3.068-5.191 5.281-5.191 1.312 0 4.151.501 5.719 4.457 1.59-3.968 4.464-4.447 5.726-4.447 2.54 0 5.274 1.621 5.274 5.181 0 4.069-5.136 8.625-11 14.402z"/></svg>
-        <span>Building a Health Identity for Every Pet</span>
-      </div>
 
       {error && <p className="auth-error">{error}</p>}
 
-      {/* Pet Parent Name */}
       <div className="form-group">
         <label>Pet Parent Name</label>
-        <input
-          type="text"
-          placeholder="Enter your full name"
-          value={form.name}
-          onChange={set("name")}
-          autoComplete="name"
-        />
+        <input type="text" placeholder="Enter your full name" value={form.name} onChange={set("name")} autoComplete="name" />
       </div>
 
-      {/* Mobile Number */}
       <div className="form-group">
         <label>Mobile Number</label>
         <div className="phone-input-group">
@@ -284,18 +232,15 @@ export function SuccessScreen({ type, userName, onContinue }) {
             placeholder="Enter 10-digit mobile number"
             value={form.mobile}
             onChange={(e) => {
-              // Only allow digits, max 10
               const val = e.target.value.replace(/\D/g, "").slice(0, 10);
               setForm((prev) => ({ ...prev, mobile: val }));
             }}
             inputMode="numeric"
             maxLength={10}
-            autoComplete="tel"
           />
         </div>
       </div>
 
-      {/* Password */}
       <div className="form-group">
         <label>Password</label>
         <div className="input-with-icon">
@@ -312,11 +257,9 @@ export function SuccessScreen({ type, userName, onContinue }) {
         </div>
       </div>
 
-      {/* Pincode */}
       <div className="form-group">
         <label>
-          Pincode
-          {pincodeLoading && <SmallSpinner />}
+          Pincode {pincodeLoading && <SmallSpinner />}
         </label>
         <input
           type="text"
@@ -336,42 +279,30 @@ export function SuccessScreen({ type, userName, onContinue }) {
         {pincodeError && <span className="field-error">{pincodeError}</span>}
       </div>
 
-      {/* City & State — auto-filled, read-only */}
       <div className="pincode-row">
         <div className="form-group">
           <label>City</label>
-          <input
-            type="text"
-            placeholder="Auto-filled"
-            value={form.city}
-            readOnly
-            className={form.city ? "field-readonly field-filled" : "field-readonly"}
-          />
+          <input type="text" placeholder="Auto-filled" value={form.city} readOnly className={form.city ? "field-readonly field-filled" : "field-readonly"} />
         </div>
         <div className="form-group">
           <label>State</label>
-          <input
-            type="text"
-            placeholder="Auto-filled"
-            value={form.state}
-            readOnly
-            className={form.state ? "field-readonly field-filled" : "field-readonly"}
-          />
+          <input type="text" placeholder="Auto-filled" value={form.state} readOnly className={form.state ? "field-readonly field-filled" : "field-readonly"} />
         </div>
       </div>
 
-      <button
-        className="btn-primary"
-        style={{ marginTop: 8 }}
-        onClick={handleRegister}
-        disabled={loading}
-      >
+      <button className="btn-primary" style={{ marginTop: 8 }} onClick={handleRegister} disabled={loading}>
         {loading ? "Creating Account…" : "Create Account"}
       </button>
 
       <div className="or-divider"><span>OR</span></div>
 
-      <button className="btn-google" onClick={handleGoogleSignup}>
+      <button className="btn-google" onClick={async () => {
+        try {
+          const res = await fetch(`${API_BASE}/api/auth/google`);
+          const data = await res.json();
+          if (data.url) window.location.href = data.url;
+        } catch { setError("Google signup is not available yet."); }
+      }}>
         <GoogleIcon /> Sign up with Google
       </button>
 
@@ -383,9 +314,6 @@ export function SuccessScreen({ type, userName, onContinue }) {
   );
 }
 
-/* ══════════════════════════════════════════════════════
-   LOGIN SCREEN (existing — email/phone + password)
-   ══════════════════════════════════════════════════════ */
 function LoginScreen({ onSignUp, onSuccess }) {
   const [showPass, setShowPass] = useState(false);
   const [identifier, setIdentifier] = useState("");
@@ -404,7 +332,6 @@ function LoginScreen({ onSignUp, onSuccess }) {
       if (isEmail) {
         payload.email = identifier;
       } else {
-        // Add +91 prefix for phone login
         let phone = identifier.replace(/[\s\-\(\)]/g, '');
         if (!phone.startsWith("+")) {
           phone = phone.replace(/\D/g, '');
@@ -421,25 +348,53 @@ function LoginScreen({ onSignUp, onSuccess }) {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.detail || data.error || "Login failed");
-      // Store tokens
+
       if (data.access_token) localStorage.setItem("access_token", data.access_token);
       if (data.refresh_token) localStorage.setItem("refresh_token", data.refresh_token);
-      if (data.user) localStorage.setItem("user", JSON.stringify(data.user));
-      onSuccess({ type: "login", name: data.user?.user_metadata?.full_name || identifier.split("@")[0] });
+
+      if (data.user) {
+        // city is now in Supabase user_metadata (saved during signup)
+        // so data.user.user_metadata.city is always available
+        const city = data.user.user_metadata?.city;
+        const enrichedUser = {
+          ...data.user,
+          user_metadata: { ...data.user.user_metadata, city: city || "" },
+        };
+        localStorage.setItem("user", JSON.stringify(enrichedUser));
+
+        // Save to dedicated key — never lost even if localStorage.user gets refreshed
+        if (city) {
+          localStorage.setItem("user_city", city);
+        } else {
+          // Fallback for old accounts created before the backend fix:
+          // fetch city from user_profiles table
+          try {
+            const profileRes = await fetch(
+              `${API_BASE}/api/user-profile/${data.user.id}`,
+              { headers: { Authorization: `Bearer ${data.access_token}` } }
+            );
+            if (profileRes.ok) {
+              const profileData = await profileRes.json();
+              if (profileData.city) {
+                localStorage.setItem("user_city", profileData.city);
+                enrichedUser.user_metadata.city = profileData.city;
+                localStorage.setItem("user", JSON.stringify(enrichedUser));
+              }
+            }
+          } catch (e) {
+            console.warn("Could not fetch city from profile:", e);
+          }
+        }
+      }
+
+      onSuccess({
+        type: "login",
+        name: data.user?.user_metadata?.full_name || identifier.split("@")[0],
+      });
     } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleGoogleLogin = async () => {
-    try {
-      const res = await fetch(`${API_BASE}/api/auth/google`);
-      const data = await res.json();
-      if (data.url) window.location.href = data.url;
-    } catch {
-      setError("Google login is not available yet.");
     }
   };
 
@@ -475,7 +430,9 @@ function LoginScreen({ onSignUp, onSuccess }) {
         <span className="link-green" onClick={() => setShowForgot(true)}>Forgot Password?</span>
       </div>
 
-      {showForgot && <ForgotPasswordForm onBack={() => setShowForgot(false)} />}
+      {showForgot && (
+        <ForgotPasswordForm onBack={() => setShowForgot(false)} />
+      )}
 
       <button className="btn-primary" onClick={handleLogin} disabled={loading}>
         {loading ? "Logging in…" : "Login"}
@@ -483,7 +440,13 @@ function LoginScreen({ onSignUp, onSuccess }) {
 
       <div className="or-divider"><span>OR</span></div>
 
-      <button className="btn-google" onClick={handleGoogleLogin}>
+      <button className="btn-google" onClick={async () => {
+        try {
+          const res = await fetch(`${API_BASE}/api/auth/google`);
+          const data = await res.json();
+          if (data.url) window.location.href = data.url;
+        } catch { setError("Google login is not available yet."); }
+      }}>
         <GoogleIcon /> Continue with Google
       </button>
 
@@ -495,9 +458,6 @@ function LoginScreen({ onSignUp, onSuccess }) {
   );
 }
 
-/* ══════════════════════════════════════════════════════
-   FORGOT PASSWORD INLINE FORM
-   ══════════════════════════════════════════════════════ */
 function ForgotPasswordForm({ onBack }) {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
@@ -529,18 +489,17 @@ function ForgotPasswordForm({ onBack }) {
 
   if (sent) {
     return (
-      <div className="forgot-form" style={{marginTop: 12, padding: '16px', background: '#f0faf3', borderRadius: '12px'}}>
+      <div style={{marginTop: 12, padding: '16px', background: '#f0faf3', borderRadius: '12px'}}>
         <p style={{color: '#138a36', fontWeight: 600, marginBottom: 4}}>✓ Reset email sent!</p>
         <p style={{color: '#555', fontSize: '13px'}}>Check your inbox for a password reset link.</p>
-        <button className="link-green" onClick={onBack} style={{marginTop: 8, cursor: 'pointer', border: 'none', background: 'none', color: '#138a36', fontWeight: 600}}>Back to Login</button>
+        <button onClick={onBack} style={{marginTop: 8, cursor: 'pointer', border: 'none', background: 'none', color: '#138a36', fontWeight: 600}}>Back to Login</button>
       </div>
     );
   }
 
   return (
-    <div className="forgot-form" style={{marginTop: 12, padding: '16px', background: '#f8f9fa', borderRadius: '12px'}}>
+    <div style={{marginTop: 12, padding: '16px', background: '#f8f9fa', borderRadius: '12px'}}>
       <h4 style={{margin: '0 0 8px', fontSize: '15px', color: '#333'}}>Reset Password</h4>
-      <p style={{margin: '0 0 12px', fontSize: '13px', color: '#666'}}>Enter your email and we'll send a reset link.</p>
       {error && <p className="auth-error" style={{fontSize: '13px', marginBottom: 8}}>{error}</p>}
       <input
         type="email"
@@ -561,40 +520,32 @@ function ForgotPasswordForm({ onBack }) {
   );
 }
 
-/* ══════════════════════════════════════════════════════
-   MAIN LOGIN COMPONENT
-   ══════════════════════════════════════════════════════ */
 export default function Login() {
   const navigate = useNavigate();
-  // Default screen is now "register" (the registration form)
   const [screen, setScreen] = useState("register");
+  const [successData, setSuccessData] = useState(null);
 
   const handleSuccess = (data) => {
-    // Navigate immediately to home, but tell it to show the 3s success overlay!
-    navigate("/home", { state: { showSuccessOverlay: true, successData: data } });
+    setSuccessData(data);
+    setScreen("success");
+  };
+
+  const handleSuccessContinue = () => {
+    navigate("/home");
+    setSuccessData(null);
   };
 
   return (
     <div className="login-root">
       <div className="login-card">
         {screen === "register" && (
-          <RegistrationScreen
-            onLogin={() => setScreen("login")}
-            onSuccess={handleSuccess}
-          />
+          <RegistrationScreen onLogin={() => setScreen("login")} onSuccess={handleSuccess} />
         )}
         {screen === "login" && (
-          <LoginScreen
-            onSignUp={() => setScreen("register")}
-            onSuccess={handleSuccess}
-          />
+          <LoginScreen onSignUp={() => setScreen("register")} onSuccess={handleSuccess} />
         )}
         {screen === "success" && (
-          <SuccessScreen
-            type={successData?.type}
-            userName={successData?.name}
-            onContinue={handleSuccessContinue}
-          />
+          <SuccessScreen type={successData?.type} userName={successData?.name} onContinue={handleSuccessContinue} />
         )}
       </div>
     </div>
