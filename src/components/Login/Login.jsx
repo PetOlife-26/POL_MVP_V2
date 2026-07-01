@@ -570,8 +570,8 @@ export default function Login() {
   const [screen, setScreen] = useState("register");
 
   const handleSuccess = (data) => {
-    navigate("/home");
-    setSuccessData(null);
+    // Navigate immediately to home, but tell it to show the 3s success overlay!
+    navigate("/home", { state: { showSuccessOverlay: true, successData: data } });
   };
 
   return (
