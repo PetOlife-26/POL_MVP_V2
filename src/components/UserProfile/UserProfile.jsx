@@ -73,7 +73,7 @@ const UserProfile = ({ pets = [], activePetId, onPetSelect, onAddPet }) => {
             <div
               className={`pet-chip${pet.id === selectedPet?.id ? " active" : ""}`}
               key={pet.id}
-              onClick={() => onPetSelect?.(pet.id)}
+              onClick={() => onPetSelect?.(pet)}
               role="button"
               tabIndex={0}
             >
