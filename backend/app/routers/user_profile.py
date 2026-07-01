@@ -1,7 +1,16 @@
-from fastapi import APIRouter, HTTPException, UploadFile, File
+"""
+User Profile routes — secure, user-scoped endpoints.
+
+GET  /api/user-profile/{user_id}        — Get user profile (ownership enforced)
+PUT  /api/user-profile/{user_id}        — Update user profile (ownership enforced)
+POST /api/user-profile/{user_id}/avatar — Upload avatar (ownership enforced)
+"""
+
+from fastapi import APIRouter, HTTPException, UploadFile, File, Depends
 from pydantic import BaseModel
 from typing import Optional
 from app.supabase_client import supabase
+from app.utils.auth import get_current_user_id
 import time
 
 router = APIRouter()
@@ -25,17 +34,27 @@ def ensure_avatars_bucket_exists():
         print(f"[Storage] Note during bucket check: {e}")
 
 @router.get("/{user_id}")
-async def get_user_profile(user_id: str):
+async def get_user_profile(user_id: str, auth_user_id: str = Depends(get_current_user_id)):
+    """Get user profile (ownership enforced)."""
+    # SECURITY: Users can only view their own profile
+    if user_id != auth_user_id:
+        raise HTTPException(status_code=403, detail="You can only view your own profile")
     try:
         response = supabase.table("user_profiles").select("*").eq("id", user_id).execute()
         if not response.data:
             raise HTTPException(status_code=404, detail="User profile not found")
         return response.data[0]
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.put("/{user_id}")
-async def update_user_profile(user_id: str, profile: UserProfileUpdate):
+async def update_user_profile(user_id: str, profile: UserProfileUpdate, auth_user_id: str = Depends(get_current_user_id)):
+    """Update user profile (ownership enforced)."""
+    # SECURITY: Users can only update their own profile
+    if user_id != auth_user_id:
+        raise HTTPException(status_code=403, detail="You can only update your own profile")
     try:
         update_data = {k: v for k, v in profile.dict().items() if v is not None}
         if not update_data:
@@ -45,11 +64,17 @@ async def update_user_profile(user_id: str, profile: UserProfileUpdate):
         if not response.data:
             raise HTTPException(status_code=404, detail="User profile not found or update failed")
         return response.data[0]
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/{user_id}/avatar")
-async def upload_avatar(user_id: str, file: UploadFile = File(...)):
+async def upload_avatar(user_id: str, file: UploadFile = File(...), auth_user_id: str = Depends(get_current_user_id)):
+    """Upload user avatar (ownership enforced)."""
+    # SECURITY: Users can only change their own avatar
+    if user_id != auth_user_id:
+        raise HTTPException(status_code=403, detail="You can only update your own avatar")
     try:
         ensure_avatars_bucket_exists()
         
@@ -73,5 +98,7 @@ async def upload_avatar(user_id: str, file: UploadFile = File(...)):
         supabase.table("user_profiles").update({"avatar_url": public_url}).eq("id", user_id).execute()
         
         return {"avatar_url": public_url}
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
