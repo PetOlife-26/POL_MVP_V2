@@ -35,7 +35,12 @@ const categories = [
   "Other",
 ];
 
-export default function MedicalRecords({ pets, activePetId, onPetSelect, onAddPet }) {
+export default function MedicalRecords({
+  pets,
+  activePetId,
+  onPetSelect,
+  onAddPet,
+}) {
   const [activeCategory, setActiveCategory] = useState("Quick Access");
   const [showUploadSheet, setShowUploadSheet] = useState(false);
   const imageInputRef = useRef(null);
@@ -74,7 +79,7 @@ export default function MedicalRecords({ pets, activePetId, onPetSelect, onAddPe
         `${API_BASE}/api/medical-records/${petProfileId}`,
         {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
-        }
+        },
       );
       if (res.ok) {
         const data = await res.json();
@@ -99,7 +104,9 @@ export default function MedicalRecords({ pets, activePetId, onPetSelect, onAddPe
     const target = cat.toLowerCase().trim();
     return dbRecords.filter((r) => {
       const recCat = (r.category || "").toLowerCase().trim();
-      return recCat === target || recCat.includes(target) || target.includes(recCat);
+      return (
+        recCat === target || recCat.includes(target) || target.includes(recCat)
+      );
     });
   };
 
@@ -249,7 +256,7 @@ export default function MedicalRecords({ pets, activePetId, onPetSelect, onAddPe
 
       {/* PET PROFILE CARD WITH SWITCHER */}
       {pets && pets.length > 0 && (
-        <div style={{ padding: '16px 16px 0' }}>
+        <div style={{ padding: "16px 16px 0" }}>
           <ProfileCard
             pets={pets}
             selectedPet={activePet}
@@ -331,9 +338,7 @@ export default function MedicalRecords({ pets, activePetId, onPetSelect, onAddPe
                   <div className="upload-success-icon">
                     <CheckCircle2 size={52} strokeWidth={2.4} />
                   </div>
-                  <h3 className="upload-success-text">
-                    Uploaded Successfully
-                  </h3>
+                  <h3 className="upload-success-text">Uploaded Successfully</h3>
                 </>
               )}
 
@@ -364,7 +369,7 @@ export default function MedicalRecords({ pets, activePetId, onPetSelect, onAddPe
                       await uploadToBackend(
                         selectedFile,
                         selectedFile.name,
-                        "Quick Access"
+                        "Quick Access",
                       );
                       setShowUploadProgress(false);
                       setShowPreview(false);
@@ -567,14 +572,8 @@ export default function MedicalRecords({ pets, activePetId, onPetSelect, onAddPe
       {/* VIEW RECORD (from DB — uses URL) */}
       {viewRecord && (
         <div className="file-view-overlay" onClick={() => setViewRecord(null)}>
-          <div
-            className="file-view-card"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              className="close-btn"
-              onClick={() => setViewRecord(null)}
-            >
+          <div className="file-view-card" onClick={(e) => e.stopPropagation()}>
+            <button className="close-btn" onClick={() => setViewRecord(null)}>
               <X size={22} />
             </button>
 
@@ -700,10 +699,7 @@ export default function MedicalRecords({ pets, activePetId, onPetSelect, onAddPe
           className="sheet-overlay"
           onClick={() => setShowCategoryPicker(false)}
         >
-          <div
-            className="category-sheet"
-            onClick={(e) => e.stopPropagation()}
-          >
+          <div className="category-sheet" onClick={(e) => e.stopPropagation()}>
             <div className="sheet-handle"></div>
             <h3>Select Category</h3>
             <div className="category-options">
