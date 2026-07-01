@@ -213,6 +213,7 @@ const handleDateInput = (e) => {
                     type="number"
                     placeholder="e.g. 3"
                     value={years}
+                    //handle input change for years
                     min="0"
                     max="100"
                     onChange={(e) => {
@@ -239,7 +240,7 @@ const handleDateInput = (e) => {
                     value={months}
                     min="0"
                     max="12"
-                    
+                    //handle input change for months
                     onChange={(e) => {
                       let value = e.target.value;
 
