@@ -387,7 +387,7 @@ export default function MedicalRecords() {
 
       {showUploadChoice && (
         <div
-          className="sheet-overlay"
+          className="choice-overlay"
           onClick={() => setShowUploadChoice(false)}
         >
           <div className="choice-sheet" onClick={(e) => e.stopPropagation()}>
