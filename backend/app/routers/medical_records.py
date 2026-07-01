@@ -51,8 +51,9 @@ async def upload_medical_record(
         timestamp = int(time.time() * 1000)
         safe_filename = file.filename.replace(" ", "_") if file.filename else "document"
         
-        # Clean path: {pet_profile_id}/{timestamp}-{filename}
-        storage_path = f"{pet_profile_id}/{timestamp}-{safe_filename}"
+        # Clean path: {category}/{pet_profile_id}/{timestamp}-{filename}
+        safe_category = category.strip().replace(" ", "_")
+        storage_path = f"{safe_category}/{pet_profile_id}/{timestamp}-{safe_filename}"
         
         file_bytes = await file.read()
         file_size = len(file_bytes)
