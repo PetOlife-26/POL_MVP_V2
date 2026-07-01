@@ -42,7 +42,7 @@ export default function QuickActions({ onNavigateTab }) {
           </div>
           <div className="action-card-content">
             <h4 className="action-card-title action-card-title--green">
-              Health Checklist
+              Health Timeline
             </h4>
             <p className="action-card-desc">
               Track care, tasks & important reminders

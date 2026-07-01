@@ -158,20 +158,21 @@ const EditablePetCard = ({ pet, onUpdate }) => {
           <div className="avatar-wrapper pet-avatar">
             <img src={profile.pet_photo_url || pawIcon} alt="Pet" className="avatar-image" />
           </div>
-          {isEditing && (
-            <>
-              <label htmlFor="pet-avatar-upload" className="avatar-upload-label">
-                Change Photo
-              </label>
-              <input 
-                id="pet-avatar-upload" 
-                type="file" 
-                accept="image/*" 
-                className="hidden-input" 
-                onChange={handlePhotoChange}
-              />
-            </>
-          )}
+            {isEditing && (
+              <>
+                <label htmlFor="pet-avatar-upload" className="pet-edit-icon">
+                  <FiEdit2 size={14} />
+                </label>
+
+                <input
+                  id="pet-avatar-upload"
+                  type="file"
+                  accept="image/*"
+                  className="hidden-input"
+                  onChange={handlePhotoChange}
+                />
+              </>
+            )}
         </div>
 
         <div className="details-section">
@@ -247,7 +248,9 @@ const EditablePetCard = ({ pet, onUpdate }) => {
             )}
           </div>
         </div>
+        
       </div>
+      
     </div>
   );
 };

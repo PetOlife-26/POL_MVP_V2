@@ -56,7 +56,7 @@ function SmallSpinner() {
 }
 
 /* ── Success Screen — auto-redirects after 3 seconds ── */
-function SuccessScreen({ type, userName, onContinue }) {
+export function SuccessScreen({ type, userName, onContinue }) {
   const isSignup = type === "signup";
   const [countdown, setCountdown] = useState(3);
 
@@ -67,31 +67,35 @@ function SuccessScreen({ type, userName, onContinue }) {
   }, [countdown, onContinue]);
 
   return (
-    <div className="screen success-screen">
-      <div className="success-icon-wrap">
-        <div className="success-circle">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="20 6 9 17 4 12"/>
-          </svg>
+    <div className="login-root" style={{ minHeight: '100vh', width: '100%', position: 'absolute', top: 0, left: 0, zIndex: 9999 }}>
+      <div className="login-card">
+        <div className="screen success-screen">
+          <div className="success-icon-wrap">
+            <div className="success-circle">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            </div>
+          </div>
+          <h2 className="success-title">
+            {isSignup ? "Account Created!" : "Welcome Back!"}
+          </h2>
+          <p className="success-sub">
+            {isSignup
+              ? `Hey ${userName || "there"} 👋 Your PetOLife account is all set. Let's get started!`
+              : `Great to see you again ${userName || ""}! Your pets are waiting for you.`}
+          </p>
+          <div className="success-badge">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="#06402B"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
+            <span>PetOLife Member</span>
+          </div>
+          <p className="success-countdown" style={{marginTop: 16, color: '#666', fontSize: '14px'}}>
+            Redirecting in {countdown}s…
+          </p>
+          <div className="countdown-bar" style={{width: '120px', height: '4px', background: '#e0e0e0', borderRadius: '2px', margin: '8px auto 0', overflow: 'hidden'}}>
+            <div style={{height: '100%', background: '#138a36', borderRadius: '2px', width: `${((3 - countdown) / 3) * 100}%`, transition: 'width 1s linear'}} />
+          </div>
         </div>
-      </div>
-      <h2 className="success-title">
-        {isSignup ? "Account Created!" : "Welcome Back!"}
-      </h2>
-      <p className="success-sub">
-        {isSignup
-          ? `Hey ${userName || "there"} 👋 Your PetOLife account is all set. Let's get started!`
-          : `Great to see you again ${userName || ""}! Your pets are waiting for you.`}
-      </p>
-      <div className="success-badge">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="#06402B"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
-        <span>PetOLife Member</span>
-      </div>
-      <p className="success-countdown" style={{marginTop: 16, color: '#666', fontSize: '14px'}}>
-        Redirecting in {countdown}s…
-      </p>
-      <div className="countdown-bar" style={{width: '120px', height: '4px', background: '#e0e0e0', borderRadius: '2px', margin: '8px auto 0', overflow: 'hidden'}}>
-        <div style={{height: '100%', background: '#138a36', borderRadius: '2px', width: `${((3 - countdown) / 3) * 100}%`, transition: 'width 1s linear'}} />
       </div>
     </div>
   );
@@ -564,17 +568,10 @@ export default function Login() {
   const navigate = useNavigate();
   // Default screen is now "register" (the registration form)
   const [screen, setScreen] = useState("register");
-  const [successData, setSuccessData] = useState(null);
 
   const handleSuccess = (data) => {
-    setSuccessData(data);
-    setScreen("success");
-  };
-
-  const handleSuccessContinue = () => {
-    // Both signup and login success → go to home
-    navigate("/home");
-    setSuccessData(null);
+    // Navigate immediately to home, but tell it to show the 3s success overlay!
+    navigate("/home", { state: { showSuccessOverlay: true, successData: data } });
   };
 
   return (
