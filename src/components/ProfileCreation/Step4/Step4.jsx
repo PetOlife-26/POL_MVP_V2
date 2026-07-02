@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import StepProgress from "../StepProgress/StepProgress";
 import StepHeaderBar from "../StepHeaderBar/StepHeaderBar";
 import { FiEdit2, FiCheck } from "../icons";
-import { API_BASE } from "../constants";
+import { API_BASE, petTypes, breedData } from "../constants";
 import fetchWithAuth from "../../../utils/fetchWithAuth";
 import { PetAvatar } from "../../common/PetAvatar";
 import "./Step4.css";
@@ -21,6 +21,25 @@ function Step4({ goBack, petData, setStep, isSubmitting, setIsSubmitting, submit
   });
 
   const [isEditing, setIsEditing] = useState(false);
+
+  React.useEffect(() => {
+    if (localPetData.birthDate) {
+      const dob = new Date(localPetData.birthDate);
+      const today = new Date();
+      let y = today.getFullYear() - dob.getFullYear();
+      let m = today.getMonth() - dob.getMonth();
+      if (m < 0) {
+        y--;
+        m += 12;
+      }
+      if (y >= 0 && m >= 0) {
+        setLocalPetData((prev) => ({
+          ...prev,
+          approxAge: `${y}y ${m}m`,
+        }));
+      }
+    }
+  }, [localPetData.birthDate]);
 
   const handleGenerate = async () => {
     setIsSubmitting(true);
@@ -109,7 +128,7 @@ function Step4({ goBack, petData, setStep, isSubmitting, setIsSubmitting, submit
     }
   };
 
-  const inputStyle = { padding: '6px', borderRadius: '6px', border: '1px solid #ccc', outline: 'none', width: '100%', maxWidth: '150px', textAlign: 'right', fontFamily: 'inherit' };
+  const inputStyle = { padding: '6px', borderRadius: '6px', border: '1px solid #ccc', outline: 'none', width: '100%', maxWidth: '150px', textAlign: 'left', fontFamily: 'inherit' };
 
   return (
     <div className="confirm-container">
@@ -147,8 +166,8 @@ function Step4({ goBack, petData, setStep, isSubmitting, setIsSubmitting, submit
         <div className="confirm-details">
           {[
             { icon: "👤", label: "Pet Name",  name: "petName", type: "text" },
-            { icon: "🐕", label: "Pet Type",  name: "petType", type: "text" },
-            { icon: "🐾", label: "Breed",     name: "breed", type: "text" },
+            { icon: "🐕", label: "Pet Type",  name: "petType", type: "select", options: petTypes.map(p => p.name) },
+            { icon: "🐾", label: "Breed",     name: "breed", type: "select", options: breedData[localPetData.petType] || [] },
             { icon: "♂",  label: "Gender",    name: "gender", type: "select", options: ["Male", "Female"] },
           ].map(({ icon, label, name, type, options }) => (
             <div className="confirm-row" key={label}>
@@ -157,10 +176,17 @@ function Step4({ goBack, petData, setStep, isSubmitting, setIsSubmitting, submit
                 <span className="label">{label}</span>
               </div>
               {isEditing ? (
-                 type === "select" ? (
+                 type === "select" && options?.length > 0 ? (
                    <select 
                      value={localPetData[name]} 
-                     onChange={e => setLocalPetData({...localPetData, [name]: e.target.value})} 
+                     onChange={e => {
+                       const val = e.target.value;
+                       setLocalPetData(prev => {
+                         const next = { ...prev, [name]: val };
+                         if (name === "petType") next.breed = ""; // reset breed on type change
+                         return next;
+                       });
+                     }} 
                      style={inputStyle}
                    >
                      <option value="">Select...</option>
@@ -188,24 +214,42 @@ function Step4({ goBack, petData, setStep, isSubmitting, setIsSubmitting, submit
               <span className="label">Age / DOB</span>
             </div>
             {isEditing ? (
-              <div style={{ display: 'flex', gap: '8px', flexDirection: 'column', alignItems: 'flex-end', width: '150px' }}>
+              <div style={{ display: 'flex', gap: '8px', flexDirection: 'column', alignItems: 'flex-start', width: '150px' }}>
                 <input 
                   type="date" 
                   value={localPetData.birthDate} 
                   max={new Date().toISOString().split("T")[0]}
-                  onChange={e => setLocalPetData({...localPetData, birthDate: e.target.value, approxAge: ""})} 
+                  onChange={e => setLocalPetData({...localPetData, birthDate: e.target.value})} 
                   style={inputStyle}
                   title="Date of Birth"
                 />
-                <span style={{ fontSize: '11px', color: '#888', marginRight: '4px' }}>OR</span>
-                <input 
-                  type="text" 
-                  value={localPetData.approxAge} 
-                  onChange={e => setLocalPetData({...localPetData, approxAge: e.target.value, birthDate: ""})} 
-                  style={inputStyle}
-                  placeholder="e.g. 2y 5m"
-                  title="Approximate Age"
-                />
+                <span style={{ fontSize: '11px', color: '#888', marginLeft: '4px' }}>Approx Age (if no DOB)</span>
+                <div style={{ display: 'flex', gap: '4px', width: '100%' }}>
+                  <input 
+                    type="number" 
+                    value={localPetData.approxAge.match(/(\d+)y/)?.[1] || ""} 
+                    min="0" max="100"
+                    onChange={e => {
+                      const y = e.target.value;
+                      const m = localPetData.approxAge.match(/(\d+)m/)?.[1] || "0";
+                      setLocalPetData({...localPetData, approxAge: `${y}y ${m}m`, birthDate: ""});
+                    }} 
+                    style={{...inputStyle, width: '60px'}}
+                    placeholder="Yrs"
+                  />
+                  <input 
+                    type="number" 
+                    value={localPetData.approxAge.match(/(\d+)m/)?.[1] || ""} 
+                    min="0" max="11"
+                    onChange={e => {
+                      const m = e.target.value;
+                      const y = localPetData.approxAge.match(/(\d+)y/)?.[1] || "0";
+                      setLocalPetData({...localPetData, approxAge: `${y}y ${m}m`, birthDate: ""});
+                    }} 
+                    style={{...inputStyle, width: '60px'}}
+                    placeholder="Mos"
+                  />
+                </div>
               </div>
             ) : (
               <strong>{localPetData.birthDate || localPetData.approxAge || "[Not Added]"}</strong>
