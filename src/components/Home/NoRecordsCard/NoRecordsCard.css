@@ -132,3 +132,70 @@
   font-size: 0.75rem;
   color: #94a3b8;
 }
+
+/* FILE VIEW OVERLAY */
+
+.file-view-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 5000;
+  padding: 18px;
+}
+
+.file-view-card {
+  position: relative;
+  width: 100%;
+  max-width: 430px;
+  height: 80vh;
+  background: white;
+  border-radius: 22px;
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  gap: 12px;
+  overflow: hidden;
+}
+
+.file-view-content {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.file-view-content img,
+.file-view-content iframe {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border: none;
+}
+
+.close-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 42px;
+  height: 42px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.95);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  color: #f73434;
+  z-index: 100;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.close-btn:hover {
+  background: #e93115;
+  color: rgb(240, 240, 240);
+}

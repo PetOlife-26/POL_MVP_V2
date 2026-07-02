@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { X } from "lucide-react";
 import "./NoRecordsCard.css";
 import noRecordsIcon from "./no-records-icon.png";
 
@@ -9,6 +10,7 @@ export default function NoRecordsCard({ selectedPet, onNavigateTab }) {
   const navigate = useNavigate();
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [viewFile, setViewFile] = useState(null);
 
   const petId = selectedPet?.id || selectedPet?.pet_profile_id;
 
@@ -61,7 +63,7 @@ export default function NoRecordsCard({ selectedPet, onNavigateTab }) {
 
         <div className="summary-list">
           {records.slice(0, 3).map((rec) => (
-            <div key={rec.id} className="summary-item" onClick={handleGoToRecords}>
+            <div key={rec.id} className="summary-item" onClick={() => setViewFile(rec)}>
               <span className="summary-badge">{rec.category}</span>
               <span className="summary-title">{rec.title || rec.file_name}</span>
               <span className="summary-date">
@@ -70,6 +72,27 @@ export default function NoRecordsCard({ selectedPet, onNavigateTab }) {
             </div>
           ))}
         </div>
+
+        {viewFile && (
+          <div className="file-view-overlay" onClick={() => setViewFile(null)}>
+            <div className="file-view-card" onClick={(e) => e.stopPropagation()}>
+              <button className="close-btn" onClick={() => setViewFile(null)}>
+                <X size={22} />
+              </button>
+
+              <div className="file-view-content">
+                {viewFile.file_type?.startsWith("image") ? (
+                  <img src={viewFile.file_url} alt="Preview" />
+                ) : (
+                  <iframe
+                    src={`${viewFile.file_url}#toolbar=0&navpanes=0`}
+                    title="PDF"
+                  />
+                )}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
