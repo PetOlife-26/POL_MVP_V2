@@ -29,8 +29,9 @@ export function PetAvatar({ src, petType, className, size = 48, iconColor = "#9c
         alignItems: "center",
         justifyContent: "center",
         backgroundColor: "#f3f4f6",
-        width: "100%",
-        height: "100%",
+        width: size,
+        height: size,
+        flexShrink: 0,
         borderRadius: "50%",
       }}
     >

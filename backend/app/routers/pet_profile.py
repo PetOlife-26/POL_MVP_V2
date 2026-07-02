@@ -331,3 +331,36 @@ async def update_pet_photo(profile_id: str, file: UploadFile = File(...), user_i
     except Exception as e:
         print(f"Photo upload error: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to upload photo: {str(e)}")
+
+@router.delete("/{profile_id}")
+async def delete_pet_profile(profile_id: str, user_id: str = Depends(get_current_user_id)):
+    """Delete pet profile (ownership enforced)."""
+    try:
+        # SECURITY: Verify ownership before allowing delete
+        _verify_pet_ownership(profile_id, user_id)
+
+        # 1. Fetch profile to get photo_url
+        result = supabase.table("pet_profiles").select("pet_photo_url").eq("id", profile_id).execute()
+        if result.data:
+            photo_url = result.data[0].get("pet_photo_url")
+            if photo_url:
+                # Extract filename from URL (usually the last part)
+                filename = photo_url.split("/")[-1]
+                if filename:
+                    try:
+                        supabase.storage.from_("pet-photos").remove([filename])
+                    except Exception as e:
+                        print(f"Error deleting photo from bucket: {e}")
+
+        # 2. Delete pet IDs
+        supabase.table("pet_ids").delete().eq("pet_profile_id", profile_id).execute()
+
+        # 3. Delete pet profile
+        delete_result = supabase.table("pet_profiles").delete().eq("id", profile_id).execute()
+        
+        return {"message": "Pet profile deleted successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Delete profile error: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to delete profile: {str(e)}")

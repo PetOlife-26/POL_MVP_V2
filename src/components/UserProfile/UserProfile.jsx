@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FiPlus } from "react-icons/fi";
+import { FiPlus, FiEdit2 } from "react-icons/fi";
 import useAuth from "../../hooks/useAuth";
 import EditableUserCard from "./EditableUserCard";
 import EditablePetCard from "./EditablePetCard";
@@ -8,9 +8,10 @@ import NO_PETS_IMG from "../../assets/no-pets.png";
 import PETS_BANNER_IMG from "../../assets/dog-cat-banner.png";
 import "./UserProfile.css";
 
-const UserProfile = ({ pets = [], activePetId, onPetSelect, onAddPet }) => {
+const UserProfile = ({ pets = [], activePetId, onPetSelect, onAddPet, refreshPets }) => {
   const { user, logout } = useAuth();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   // Fallback to first pet if no activePetId is provided but pets exist
   const selectedPet = pets.find(p => p.id === activePetId) || (pets.length > 0 ? pets[0] : null);
@@ -31,7 +32,7 @@ const UserProfile = ({ pets = [], activePetId, onPetSelect, onAddPet }) => {
   };
 
   const handlePetUpdate = () => {
-    window.location.reload();
+    if (refreshPets) refreshPets();
   };
 
   return (
@@ -43,14 +44,14 @@ const UserProfile = ({ pets = [], activePetId, onPetSelect, onAddPet }) => {
       {/* My Pets Section */}
       <div className="section-header">
         <h3>My Pets</h3>
-        {pets.length > 0 && (
+        {pets.length > 0 && selectedPet && (
           <button 
             type="button" 
-            className="view-all-link" 
-            onClick={() => navigate("/home", { state: { tab: "home" } })}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+            className="view-all-link edit-pet-link" 
+            onClick={() => setShowEditModal(true)}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: '6px', color: '#178a32', fontWeight: 600 }}
           >
-            View All <span className="arrow">→</span>
+            <FiEdit2 size={16} /> Edit Pet
           </button>
         )}
       </div>
@@ -132,6 +133,16 @@ const UserProfile = ({ pets = [], activePetId, onPetSelect, onAddPet }) => {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {showEditModal && selectedPet && (
+        <div className="logout-modal-overlay" style={{ zIndex: 1000, overflowY: 'auto', padding: '20px 0' }}>
+          <EditablePetCard 
+            pet={selectedPet} 
+            onUpdate={() => { setShowEditModal(false); handlePetUpdate(); }} 
+            onClose={() => setShowEditModal(false)} 
+          />
         </div>
       )}
     </div>
