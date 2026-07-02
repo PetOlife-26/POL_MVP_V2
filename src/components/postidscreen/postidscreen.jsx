@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import './postidscreen.css';
 import { QRCodeSVG } from 'qrcode.react';
+import { PetAvatar } from '../common/PetAvatar';
 import {
   Check,
   PawPrint,
@@ -33,6 +34,7 @@ export default function PostIdScreen({ inlineData }) {
     petName = 'Pet',
     petolifeId = 'ID',
     petPhotoUrl = '',
+    petType = '',
     petProfileId = '',
   } = dataToUse;
 
@@ -191,11 +193,12 @@ export default function PostIdScreen({ inlineData }) {
         <div className="avatars">
           <div className="avatar avatar-dog" style={{ animationDelay: '0.15s' }}>
             <div className="avatar-ring">
-              {petPhotoUrl ? (
-                <img className="avatar-photo" src={petPhotoUrl} alt={petName} loading="lazy" />
-              ) : (
-                <PawPrint size={48} color="var(--cream)" style={{ opacity: 0.5 }} />
-              )}
+              <PetAvatar
+                src={petPhotoUrl}
+                petType={petType}
+                className="avatar-photo"
+                size={48}
+              />
             </div>
             <span className="avatar-charm">
               <PawPrint size={14} />

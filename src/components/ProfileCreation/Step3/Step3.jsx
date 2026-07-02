@@ -1,79 +1,13 @@
-import React, { useState, forwardRef } from "react";
+import React, { useState } from "react";
 import StepProgress from "../StepProgress/StepProgress";
 import StepHeaderBar from "../StepHeaderBar/StepHeaderBar";
 import { FiCalendar } from "../icons";
 import "./Step3.css";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
-
-
-
-const CustomDateInput = forwardRef(
-  ({ value, onClick, onChange }, ref) => {
-    const handleInputChange = (e) => {
-      let input = e.target.value.replace(/\D/g, "");
-
-      if (input.length > 8) input = input.slice(0, 8);
-
-      if (input.length > 4) {
-        input = `${input.slice(0, 2)}/${input.slice(2, 4)}/${input.slice(4)}`;
-      } else if (input.length > 2) {
-        input = `${input.slice(0, 2)}/${input.slice(2)}`;
-      }
-
-      // Send the formatted value back
-      onChange({
-        target: {
-          value: input,
-        },
-      });
-    };
-
-    return (
-      <div className="date-input-wrapper">
-        <input
-          ref={ref}
-          type="text"
-          value={value}
-          onClick={onClick}
-          onChange={handleInputChange}
-          placeholder="DD/MM/YYYY"
-          maxLength={10}
-          inputMode="numeric"
-          className="dob-input"
-          onKeyDown={(e) => {
-            const allowed = [
-              "Backspace",
-              "Delete",
-              "ArrowLeft",
-              "ArrowRight",
-              "Tab",
-              "Home",
-              "End",
-            ];
-
-            if (allowed.includes(e.key)) return;
-
-            if (!/^\d$/.test(e.key)) {
-              e.preventDefault();
-            }
-          }}
-        />
-
-        <FiCalendar className="calendar-icon" />
-      </div>
-    );
-  }
-);
 
 function Step3({ goNext, goBack, petData }) {
 const [knowDOB, setKnowDOB] = useState(!!petData.birthDate);
 
 const [dob, setDob] = useState(petData.birthDate || "");
-
-const [selectedDate, setSelectedDate] = useState(
-  petData.birthDate ? new Date(petData.birthDate) : null
-);
   const getApproxYears = () => {
     if (!petData.approxAge) return "";
     const match = petData.approxAge.match(/(\d+)y/);
@@ -93,19 +27,7 @@ const [selectedDate, setSelectedDate] = useState(
   const [years, setYears] = useState(getApproxYears());
   const [months, setMonths] = useState(getApproxMonths());
   const progress = 75;
-const handleDateInput = (e) => {
-  let value = e.target.value.replace(/\D/g, "");
-
-  if (value.length > 8) value = value.slice(0, 8);
-
-  if (value.length > 4) {
-    value = `${value.slice(0, 2)}/${value.slice(2, 4)}/${value.slice(4)}`;
-  } else if (value.length > 2) {
-    value = `${value.slice(0, 2)}/${value.slice(2)}`;
-  }
-
-  setDob(value);
-};
+  const maxDate = new Date().toISOString().split("T")[0];
   return (
     <div className="pet-age-container">
       <StepHeaderBar onBack={goBack} />
@@ -144,40 +66,15 @@ const handleDateInput = (e) => {
             <div className="input-group">
               <label>Date of Birth</label>
               <div className="date-input">
-<div className="date-input">
-<DatePicker
-  selected={selectedDate}
-  onChange={(date) => {
-    setSelectedDate(date);
-
-    if (date) {
-      const formatted = `${String(date.getDate()).padStart(2, "0")}/${String(
-        date.getMonth() + 1
-      ).padStart(2, "0")}/${date.getFullYear()}`;
-
-      setDob(formatted);
-    }
-  }}
-  customInput={
-    <CustomDateInput
-      value={dob}
-      onChange={(e) => setDob(e.target.value)}
-    />
-  }
-    popperPlacement="bottom-start"
-      popperModifiers={[
-    {
-      name: "flip",
-      enabled: false,
-    },
-  ]}
-  showPopperArrow={false}
-  popperClassName="custom-datepicker-popper"
-/>
-
-  <FiCalendar className="calendar-icon" />
-</div>
-</div>
+                <input
+                  type="date"
+                  max={maxDate}
+                  value={dob}
+                  onChange={(e) => setDob(e.target.value)}
+                  className="dob-input"
+                  style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid #ccc", outline: "none" }}
+                />
+              </div>
             </div>
           </div>
         )}
@@ -238,7 +135,7 @@ const handleDateInput = (e) => {
                     placeholder="e.g. 6"
                     value={months}
                     min="0"
-                    max="12"
+                    max="11"
                     
                     onChange={(e) => {
                       let value = e.target.value;
@@ -251,7 +148,7 @@ const handleDateInput = (e) => {
 
                       value = Number(value);
 
-                      if (value >= 0 && value <= 12) {
+                      if (value >= 0 && value <= 11) {
                         setMonths(value);
                       }
                     }}

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { FiEdit2, FiCheck, FiX } from "react-icons/fi";
 import fetchWithAuth from "../../utils/fetchWithAuth";
+import { PetAvatar } from "../common/PetAvatar";
 import "./EditablePetCard.css";
 
 import calendarIcon from "../Home/ProfileCard/calendar-icon.png";
@@ -156,7 +157,12 @@ const EditablePetCard = ({ pet, onUpdate }) => {
       <div className="card-content">
         <div className="avatar-section">
           <div className="avatar-wrapper pet-avatar">
-            <img src={profile.pet_photo_url || pawIcon} alt="Pet" className="avatar-image" />
+            <PetAvatar
+              src={profile.pet_photo_url}
+              petType={pet.pet_type}
+              className="avatar-image"
+              size={48}
+            />
           </div>
             {isEditing && (
               <>

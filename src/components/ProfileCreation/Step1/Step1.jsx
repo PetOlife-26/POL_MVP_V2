@@ -3,6 +3,7 @@ import StepProgress from "../StepProgress/StepProgress";
 import StepHeaderBar from "../StepHeaderBar/StepHeaderBar";
 import { FiCamera, FiSkipForward, FiArrowRight } from "../icons";
 import { PAW_IMG } from "../constants";
+import { PetAvatar } from "../../common/PetAvatar";
 import "./Step1.css";
 
 
@@ -53,7 +54,7 @@ function Step1({ goNext, onNavigateBack, petData }) {
         <img src={PAW_IMG} alt="" className="paw-img paw-right" />
 
 <div className="pet-photo-ring">
-  {image ? <img src={image} alt="pet" /> : <span>🐶</span>}
+  <PetAvatar src={image} petType={petData?.petType} alt="pet" size={48} />
 
   <label className="pet-camera-badge">
     <FiCamera />

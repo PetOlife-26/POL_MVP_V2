@@ -4,6 +4,7 @@ import StepHeaderBar from "../StepHeaderBar/StepHeaderBar";
 import { FiEdit2 } from "../icons";
 import { API_BASE } from "../constants";
 import fetchWithAuth from "../../../utils/fetchWithAuth";
+import { PetAvatar } from "../../common/PetAvatar";
 import "./Step4.css";
 
 function Step4({ goBack, petData, setStep, isSubmitting, setIsSubmitting, submitError, setSubmitError, onNavigateToPetHome }) {
@@ -116,15 +117,12 @@ function Step4({ goBack, petData, setStep, isSubmitting, setIsSubmitting, submit
       <div className="confirm-card">
         <div className="pet-summary-top">
           <div className="pet-avatar-wrap">
-            {petData.petPhotoFile ? (
-              <img
-                src={URL.createObjectURL(petData.petPhotoFile)}
-                alt={petData.petName || "Pet"}
-                className="pet-avatar"
-              />
-            ) : (
-              <div className="pet-avatar placeholder-avatar">🐾</div>
-            )}
+            <PetAvatar
+              src={petData.petPhotoFile ? URL.createObjectURL(petData.petPhotoFile) : null}
+              petType={petData.petType}
+              className="pet-avatar"
+              size={48}
+            />
           </div>
 
           <div className="pet-summary-meta">

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
+import { PetAvatar } from '../common/PetAvatar';
 import './petcard.css';
 import logoImg from '../../assets/logo.png';
 
@@ -128,17 +129,13 @@ export default function PetCard({ petData: propPetData }) {
           <div className="pc-top-row">
             <div className="pc-photo-section">
               <div className="pc-photo-frame">
-                {fullProfile.pet_photo_url ? (
-                  <img
-                    className="pc-photo"
-                    src={fullProfile.pet_photo_url}
-                    alt={fullProfile.pet_name}
-                  />
-                ) : (
-                  <div className="pc-photo-placeholder">
-                    <PawIcon size={40} />
-                  </div>
-                )}
+                <PetAvatar
+                  src={fullProfile.pet_photo_url}
+                  petType={fullProfile.pet_type}
+                  className={fullProfile.pet_photo_url ? "pc-photo" : "pc-photo-placeholder"}
+                  size={40}
+                  iconColor="#0c6b3a"
+                />
               </div>
             </div>
 
