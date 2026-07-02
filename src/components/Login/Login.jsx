@@ -53,7 +53,7 @@ function SmallSpinner() {
   return <span className="pincode-spinner" />;
 }
 
-function SuccessScreen({ type, userName, onContinue }) {
+export function SuccessScreen({ type, userName, onContinue }) {
   const isSignup = type === "signup";
   const [countdown, setCountdown] = useState(3);
 

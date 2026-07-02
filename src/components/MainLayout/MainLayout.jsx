@@ -29,46 +29,46 @@ const MainLayout = () => {
     }
   }, [location.state]);
 
-  useEffect(() => {
-    const fetchPets = async () => {
-      if (!user) return;
-      setLoadingPets(true);
-      try {
-        // Try local storage first
-        const localPets = localStorage.getItem(`pets_${user.id}`);
-        if (localPets) {
-          const parsed = JSON.parse(localPets);
-          setPets(parsed);
-          const savedActive = localStorage.getItem(`active_pet_id_${user.id}`);
-          if (savedActive && parsed.some(p => p.id === savedActive)) {
-            setActivePetId(savedActive);
-          } else if (parsed.length > 0) {
-            setActivePetId(parsed[0].id);
-          }
+  const fetchPets = async () => {
+    if (!user) return;
+    setLoadingPets(true);
+    try {
+      // Try local storage first
+      const localPets = localStorage.getItem(`pets_${user.id}`);
+      if (localPets) {
+        const parsed = JSON.parse(localPets);
+        setPets(parsed);
+        const savedActive = localStorage.getItem(`active_pet_id_${user.id}`);
+        if (savedActive && parsed.some(p => p.id === savedActive)) {
+          setActivePetId(savedActive);
+        } else if (parsed.length > 0) {
+          setActivePetId(parsed[0].id);
         }
-
-        // ✅ FIX: Fetch only THIS user's pets using their user.id
-        // Previously was "/api/pet-profile/" which returned ALL pets from ALL users
-        const res = await fetchWithAuth(`/api/pet-profile/by-user/${user.id}`);
-        if (res.ok) {
-          const data = await res.json();
-          setPets(data);
-          localStorage.setItem(`pets_${user.id}`, JSON.stringify(data));
-          
-          const savedActive = localStorage.getItem(`active_pet_id_${user.id}`);
-          if (savedActive && data.some(p => p.id === savedActive)) {
-            setActivePetId(savedActive);
-          } else if (data.length > 0) {
-            setActivePetId(data[0].id);
-            localStorage.setItem(`active_pet_id_${user.id}`, data[0].id);
-          }
-        }
-      } catch (err) {
-        console.error("Failed to fetch pets", err);
-      } finally {
-        setLoadingPets(false);
       }
-    };
+
+      // ✅ Fetch only THIS user's pets using their user.id
+      const res = await fetchWithAuth(`/api/pet-profile/by-user/${user.id}`);
+      if (res.ok) {
+        const data = await res.json();
+        setPets(data);
+        localStorage.setItem(`pets_${user.id}`, JSON.stringify(data));
+        
+        const savedActive = localStorage.getItem(`active_pet_id_${user.id}`);
+        if (savedActive && data.some(p => p.id === savedActive)) {
+          setActivePetId(savedActive);
+        } else if (data.length > 0) {
+          setActivePetId(data[0].id);
+          localStorage.setItem(`active_pet_id_${user.id}`, data[0].id);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to fetch pets", err);
+    } finally {
+      setLoadingPets(false);
+    }
+  };
+
+  useEffect(() => {
     fetchPets();
   }, [user]);
 
@@ -116,6 +116,7 @@ const MainLayout = () => {
             activePetId={activePetId}
             onPetSelect={handlePetSelect}
             onAddPet={handleAddPet}
+            refreshPets={fetchPets}
           />
         </div>
       );

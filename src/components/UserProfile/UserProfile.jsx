@@ -4,6 +4,7 @@ import { FiPlus, FiEdit2 } from "react-icons/fi";
 import useAuth from "../../hooks/useAuth";
 import EditableUserCard from "./EditableUserCard";
 import EditablePetCard from "./EditablePetCard";
+import { PetAvatar } from "../common/PetAvatar";
 import NO_PETS_IMG from "../../assets/no-pets.png";
 import PETS_BANNER_IMG from "../../assets/dog-cat-banner.png";
 import "./UserProfile.css";
@@ -78,10 +79,11 @@ const UserProfile = ({ pets = [], activePetId, onPetSelect, onAddPet, refreshPet
               role="button"
               tabIndex={0}
             >
-              <img
-                src={pet.pet_photo_url || pet.image || NO_PETS_IMG}
-                alt={pet.pet_name || pet.name || "Pet"}
+              <PetAvatar
+                src={pet.pet_photo_url || pet.image}
+                petType={pet.pet_type || pet.type}
                 className="pet-chip-img"
+                size={64}
               />
               <span className="pet-chip-name">
                 {pet.pet_name || pet.name || "Unnamed"}
