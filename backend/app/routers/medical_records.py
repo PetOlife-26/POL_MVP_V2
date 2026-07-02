@@ -5,6 +5,7 @@ Handles uploading, fetching, and deleting pet medical documents via Supabase Sto
 POST   /api/medical-records/upload          — Upload a record (ownership enforced)
 GET    /api/medical-records/{pet_profile_id} — Fetch records for a pet (ownership enforced)
 DELETE /api/medical-records/{record_id}      — Delete a record (ownership enforced)
+PATCH  /api/medical-records/{record_id}/favorite — Toggle favorite status
 """
 
 import time
@@ -179,3 +180,43 @@ async def delete_medical_record(record_id: str, user_id: str = Depends(get_curre
     except Exception as e:
         print(f"Delete record error: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to delete record: {str(e)}")
+
+@router.patch("/{record_id}/favorite")
+async def toggle_favorite(record_id: str, user_id: str = Depends(get_current_user_id)):
+    """Toggle the is_favorite status of a medical record (ownership enforced)."""
+    try:
+        # 1) Get the record and verify ownership
+        res = supabase.table("medical_records").select("*").eq("id", record_id).execute()
+        if not res.data:
+            raise HTTPException(status_code=404, detail="Record not found")
+        
+        record = res.data[0]
+        
+        # Fast check via record's user_id if it exists, else fallback to pet profile
+        record_user_id = record.get("user_id")
+        
+        if record_user_id:
+            if record_user_id != user_id:
+                raise HTTPException(status_code=403, detail="You do not have permission to modify this record")
+        else:
+            pet_res = supabase.table("pet_profiles").select("user_id").eq("id", record.get("pet_profile_id")).execute()
+            if pet_res.data and pet_res.data[0].get("user_id") != user_id:
+                raise HTTPException(status_code=403, detail="You do not have permission to modify this record")
+                
+        # 2) Toggle the is_favorite boolean
+        current_fav = record.get("is_favorite", False)
+        new_fav = not current_fav
+        
+        update_res = supabase.table("medical_records").update({"is_favorite": new_fav}).eq("id", record_id).execute()
+        
+        if not update_res.data:
+            raise HTTPException(status_code=500, detail="Failed to update favorite status")
+            
+        return {"message": "Favorite status updated", "is_favorite": new_fav, "record": update_res.data[0]}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Toggle favorite error: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to toggle favorite: {str(e)}")
+

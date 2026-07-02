@@ -12,15 +12,16 @@ import {
   FileImage,
   File,
   ChevronRight,
-  CheckCircle2,
+  Heart,
   X,
   Trash2,
+  CheckCircle2,
 } from "lucide-react";
 import heroImage from "../../assets/medical-banner.png";
 import emptyDog from "../../assets/empty-dog.png";
 
-const categories = [
-  "Quick Access",
+const FIXED_CATEGORIES = ["All", "Favorites"];
+const DYNAMIC_CATEGORIES = [
   "Prescription",
   "Lab Reports",
   "Vaccination",
@@ -32,7 +33,7 @@ const categories = [
 ];
 
 export default function MedicalRecords({ pets = [], activePetId, onPetSelect, onAddPet }) {
-  const [activeCategory, setActiveCategory] = useState("Quick Access");
+  const [activeCategory, setActiveCategory] = useState("All");
   const [showUploadSheet, setShowUploadSheet] = useState(false);
   const imageInputRef = useRef(null);
   const pdfInputRef = useRef(null);
@@ -223,14 +224,44 @@ export default function MedicalRecords({ pets = [], activePetId, onPetSelect, on
     }
   };
 
+  const toggleFavorite = async (recordId) => {
+    try {
+      const res = await fetchWithAuth(`/api/medical-records/${recordId}/favorite`, {
+        method: "PATCH",
+      });
+      if (res.ok) {
+        await fetchRecords();
+      } else {
+        console.error("Failed to toggle favorite");
+      }
+    } catch (err) {
+      console.error("Error toggling favorite:", err);
+    }
+  };
+
+  // Dynamically sort categories
+  const categoryCounts = {};
+  allRecords.forEach((r) => {
+    if (DYNAMIC_CATEGORIES.includes(r.category)) {
+      categoryCounts[r.category] = (categoryCounts[r.category] || 0) + 1;
+    }
+  });
+
+  const sortedDynamicCategories = [...DYNAMIC_CATEGORIES].sort((a, b) => {
+    const countA = categoryCounts[a] || 0;
+    const countB = categoryCounts[b] || 0;
+    return countB - countA;
+  });
+
+  const displayedCategories = [...FIXED_CATEGORIES, ...sortedDynamicCategories];
+
   // Filter records based on selected category
-  const quickAccessRecords = allRecords.filter(
-    (r) => r.category === "Quick Access" || r.category === "QuickAccess"
-  );
-  
-  const currentRecords = allRecords.filter(
-    (r) => r.category === activeCategory
-  );
+  const currentRecords =
+    activeCategory === "All"
+      ? allRecords
+      : activeCategory === "Favorites"
+      ? allRecords.filter((r) => r.is_favorite)
+      : allRecords.filter((r) => r.category === activeCategory);
 
   return (
     <div className="medical-records">
@@ -286,7 +317,7 @@ export default function MedicalRecords({ pets = [], activePetId, onPetSelect, on
           <div className="card-icon">
             <FolderOpen size={28} strokeWidth={2} />
           </div>
-          <h3>Quick Access</h3>
+          <h3>Favorites</h3>
 
           <p>View your important records instantly.</p>
         </button>
@@ -315,7 +346,7 @@ export default function MedicalRecords({ pets = [], activePetId, onPetSelect, on
         </div>
 
         <div className="category-scroll">
-          {categories.map((item) => (
+          {displayedCategories.map((item) => (
             <button
               key={item}
               className={`chip ${activeCategory === item ? "active" : ""}`}
@@ -326,139 +357,108 @@ export default function MedicalRecords({ pets = [], activePetId, onPetSelect, on
           ))}
         </div>
 
-        {/* EMPTY STATE */}
         <div className="empty-state">
-          {/* 1. UPLOAD PROGRESS */}
-          {showUploadProgress && (
-            <div className="uploading-placeholder">
-              {progress < 100 ? (
-                <>
-                  <div className="upload-spinner"></div>
-                  <h3>Uploading...</h3>
-                </>
-              ) : (
-                <>
-                  <div className="upload-success-icon">
-                    <CheckCircle2 size={52} strokeWidth={2.4} />
-                  </div>
-                  <h3 className="upload-success-text">Uploaded Successfully</h3>
-                </>
-              )}
-
-              <p>{selectedFile?.name}</p>
-
-              <div className="progress-bar">
+          {/* RECORDS LIST */}
+          {loadingRecords ? (
+            <div className="upload-spinner"></div>
+          ) : currentRecords.length > 0 ? (
+            <div className="records-list">
+              {currentRecords.map((record, index) => (
                 <div
-                  className="progress-fill"
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
+                  key={record.id || index}
+                  className="record-card"
+                  onClick={() => setViewFile(record)}
+                >
+                  <div className="record-icon">
+                    {record.file_type?.includes("pdf") ? (
+                      <File size={30} />
+                    ) : (
+                      <FileImage size={30} />
+                    )}
+                  </div>
 
-              <span>{progress}%</span>
+                  <div className="record-details">
+                    <h4>{record.title || record.file_name}</h4>
+                    <p>{record.category}</p>
+                    <span>{record.created_at ? new Date(record.created_at).toLocaleDateString() : ""}</span>
+                  </div>
 
-              {progress === 100 && (
-                <div className="upload-actions">
                   <button
-                    className="preview-btn"
-                    onClick={() => setShowPreview(true)}
-                  >
-                    Preview
-                  </button>
-
-                  <button
-                    className="save-btn"
-                    onClick={() => {
-                      setShowUploadProgress(false);
-                      setShowPreview(false);
-                      setSelectedFile(null);
-                      setProgress(0);
+                    className={`favorite-btn ${record.is_favorite ? 'active' : ''}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleFavorite(record.id);
                     }}
                   >
-                    Done
+                    <Heart size={20} fill={record.is_favorite ? "currentColor" : "none"} />
                   </button>
                 </div>
-              )}
+              ))}
+            </div>
+          ) : (
+            <div className="empty-card">
+              <img src={emptyDog} alt="empty" className="empty-dog" />
+              <h3>No Record Found</h3>
+              <p>{activeCategory === "Favorites" ? "No favorite records yet" : `No records in ${activeCategory}`}</p>
             </div>
           )}
-
-          {/* 2. QUICK ACCESS */}
-          {!showUploadProgress &&
-            activeCategory === "Quick Access" &&
-            (loadingRecords ? (
-              <div className="upload-spinner"></div>
-            ) : quickAccessRecords.length > 0 ? (
-              <div className="records-list">
-                {quickAccessRecords.map((record, index) => (
-                  <div
-                    key={record.id || index}
-                    className="record-card"
-                    onClick={() => setViewFile(record)}
-                  >
-                    <div className="record-icon">
-                      {record.file_type?.includes("pdf") ? (
-                        <File size={30} />
-                      ) : (
-                        <FileImage size={30} />
-                      )}
-                    </div>
-
-                    <div className="record-details">
-                      <h4>{record.title || record.file_name}</h4>
-                      <p>
-                        {record.file_type?.includes("pdf")
-                          ? "PDF Document"
-                          : "Image File"}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="empty-card">
-                <img src={emptyDog} alt="empty" className="empty-dog" />
-                <h3>No Record Found</h3>
-                <p>Start by uploading your medical records</p>
-              </div>
-            ))}
-
-          {/* 3. CATEGORY RECORDS */}
-          {!showUploadProgress &&
-            activeCategory !== "Quick Access" &&
-            (loadingRecords ? (
-              <div className="upload-spinner"></div>
-            ) : currentRecords.length > 0 ? (
-              <div className="records-list">
-                {currentRecords.map((record, index) => (
-                  <div
-                    key={record.id || index}
-                    className="record-card"
-                    onClick={() => setViewFile(record)}
-                  >
-                    <div className="record-icon">
-                      {record.file_type?.includes("pdf") ? (
-                        <File size={30} />
-                      ) : (
-                        <FileImage size={30} />
-                      )}
-                    </div>
-
-                    <div className="record-details">
-                      <h4>{record.title || record.file_name}</h4>
-                      <p>{record.category}</p>
-                      <span>{record.created_at ? new Date(record.created_at).toLocaleDateString() : ""}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="empty-card">
-                <img src={emptyDog} alt="empty" className="empty-dog" />
-                <h3>No Record Found</h3>
-                <p>{`No records in ${activeCategory}`}</p>
-              </div>
-            ))}
         </div>
       </section>
+
+      {/* UPLOAD PROGRESS OVERLAY */}
+      {showUploadProgress && (
+        <div className="upload-progress-overlay">
+          <div className="uploading-placeholder">
+            {progress < 100 ? (
+              <>
+                <div className="upload-spinner"></div>
+                <h3>Uploading...</h3>
+              </>
+            ) : (
+              <>
+                <div className="upload-success-icon">
+                  <CheckCircle2 size={52} strokeWidth={2.4} />
+                </div>
+                <h3 className="upload-success-text">Uploaded Successfully</h3>
+              </>
+            )}
+
+            <p>{selectedFile?.name}</p>
+
+            <div className="progress-bar">
+              <div
+                className="progress-fill"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+
+            <span>{progress}%</span>
+
+            {progress === 100 && (
+              <div className="upload-actions">
+                <button
+                  className="preview-btn"
+                  onClick={() => setShowPreview(true)}
+                >
+                  Preview
+                </button>
+
+                <button
+                  className="save-btn"
+                  onClick={() => {
+                    setShowUploadProgress(false);
+                    setShowPreview(false);
+                    setSelectedFile(null);
+                    setProgress(0);
+                  }}
+                >
+                  Done
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/*file choosing for upload-pop-up*/}
       {showUploadSheet && (
@@ -550,13 +550,6 @@ export default function MedicalRecords({ pets = [], activePetId, onPetSelect, on
                 }
               }}
             />
-
-            <button
-              className="cancel-btn"
-              onClick={() => setShowUploadSheet(false)}
-            >
-              ✖ Cancel
-            </button>
           </div>
         </div>
       )}
@@ -666,7 +659,7 @@ export default function MedicalRecords({ pets = [], activePetId, onPetSelect, on
                 value={formData.category}
                 onChange={handleFormChange}
               >
-                {categories.filter(c => c !== "Quick Access").map((cat) => (
+                {DYNAMIC_CATEGORIES.map((cat) => (
                   <option key={cat} value={cat}>
                     {cat}
                   </option>
