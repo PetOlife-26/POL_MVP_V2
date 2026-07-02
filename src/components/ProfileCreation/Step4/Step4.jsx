@@ -1,7 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
 import StepProgress from "../StepProgress/StepProgress";
 import StepHeaderBar from "../StepHeaderBar/StepHeaderBar";
-import { FiEdit2 } from "../icons";
+import { FiEdit2, FiCheck } from "../icons";
 import { API_BASE } from "../constants";
 import fetchWithAuth from "../../../utils/fetchWithAuth";
 import { PetAvatar } from "../../common/PetAvatar";
@@ -10,28 +10,37 @@ import "./Step4.css";
 function Step4({ goBack, petData, setStep, isSubmitting, setIsSubmitting, submitError, setSubmitError, onNavigateToPetHome }) {
   const progress = 100;
 
+  const [localPetData, setLocalPetData] = useState({
+    petName: petData.petName || "",
+    petType: petData.petType || "",
+    breed: petData.breed || "",
+    gender: petData.gender || "",
+    birthDate: petData.birthDate || "",
+    approxAge: petData.approxAge || "",
+    petPhotoFile: petData.petPhotoFile || null
+  });
+
+  const [isEditing, setIsEditing] = useState(false);
+
   const handleGenerate = async () => {
     setIsSubmitting(true);
     setSubmitError("");
 
     try {
       const formData = new FormData();
-      formData.append("pet_type", petData.petType || "");
-      formData.append("pet_name", (petData.petName || "").trim());
-      if (petData.breed)      formData.append("breed", petData.breed);
-      if (petData.gender)     formData.append("gender", petData.gender);
-      if (petData.birthDate)  formData.append("birth_date", petData.birthDate);
-      if (petData.approxAge)  formData.append("approx_age", petData.approxAge);
-      if (petData.petPhotoFile) formData.append("pet_photo", petData.petPhotoFile);
+      formData.append("pet_type", localPetData.petType || "");
+      formData.append("pet_name", (localPetData.petName || "").trim());
+      if (localPetData.breed)      formData.append("breed", localPetData.breed);
+      if (localPetData.gender)     formData.append("gender", localPetData.gender);
+      if (localPetData.birthDate)  formData.append("birth_date", localPetData.birthDate);
+      if (localPetData.approxAge)  formData.append("approx_age", localPetData.approxAge);
+      if (localPetData.petPhotoFile) formData.append("pet_photo", localPetData.petPhotoFile);
 
       const storedUserData = localStorage.getItem("user");
       if (storedUserData) {
         try {
           const userObj = JSON.parse(storedUserData);
           if (userObj.id) formData.append("user_id", userObj.id);
-          // City was auto-detected from the PIN code at signup and saved
-          // into user_metadata — pass it through so the PetLife ID uses
-          // the user's real city instead of the old hardcoded default.
           const city = userObj.user_metadata?.city;
           if (city) formData.append("city", city);
         } catch {}
@@ -67,11 +76,11 @@ function Step4({ goBack, petData, setStep, isSubmitting, setIsSubmitting, submit
       const newPet = {
         id: petProfileId,
         petolife_id: petolifeId,
-        pet_name: (petData.petName || "").trim(),
-        pet_type: petData.petType,
-        breed: petData.breed,
-        gender: petData.gender,
-        birth_date: petData.birthDate,
+        pet_name: (localPetData.petName || "").trim(),
+        pet_type: localPetData.petType,
+        breed: localPetData.breed,
+        gender: localPetData.gender,
+        birth_date: localPetData.birthDate,
         pet_photo_url: profileData.data?.pet_photo_url,
       };
 
@@ -82,12 +91,12 @@ function Step4({ goBack, petData, setStep, isSubmitting, setIsSubmitting, submit
       const petForHome = {
         id: petProfileId,
         petolife_id: petolifeId,
-        name:   (petData.petName || "").trim(),
-        breed:  petData.breed  || "Not added",
-        gender: petData.gender || "Male",
-        age:    petData.birthDate ? petData.birthDate : petData.approxAge || "Not added",
+        name:   (localPetData.petName || "").trim(),
+        breed:  localPetData.breed  || "Not added",
+        gender: localPetData.gender || "Male",
+        age:    localPetData.birthDate ? localPetData.birthDate : localPetData.approxAge || "Not added",
         image:  profileData.data?.pet_photo_url ||
-                (petData.petPhotoFile ? URL.createObjectURL(petData.petPhotoFile) : ""),
+                (localPetData.petPhotoFile ? URL.createObjectURL(localPetData.petPhotoFile) : ""),
       };
 
       onNavigateToPetHome({ newPet: petForHome });
@@ -100,7 +109,7 @@ function Step4({ goBack, petData, setStep, isSubmitting, setIsSubmitting, submit
     }
   };
 
-  const petAgeValue = petData.birthDate || petData.approxAge || "[Not Added]";
+  const inputStyle = { padding: '6px', borderRadius: '6px', border: '1px solid #ccc', outline: 'none', width: '100%', maxWidth: '150px', textAlign: 'right', fontFamily: 'inherit' };
 
   return (
     <div className="confirm-container">
@@ -118,53 +127,112 @@ function Step4({ goBack, petData, setStep, isSubmitting, setIsSubmitting, submit
         <div className="pet-summary-top">
           <div className="pet-avatar-wrap">
             <PetAvatar
-              src={petData.petPhotoFile ? URL.createObjectURL(petData.petPhotoFile) : null}
-              petType={petData.petType}
+              src={localPetData.petPhotoFile ? URL.createObjectURL(localPetData.petPhotoFile) : null}
+              petType={localPetData.petType}
               className="pet-avatar"
               size={48}
             />
           </div>
 
           <div className="pet-summary-meta">
-            <h3>{petData.petName || "Your Pet"}</h3>
-            <p>{petData.breed || "Breed not added"}</p>
+            <h3>{localPetData.petName || "Your Pet"}</h3>
+            <p>{localPetData.breed || "Breed not added"}</p>
             <div className="pet-summary-badge">
               <span className="pet-summary-badge-icon">🐾</span>
-              <span>{petData.petType || "Pet"}</span>
+              <span>{localPetData.petType || "Pet"}</span>
             </div>
           </div>
         </div>
 
         <div className="confirm-details">
           {[
-            { icon: "👤", label: "Pet Name",  value: petData.petName  || "[Not Added]" },
-            { icon: "🐕", label: "Pet Type",  value: petData.petType  || "[Not Added]" },
-            { icon: "🐾", label: "Breed",     value: petData.breed    || "[Not Added]" },
-            { icon: "♂",  label: "Gender",    value: petData.gender   || "[Not Added]" },
-            { icon: "📅", label: "Age / DOB", value: petAgeValue },
-          ].map(({ icon, label, value }) => (
+            { icon: "👤", label: "Pet Name",  name: "petName", type: "text" },
+            { icon: "🐕", label: "Pet Type",  name: "petType", type: "text" },
+            { icon: "🐾", label: "Breed",     name: "breed", type: "text" },
+            { icon: "♂",  label: "Gender",    name: "gender", type: "select", options: ["Male", "Female"] },
+          ].map(({ icon, label, name, type, options }) => (
             <div className="confirm-row" key={label}>
               <div className="confirm-row-left">
                 <span className="confirm-row-icon">{icon}</span>
                 <span className="label">{label}</span>
               </div>
-              <strong>{value}</strong>
+              {isEditing ? (
+                 type === "select" ? (
+                   <select 
+                     value={localPetData[name]} 
+                     onChange={e => setLocalPetData({...localPetData, [name]: e.target.value})} 
+                     style={inputStyle}
+                   >
+                     <option value="">Select...</option>
+                     {options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                   </select>
+                 ) : (
+                   <input 
+                     type="text" 
+                     value={localPetData[name]} 
+                     onChange={e => setLocalPetData({...localPetData, [name]: e.target.value})} 
+                     style={inputStyle}
+                     placeholder={`Enter ${label}`}
+                   />
+                 )
+              ) : (
+                 <strong>{localPetData[name] || "[Not Added]"}</strong>
+              )}
             </div>
           ))}
+
+          {/* Age / DOB Row */}
+          <div className="confirm-row" key="Age">
+            <div className="confirm-row-left">
+              <span className="confirm-row-icon">📅</span>
+              <span className="label">Age / DOB</span>
+            </div>
+            {isEditing ? (
+              <div style={{ display: 'flex', gap: '8px', flexDirection: 'column', alignItems: 'flex-end', width: '150px' }}>
+                <input 
+                  type="date" 
+                  value={localPetData.birthDate} 
+                  max={new Date().toISOString().split("T")[0]}
+                  onChange={e => setLocalPetData({...localPetData, birthDate: e.target.value, approxAge: ""})} 
+                  style={inputStyle}
+                  title="Date of Birth"
+                />
+                <span style={{ fontSize: '11px', color: '#888', marginRight: '4px' }}>OR</span>
+                <input 
+                  type="text" 
+                  value={localPetData.approxAge} 
+                  onChange={e => setLocalPetData({...localPetData, approxAge: e.target.value, birthDate: ""})} 
+                  style={inputStyle}
+                  placeholder="e.g. 2y 5m"
+                  title="Approximate Age"
+                />
+              </div>
+            ) : (
+              <strong>{localPetData.birthDate || localPetData.approxAge || "[Not Added]"}</strong>
+            )}
+          </div>
         </div>
       </div>
 
-      <button type="button" className="edit-profile-btn" onClick={() => setStep(2)}>
-        <FiEdit2 />
-        <span>Edit Details</span>
-      </button>
+      {isEditing ? (
+        <button type="button" className="edit-profile-btn" onClick={() => setIsEditing(false)} style={{ background: '#eff8e8', color: '#178a32', borderColor: '#a8d48d' }}>
+          <FiCheck />
+          <span>Save Details</span>
+        </button>
+      ) : (
+        <button type="button" className="edit-profile-btn" onClick={() => setIsEditing(true)}>
+          <FiEdit2 />
+          <span>Edit Details</span>
+        </button>
+      )}
 
       {submitError && <div className="submit-error">{submitError}</div>}
 
       <button
         className={`generate-btn ${isSubmitting ? "loading" : ""}`}
         onClick={handleGenerate}
-        disabled={isSubmitting}
+        disabled={isSubmitting || isEditing}
+        style={isEditing ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
       >
         {isSubmitting ? (
           <>

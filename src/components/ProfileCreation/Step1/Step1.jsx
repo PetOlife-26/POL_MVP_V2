@@ -54,7 +54,7 @@ function Step1({ goNext, onNavigateBack, petData }) {
         <img src={PAW_IMG} alt="" className="paw-img paw-right" />
 
 <div className="pet-photo-ring">
-  <PetAvatar src={image} petType={petData?.petType} alt="pet" size={48} />
+  <PetAvatar src={image} petType={petData?.petType} alt="pet" size={70} className="step1-avatar-fallback" />
 
   <label className="pet-camera-badge">
     <FiCamera />

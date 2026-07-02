@@ -92,6 +92,12 @@
   position: relative;
   z-index: 1;
 }
+
+.step1-avatar-fallback {
+  position: relative;
+  z-index: 1;
+}
+
 .pet-camera-badge {
   position: absolute;
   right: 10px;

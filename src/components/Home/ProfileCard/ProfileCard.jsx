@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { PetAvatar } from "../../common/PetAvatar";
 import "./ProfileCard.css";
 
 import calendarIcon from "./calendar-icon.png";
@@ -31,7 +32,8 @@ function normalizePet(pet) {
   return {
     id: pet.id || Math.random().toString(),
     name: pet.pet_name || pet.name || "Pet",
-    image: pet.pet_photo_url || pet.image || pawIcon,
+    image: pet.pet_photo_url || pet.image || "",
+    petType: pet.pet_type || pet.type || "",
     breed: pet.breed || "Breed not added",
     gender: pet.gender || "Male",
     age: ageStr || "Not added",
@@ -109,7 +111,7 @@ export default function ProfileCard({
         onClick={toggleDropdown}
       >
         <div className="profile-avatar">
-          <img src={selectedPet.image} alt={selectedPet.name} className="avatar-img" onError={(e) => { e.target.src = pawIcon; }} />
+          <PetAvatar src={selectedPet.image} petType={selectedPet.petType} className="avatar-img" size={48} />
         </div>
 
         <div className="profile-info">
@@ -161,7 +163,7 @@ export default function ProfileCard({
               }`}
               onClick={() => onSelect(originalPet)}
             >
-              <img src={pet.image} alt={pet.name} className="pet-switcher__avatar" onError={(e) => { e.target.src = pawIcon; }} />
+              <PetAvatar src={pet.image} petType={pet.petType} className="pet-switcher__avatar" size={40} />
 
               <div className="pet-switcher__info">
                 <h4>{pet.name}</h4>
