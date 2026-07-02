@@ -10,9 +10,9 @@
   --gold-soft: #f0d78c;
   --cream: #faf8f2;
   --ink: #0c2417;
-  --bg-glow: rgba(46, 168, 98, 0.18);
-  --bg-mid: #0e4a28;
-  --bg-deep: #092016;
+  --bg-glow: rgba(57, 181, 74, 0.18);
+  --bg-mid: #39b54a;
+  --bg-deep: #1f5f2d;
   --font-display: 'Inter', system-ui, sans-serif;
   --font-body: 'Inter', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
@@ -30,7 +30,7 @@
   flex-direction: column;
   background:
     radial-gradient(120% 60% at 50% 0%, var(--bg-glow) 0%, transparent 60%),
-    linear-gradient(180deg, var(--bg-mid) 0%, var(--bg-deep) 55%, #051a0c 100%);
+    linear-gradient(180deg, var(--bg-mid) 0%, var(--bg-deep) 55%, #113f1b 100%);
   padding: 28px 20px 36px;
 }
 
@@ -45,31 +45,37 @@
 
 /* ---------- Ambient confetti ---------- */
 
-.confetti-layer {
+/* ---------- Ambient paws ---------- */
+
+.paw-layer {
   position: absolute;
   inset: 0;
   pointer-events: none;
   z-index: 0;
+  overflow: hidden;
 }
 
-.confetti-piece {
+.paw-piece {
   position: absolute;
-  top: -5%;
+  top: -10%;
   opacity: 0;
-  animation-name: confetti-fall;
+  animation-name: paw-fall;
   animation-timing-function: ease-in;
   animation-iteration-count: infinite;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-@keyframes confetti-fall {
+@keyframes paw-fall {
   0% {
     transform: translateY(0) rotate(0deg);
     opacity: 0;
   }
-  8% { opacity: 0.9; }
-  90% { opacity: 0.7; }
+  15% { opacity: 0.6; }
+  85% { opacity: 0.4; }
   100% {
-    transform: translateY(105vh) rotate(var(--rot));
+    transform: translateY(110vh) rotate(var(--rot));
     opacity: 0;
   }
 }
@@ -203,27 +209,29 @@
 
 .id-panel {
   display: flex;
-  align-items: stretch;
-  gap: 14px;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
   background: #eef5ef;
   border-radius: 18px;
-  padding: 16px;
-  text-align: left;
+  padding: 20px 16px;
+  text-align: center;
 }
 
-.id-info { flex: 1; display: flex; flex-direction: column; align-items: flex-start; justify-content: space-between; min-width: 0; }
+.id-info { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; }
 
-.id-label { display: flex; align-items: center; gap: 6px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; color: var(--green-700); text-transform: uppercase; }
+.id-label { display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; color: var(--green-700); text-transform: uppercase; }
 
-.id-number { font-family: var(--font-mono); font-weight: 700; font-size: clamp(1.05rem, 4.6vw, 1.25rem); color: var(--ink); margin-top: 8px; word-break: break-all; }
+.id-number { font-family: var(--font-mono); font-weight: 700; font-size: clamp(1.2rem, 5vw, 1.4rem); color: var(--ink); margin-top: 8px; word-break: break-all; }
 
-.id-divider { width: 100%; height: 1px; background: rgba(12, 36, 23, 0.12); margin: 12px 0; }
+.id-divider { display: none; }
 
 .id-qr { position: relative; display: flex; align-items: center; justify-content: center; }
 
-.qr-frame { background: var(--cream); border: 2px solid var(--green-500); border-radius: 14px; padding: 10px; display: flex; }
+.qr-frame { background: var(--cream); border: 2.5px solid var(--green-500); border-radius: 16px; padding: 14px; display: flex; margin-bottom: 4px; }
 
-.qr-tag { position: absolute; bottom: -10px; right: -10px; background: var(--green-700); color: var(--cream); font-size: 0.62rem; font-weight: 700; line-height: 1.2; padding: 6px 9px; border-radius: 10px; box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25); max-width: 70px; text-align: center; }
+.qr-tag { position: absolute; bottom: -6px; right: 50%; transform: translateX(50%); background: var(--green-700); color: var(--cream); font-size: 0.65rem; font-weight: 700; line-height: 1.2; padding: 6px 12px; border-radius: 10px; box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25); white-space: nowrap; text-align: center; }
+
 
 /* ---------- Actions ---------- */
 

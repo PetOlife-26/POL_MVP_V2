@@ -16,6 +16,7 @@ import {
   MessageCircle,
   X,
   CheckCircle2,
+  Download,
 } from 'lucide-react';
 
 export default function PostIdScreen({ inlineData }) {
@@ -24,6 +25,7 @@ export default function PostIdScreen({ inlineData }) {
 
   const [showShareModal, setShowShareModal] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [copiedId, setCopiedId] = useState(false);
 
   const dataToUse = inlineData || location.state || {};
 
@@ -44,6 +46,35 @@ export default function PostIdScreen({ inlineData }) {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleCopyId = () => {
+    navigator.clipboard.writeText(petolifeId);
+    setCopiedId(true);
+    setTimeout(() => setCopiedId(false), 2000);
+  };
+
+  const handleDownloadQR = () => {
+    const svg = document.getElementById("qr-code-svg");
+    if (!svg) return;
+    const svgData = new XMLSerializer().serializeToString(svg);
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    const img = new Image();
+    
+    img.onload = () => {
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0);
+      const pngFile = canvas.toDataURL("image/png");
+      const downloadLink = document.createElement("a");
+      downloadLink.download = `${petName}_QR.png`;
+      downloadLink.href = `${pngFile}`;
+      downloadLink.click();
+    };
+    img.src = "data:image/svg+xml;base64," + btoa(svgData);
+  };
+
   const handleWhatsApp = () => {
     const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
     window.open(url, '_blank');
@@ -61,10 +92,10 @@ export default function PostIdScreen({ inlineData }) {
     }
   };
 
-  // Deterministic pseudo-random confetti layout
-  const useConfetti = (count = 26) => {
+  // Deterministic pseudo-random paw layout
+  const usePaws = (count = 16) => {
     return useMemo(() => {
-      const colors = ['var(--gold)', 'var(--gold-soft)', 'var(--green-500)', '#cfe9d6'];
+      const colors = ['var(--gold)', 'var(--gold-soft)', 'var(--green-500)', '#cfe9d6', 'var(--cream)'];
       let seed = 42;
       const rand = () => {
         seed = (seed * 9301 + 49297) % 233280;
@@ -74,34 +105,32 @@ export default function PostIdScreen({ inlineData }) {
         id: i,
         left: `${rand() * 100}%`,
         delay: `${(rand() * 4).toFixed(2)}s`,
-        duration: `${(5 + rand() * 4).toFixed(2)}s`,
-        size: `${6 + Math.round(rand() * 8)}px`,
+        duration: `${(6 + rand() * 5).toFixed(2)}s`,
+        size: Math.round(14 + rand() * 16),
         color: colors[i % colors.length],
         rotate: `${Math.round(rand() * 360)}deg`,
-        shape: i % 3 === 0 ? '50%' : '2px',
       }));
     }, [count]);
   };
 
-  const ConfettiLayer = () => {
-    const pieces = useConfetti();
+  const PawLayer = () => {
+    const pieces = usePaws();
     return (
-      <div className="confetti-layer" aria-hidden="true">
+      <div className="paw-layer" aria-hidden="true">
         {pieces.map((p) => (
           <span
             key={p.id}
-            className="confetti-piece"
+            className="paw-piece"
             style={{
               left: p.left,
               animationDelay: p.delay,
               animationDuration: p.duration,
-              width: p.size,
-              height: p.size,
-              background: p.color,
-              borderRadius: p.shape,
+              color: p.color,
               '--rot': p.rotate,
             }}
-          />
+          >
+            <PawPrint size={p.size} fill="currentColor" strokeWidth={0} />
+          </span>
         ))}
       </div>
     );
@@ -153,7 +182,7 @@ export default function PostIdScreen({ inlineData }) {
 
   return (
     <div className="page">
-      <ConfettiLayer />
+      <PawLayer />
       <PawWatermarks />
       <header className="postid-hero">
         <div className="check-badge">
@@ -184,6 +213,12 @@ export default function PostIdScreen({ inlineData }) {
           <Heart size={15} />
         </p>
         <div className="id-panel">
+          <div className="id-qr">
+            <div className="qr-frame">
+              <QRCodeSVG id="qr-code-svg" value={qrValue} size={150} bgColor="transparent" fgColor="var(--ink)" level="M" />
+            </div>
+            <span className="qr-tag">Scan to view ID</span>
+          </div>
           <div className="id-info">
             <div className="id-label">
               <PawPrint size={12} />
@@ -191,18 +226,24 @@ export default function PostIdScreen({ inlineData }) {
               <PawPrint size={12} />
             </div>
             <div className="id-number">{petolifeId}</div>
-            <div className="id-divider" />
-            <ShieldCheck size={20} color="var(--green-600)" />
-          </div>
-          <div className="id-qr">
-            <div className="qr-frame">
-              <QRCodeSVG value={qrValue} size={120} bgColor="transparent" fgColor="var(--ink)" level="M" />
-            </div>
-            <span className="qr-tag">Scan to view ID</span>
           </div>
         </div>
       </main>
       <nav className="actions" aria-label="Next steps">
+        <div style={{ display: 'flex', gap: '8px', marginBottom: '4px' }}>
+          <ActionButton
+            tone="secondary"
+            icon={copiedId ? <CheckCircle2 size={18} strokeWidth={2.2} color="var(--green-600)" /> : <Copy size={18} strokeWidth={2.2} />}
+            label={copiedId ? "ID Copied!" : "Copy Pet ID"}
+            onClick={handleCopyId}
+          />
+          <ActionButton
+            tone="secondary"
+            icon={<Download size={18} strokeWidth={2.2} />}
+            label="Download QR"
+            onClick={handleDownloadQR}
+          />
+        </div>
         <ActionButton
           tone="primary"
           icon={<UserPlus size={18} strokeWidth={2.2} />}
