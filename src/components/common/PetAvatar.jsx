@@ -9,15 +9,15 @@ export function PetAvatar({ src, petType, className, size = 48, iconColor = "#9c
   const getIcon = () => {
     switch (petType?.toLowerCase()) {
       case "dog":
-        return <Dog size={size} color={iconColor} strokeWidth={1.5} />;
+        return <Dog size="100%" color={iconColor} strokeWidth={1.5} />;
       case "cat":
-        return <Cat size={size} color={iconColor} strokeWidth={1.5} />;
+        return <Cat size="100%" color={iconColor} strokeWidth={1.5} />;
       case "bird":
-        return <Bird size={size} color={iconColor} strokeWidth={1.5} />;
+        return <Bird size="100%" color={iconColor} strokeWidth={1.5} />;
       case "rabbit":
-        return <Rabbit size={size} color={iconColor} strokeWidth={1.5} />;
+        return <Rabbit size="100%" color={iconColor} strokeWidth={1.5} />;
       default:
-        return <PawPrint size={size} color={iconColor} strokeWidth={1.5} />;
+        return <PawPrint size="100%" color={iconColor} strokeWidth={1.5} />;
     }
   };
 

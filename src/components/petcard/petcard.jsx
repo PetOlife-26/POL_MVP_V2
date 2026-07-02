@@ -133,7 +133,7 @@ export default function PetCard({ petData: propPetData }) {
                   src={fullProfile.pet_photo_url}
                   petType={fullProfile.pet_type}
                   className={fullProfile.pet_photo_url ? "pc-photo" : "pc-photo-placeholder"}
-                  size={40}
+                  size="100%"
                   iconColor="#0c6b3a"
                 />
               </div>
