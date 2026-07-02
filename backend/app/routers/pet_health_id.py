@@ -279,15 +279,17 @@ def get_next_sequence(city_code: str, pet_type_code: str) -> int:
     prefix = f"PET-{city_code}-{pet_type_code}-"
     try:
         result = (
-            supabase.table("pet_health_ids")
-            .select("sequence_number")
-            .like("health_id", f"{prefix}%")
-            .order("sequence_number", desc=True)
+            supabase.table("pet_profiles")
+            .select("petolife_id")
+            .like("petolife_id", f"{prefix}%")
+            .order("petolife_id", desc=True)
             .limit(1)
             .execute()
         )
         if result.data and len(result.data) > 0:
-            return result.data[0]["sequence_number"] + 1
+            last_id = result.data[0]["petolife_id"]
+            last_seq = int(last_id.split("-")[-1])
+            return last_seq + 1
         return 1
     except Exception as e:
         print(f"[PetHealthID] Sequence error: {e}")
@@ -329,8 +331,7 @@ def store_pet_health_id(health_id: str, pet_profile_id: str) -> bool:
 
 def generate_and_store(city_name: str, pet_type: str, pet_profile_id: str) -> str:
     health_id = generate_pet_health_id(city_name, pet_type)
-    if not store_pet_health_id(health_id, pet_profile_id):
-        raise Exception(f"Failed to store health ID: {health_id}")
+    store_pet_health_id(health_id, pet_profile_id)  # non-critical, never blocks
     try:
         supabase.table("pet_profiles").update({
             "petolife_id": health_id
