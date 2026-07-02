@@ -40,7 +40,7 @@ Any AI or developer reading this document will have complete context of every si
 - **`MainLayout.jsx`**: The core architectural piece for authenticated users.
   - **State**: `activeTab` (home, timeline, medicalrecords, profile), `pets` (array of user's pets), `activePetId`, `loadingPets`.
   - **On Mount**: Fetches `/api/pet-profile/`. Caches in `localStorage('pets_{user_id}')`. Sets `activePetId`.
-  - **Logic**: Handles tab switching via `BottomNav`. Drills `pets` and `activePetId` state down to the active tab component.
+  - **Logic**: Handles tab switching via `BottomNav`. Drills `pets`, `activePetId`, and `refreshPets` down to child components.
 - **`MainLayout.css`**: Defines `.main-layout-container` for fixed header/footer routing.
 
 ### 2.4. Navigation Components (`src/components/common/`)
@@ -48,6 +48,7 @@ Any AI or developer reading this document will have complete context of every si
 - **`BottomNav/BottomNav.jsx`**: Fixed footer tab bar. 
   - **Props**: `active` (current tab), `onNavigate` (tab switch callback), `onFabPress` (+ FAB callback to add pet).
   - **Tabs**: Home, Timeline, Medical Records, Profile.
+- **`PetAvatar.jsx`**: Global helper to dynamically load a pet's photo or a scalable 60% SVG fallback (Dog, Cat, etc.) using `lucide-react`.
 
 ### 2.5. Dashboard & Home (`src/components/Home/`)
 - **`Home.jsx`**: Conditional renderer for the dashboard.
@@ -65,14 +66,16 @@ Any AI or developer reading this document will have complete context of every si
 ### 2.6. Profile Dashboard (`src/components/UserProfile/`)
 - **`UserProfile.jsx`**: Replaces standard form with an interactive Dashboard UI.
   - **Logic**: Iterates down `pets` array to find `activePetId`.
+  - Uses `refreshPets` callback to silently fetch data instead of page reloads.
   - Renders `EditableUserCard`, `EditablePetCard`, and standard widgets (`HealthBanner`, `QuickActions`, etc.) at the bottom.
+  - Renders `PetAvatar` for default pet images dynamically instead of static placeholders.
   - **Logout Logic**: Clears `localStorage` and calls `signOut`.
 - **`EditableUserCard.jsx`**: Displays user data. 
   - **State**: `profile` (full_name, phone, email, city, etc.), `isEditing`.
   - **Logic**: Toggles to form inputs. Calls `PUT /api/user-profile/{id}` to save text, `POST /api/user-profile/{id}/avatar` for images.
 - **`EditablePetCard.jsx`**: Displays active pet data.
   - **State**: `profile` (pet_name, breed, gender, birth_date, weight, etc.), `isEditing`.
-  - **Logic**: Calls `PATCH /api/pet-profile/{pet_id}` to save text, `POST /api/pet-profile/{pet_id}/photo` for images.
+  - **Logic**: Calls `PATCH /api/pet-profile/{pet_id}` to save text, `POST /api/pet-profile/{pet_id}/photo` for images. Now supports `DELETE /api/pet-profile/{pet_id}` for complete pet profile removal. Includes dynamic breed dropdowns, DOB validation, and styled `.error-text` visual fixes.
 
 ### 2.7. Medical Records (`src/components/medical/`)
 - **`MedicalRecords.jsx`**:
@@ -92,12 +95,13 @@ Any AI or developer reading this document will have complete context of every si
 - **`LandingPg.jsx`**: Marketing promo page. Uses modals to collect early-access emails (Posting to `/api/auth/register-interest`).
 - **`Login.jsx`**: The core authentication screen.
   - **State**: `screen` ('register', 'login', 'forgot'), `form` data.
-  - **Flows**: Email/Password Sign Up (`/api/auth/signup`), Log In (`/api/auth/login`), Pincode Lookup (`/api/location/lookup`), and Google OAuth (`/api/auth/google`).
+  - **Flows**: Email/Password Sign Up (`/api/auth/signup`), Log In (`/api/auth/login`), Pincode Lookup (`/api/location/lookup`), and Google OAuth (`/api/auth/google`). Ensures `SuccessScreen` is exported for use by `ProtectedRoute`.
 - **`ResetPassword.jsx`**: Catches Supabase hash `#access_token=...` from emails. Submits new password to `/api/auth/reset-password`.
 
-### 2.10. Public QR Pet Card (`src/components/postidscreen/`)
+### 2.10. Public QR Pet Card (`src/components/postidscreen/` & `src/components/petcard/`)
 - **`postidscreen.jsx`**: Public facing pet profile. Receives `petolifeId` from URL.
   - **Logic**: Read-only display of pet details, medical history (dummy/public safe), and parent contact. Includes native sharing links and WhatsApp triggers.
+- **`petcard.jsx`**: The Pet ID card UI logic. Now uses responsive native CSS SVG scaling (`size="100%"`) for its `PetAvatar` container to gracefully handle circular fallbacks across varying device sizes.
 
 ---
 
@@ -135,6 +139,7 @@ Any AI or developer reading this document will have complete context of every si
   - `GET /`: Returns all pets owned by the authenticated JWT user.
   - `PATCH /{profile_id}`: Updates subset of text fields. Ignores `None` values to prevent erasing unchanged fields.
   - `POST /{profile_id}/photo`: Re-uploads and updates `pet_photo_url` in the DB.
+  - `DELETE /{profile_id}`: Hard deletes the pet profile, cascade-deletes related `pet_ids`, and permanently removes the pet's photo from the storage bucket (ownership enforced).
   - `GET /by-petolife-id/{petolife_id}`: Redirect endpoint. Used by physical QR codes. Redirects HTTP to frontend URL `/pet/{petolife_id}`.
   - `GET /public/{petolife_id}`: Data endpoint for the public Pet Card. Returns aggregated pet data without requiring auth.
 
@@ -151,6 +156,7 @@ Any AI or developer reading this document will have complete context of every si
   - `POST /upload`: Uploads PDF/Image to `medical-records` bucket. Inserts DB row with file metadata (`file_url`, `category`, `user_id`, `pet_profile_id`).
   - `GET /{pet_profile_id}`: Retrieves array of medical documents for a specific pet.
   - `DELETE /{record_id}`: Hard deletes the DB row and removes the file from the storage bucket.
+  - `PATCH /{record_id}/favorite`: Toggles the favorite status of a medical record.
 
 ### 3.7. Location (`app/routers/location.py`)
 - **Endpoints**:
@@ -186,14 +192,14 @@ Any AI or developer reading this document will have complete context of every si
 
 **`pet_ids`** (Official Registration Numbers)
 - `id`: UUID (Primary Key).
-- `pet_profile_id`: UUID (Foreign Key to `pet_profiles`).
+- `pet_profile_id`: UUID (Foreign Key to `pet_profiles` with `ON DELETE CASCADE`).
 - `id_name`: Text (e.g., "Microchip", "KCI Registration").
 - `id_number`: Text.
 
 **`medical_records`** (Uploaded Health Documents)
 - `id`: UUID (Primary Key).
 - `user_id`: UUID (Foreign Key to `user_profiles`).
-- `pet_profile_id`: UUID (Foreign Key to `pet_profiles`).
+- `pet_profile_id`: UUID (Foreign Key to `pet_profiles` with `ON DELETE CASCADE`).
 - `category`: Text (e.g., "Vaccination", "Prescription", "Lab Report").
 - `file_url`: Text.
 - `file_name`: Text.
@@ -217,7 +223,6 @@ All buckets are configured with public access, meaning Supabase returns a `publi
 4. **Backend Validation**: FastAPI uses strictly typed Pydantic models. Ensure frontend JSON payloads perfectly match these models. For file uploads, use `multipart/form-data` and FastAPI's `UploadFile = File(...)`.
 5. **Component Scoping**: Each UI component MUST reside in its own folder (e.g., `src/components/UserProfile/EditableUserCard/EditableUserCard.jsx` alongside `EditableUserCard.css`). Avoid dumping random `.jsx` files directly into `components/`.
 
----
 
 ## Appendix A: Raw Frontend Code Signatures (codebase_summary.txt)
 
@@ -817,14 +822,21 @@ L25: const res = await fetch(url, { ...options, headers });
 
 ---
 
+
 ## Appendix B: Raw Backend Code Signatures (backend_summary.txt)
 
-```python
---- File: app\main.py ---
+`python
+--- File: backend/app\config.py ---
+
+--- File: backend/app\main.py ---
 L56: @app.get("/")
 L65: @app.on_event("startup")
 
---- File: app\routers\auth.py ---
+--- File: backend/app\supabase_client.py ---
+
+--- File: backend/app\__init__.py ---
+
+--- File: backend/app\routers\auth.py ---
 L20: class SignupRequest(BaseModel):
 L30: class LoginRequest(BaseModel):
 L36: class RegisterInterestRequest(BaseModel):
@@ -838,48 +850,56 @@ L226: @router.post("/register-interest")
 L250: @router.post("/forgot-password")
 L263: @router.post("/reset-password")
 
---- File: app\routers\checklist.py ---
+--- File: backend/app\routers\checklist.py ---
 L9: class TaskLogRequest(BaseModel):
 L15: @router.get("/{pet_id}")
 L25: @router.post("/{pet_id}")
 
---- File: app\routers\location.py ---
+--- File: backend/app\routers\location.py ---
 L5: class PincodeRequest(BaseModel):
 L29: @router.post("/lookup")
 L59: @router.get("/pincode/{pincode}")
 
---- File: app\routers\medical_records.py ---
-L13: def ensure_bucket_exists():
-L23: @router.post("/upload")
-L111: @router.get("/{pet_profile_id}")
-L127: @router.delete("/{record_id}")
+--- File: backend/app\routers\medical_records.py ---
+L19: def ensure_bucket_exists():
+L29: @router.post("/upload")
+L116: @router.get("/{pet_profile_id}")
+L141: @router.delete("/{record_id}")
+L184: @router.patch("/{record_id}/favorite")
 
---- File: app\routers\pet_health_id.py ---
-L34: def get_city_code(city_name: str) -> str:
-L37: def get_pet_type_code(pet_type: str) -> str:
-L40: def get_next_sequence(city_code: str, pet_type_code: str) -> int:
-L58: def generate_pet_health_id(city_name: str, pet_type: str) -> str:
-L66: def store_pet_health_id(health_id: str, pet_profile_id: str) -> bool:
-L85: def generate_and_store(city_name: str, pet_type: str, pet_profile_id: str) -> str:
-L100: class GenerateHealthIdRequest(BaseModel):
-L105: @router.post("/generate")
-L142: @router.get("/preview/{city}/{pet_type}")
+--- File: backend/app\routers\pet_health_id.py ---
+L257: def get_city_code(city_name: str) -> str:
+L268: def get_pet_type_code(pet_type: str) -> str:
+L278: def get_next_sequence(city_code: str, pet_type_code: str) -> int:
+L299: def generate_pet_health_id(city_name: str, pet_type: str) -> str:
+L308: def store_pet_health_id(health_id: str, pet_profile_id: str) -> bool:
+L332: def generate_and_store(city_name: str, pet_type: str, pet_profile_id: str) -> str:
+L346: class GenerateHealthIdRequest(BaseModel):
+L352: @router.post("/generate")
+L387: @router.get("/preview/{city}/{pet_type}")
 
---- File: app\routers\pet_profile.py ---
-L18: class PetProfileUpdate(BaseModel):
-L33: @router.post("/")
-L151: @router.get("/")
-L162: @router.get("/by-user/{user_id}")
-L179: @router.get("/{profile_id}")
-L195: @router.patch("/{profile_id}")
-L214: @router.post("/{profile_id}/photo")
-L244: @router.get("/by-petolife-id/{petolife_id:path}")
-L252: @router.get("/public/{petolife_id:path}")
+--- File: backend/app\routers\pet_profile.py ---
+L22: class PetProfileUpdate(BaseModel):
+L38: def _verify_pet_ownership(profile_id: str, user_id: str):
+L50: @router.post("/")
+L175: @router.get("/")
+L192: @router.get("/by-user/{user_id}")
+L211: @router.get("/by-petolife-id/{petolife_id:path}")
+L219: @router.get("/public/{petolife_id:path}")
+L262: @router.get("/{profile_id}")
+L282: @router.patch("/{profile_id}")
+L306: @router.post("/{profile_id}/photo")
+L335: @router.delete("/{profile_id}")
 
---- File: app\routers\user_profile.py ---
-L9: class UserProfileUpdate(BaseModel):
-L17: def ensure_avatars_bucket_exists():
-L27: @router.get("/{user_id}")
-L37: @router.put("/{user_id}")
-L51: @router.post("/{user_id}/avatar")
-```
+--- File: backend/app\routers\user_profile.py ---
+L18: class UserProfileUpdate(BaseModel):
+L26: def ensure_avatars_bucket_exists():
+L36: @router.get("/{user_id}")
+L52: @router.put("/{user_id}")
+L105: @router.post("/{user_id}/avatar")
+
+--- File: backend/app\utils\auth.py ---
+
+--- File: backend/app\utils\__init__.py ---
+
+`
